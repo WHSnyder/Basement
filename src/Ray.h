@@ -51,6 +51,21 @@ class RayHit {
 		Obj *object_hit;
 
 
+		RayHit(vec3& w_ent, vec3& n_ent, float d_ent, vec3& w_exit, vec3& n_exit, float d_exit, Ray *r, Obj *obj_hit){
+			
+			entrance = new vec3(w_ent);
+			ent_normal = new vec3(n_ent);
+			ent_distance = new vec3(d_ent);
+
+			exit = new vec3(w_exit);
+			exit_normal = new vec3(n_exit);
+			exit_distance = new vec3(d_exit);
+
+			ray = r;
+			object_hit = obj_hit;
+		}
+
+
 		RayHit(vec3 *w, vec3 *n, float d, Ray *r, Obj *obj_hit){
 			entrance = w;
 			ent_normal = n;
@@ -76,18 +91,6 @@ class RayHit {
 			ray = r;
 			object_hit = obj_hit;
 		}
-
-		/*RayHit(RayHit *ex, RayHit *en, Ray *r){
-			entrance = w_ent;
-			ent_normal = n_ent;
-			ent_distance = d_ent;
-
-			exit = w_exit;
-			exit_normal = n_exit;
-			exit_distance = exit_distance;
-
-			ray = r;
-		}*/
 
 		~RayHit(){
 			delete entrance;

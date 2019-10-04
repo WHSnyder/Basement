@@ -15,20 +15,11 @@
 #include <opencv2/opencv.hpp> 
 #endif
 
-#include "primitives/Obj.h"
-#include "Ray.h"
-#include "primitives/Sphere.h"
-#include "primitives/Plane.h"
-#include "primitives/Tri.h"
 #include "Scene.h"
-
-#include "CSG.h"
 
 using namespace std;
 using namespace glm;
 using namespace std::chrono;
-
-
 
 
 void printVec(string name,vec3 v){
@@ -47,8 +38,6 @@ string arg_to_string(char* a) {
 } 
 
 
-
-
 struct thread_input {
 
 	cv::Mat *write_img;
@@ -59,11 +48,7 @@ struct thread_input {
 };
 
 
-
-
 void *trace_pixels(void *thread_args){
-
-	//pthread_detach(pthread_self()); 
 
 	thread_input *input = (thread_input *) thread_args;
 
@@ -74,8 +59,8 @@ void *trace_pixels(void *thread_args){
 
 	Scene *scene = input -> scene; 
 
-	int start_index = input -> start_index, end_index = input -> end_index;
-	int cols = write_img->cols,rows = write_img->rows,index,hit_index,i,j;
+	int start_index = input->start_index, end_index = input->end_index;
+	int cols = write_img->cols, rows = write_img->rows, index,hit_index,i,j;
 	
 	float plane_dist = 2, plane_width = 3,x,y,z;
 
@@ -83,10 +68,8 @@ void *trace_pixels(void *thread_args){
 	RayHit *hit;
 	Ray *r;
 
-	vec3 pos = scene -> view -> pos;
-	vec3 up = scene -> view -> up;
-	vec3 right = scene -> view -> right;
-	vec3 forward = scene -> view -> forward;
+	vec3 pos = scene -> view -> pos, up = scene -> view -> up;
+	vec3 right = scene -> view -> right, forward = scene -> view -> forward;
 
 	cv::Vec3b color;
 
@@ -94,10 +77,6 @@ void *trace_pixels(void *thread_args){
 
 		i = p / cols;
 		j = p % cols;
-
-		if (i % 30 == 0 && j == 0){
-			cout << "On row " << i << endl;
-		}
 
 		index = 3 * p;
 
@@ -148,7 +127,7 @@ int main(int argc, char **argv){
 	float plane_dist = 2, plane_width = 3,x,y,z;
 
 	cv::Mat outimg(dim, dim, CV_8UC3, cv::Scalar(100,100,100));
-	cv::Mat rawimg = imread("/Users/will/projects/blender/dungeon/textures/MetalSpottyDiscoloration001/Previews/Flat.jpg", cv::IMREAD_COLOR);
+	cv::Mat rawimg = imread("/Users/will/projects/blender/dungeon/textures/sewer2.png", cv::IMREAD_COLOR);
 	cv::Mat tableimg(rawimg);
 	rawimg.convertTo(tableimg, CV_8UC3);
 	cv::resize(tableimg, tableimg, cv::Size(2048,2048), 0, 0, cv::INTER_LINEAR);
@@ -161,10 +140,10 @@ int main(int argc, char **argv){
 	Plane p = Plane(p1,p2,p3,p4);
 	Obj *op = &p;
 
-	Sphere s =  Sphere(vec3(-.2,-1.1,1.2), vec3(240,240,240),.4);
+	Sphere s =  Sphere(vec3(-.2,-1.1,1.2), vec3(240,40,40),.4);
 	Obj *os = &s;
 
-	Sphere s2 = Sphere(vec3(-.2,-1.1,1.3), vec3(50,30,220),.4);//Sphere(vec3(.2,-1.0,1.1), vec3(220,250,240),.33);
+	Sphere s2 = Sphere(vec3(-.2,-1.1,1.4), vec3(50,30,220),.4);//Sphere(vec3(.2,-1.0,1.1), vec3(220,250,240),.33);
 	Obj *os2 = &s2;
 
 	vec3 t0 = vec3(0,-2.7,2.6);
@@ -244,6 +223,7 @@ int main(int argc, char **argv){
 	auto duration = duration_cast<milliseconds>(stop - start); 
 	cout << duration.count() << endl; 
 
+	cv::resize(outimg, outimg, cv::Size(1500,1500), 0, 0, cv::INTER_LINEAR);
 	cv::imwrite("output/test.png", outimg);	
 	return 0;
 }
