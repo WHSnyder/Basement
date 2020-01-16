@@ -16,7 +16,7 @@
 #include "Obj.h"
 #include "Sphere.h"
 
-
+#include <math.h>
 
 using namespace std;
 using namespace glm;
@@ -33,7 +33,11 @@ int main(){
 	uint8_t *image_data = outimg.data;
 	int _stride = outimg.step;
 
-	Sphere s = Sphere(0.0,.5,-3,2);
+	Sphere s = Sphere(0.0,.5,-3,.5);
+
+	vec3 lightpos = vec3(0.0,1.0,-2);
+	vec3 lightlook = vec3(0.0,.5,-3);
+	vec3 lightdir = normalize(lightlook - lightpos);
 
 
 	for (int i = 0; i < dim; i++){
@@ -49,8 +53,15 @@ int main(){
 
 			vec3 hit = s.intersect_ray(r);
 
-			if (hit.z > .5){
-				image_data[_stride * i + j] = 254;
+			if (hit.z > .01){
+
+				float dotprod = dot(hit,lightdir);
+
+				if (dotprod > 0){
+					continue;
+				}
+				int magnitude = (int) 255 * (1 - dotprod);
+				image_data[_stride * i + j] = (uint8_t) magnitude;
 			}
 		}
 	}
