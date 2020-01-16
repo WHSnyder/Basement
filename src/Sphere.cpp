@@ -1,18 +1,16 @@
-#include <glm/glm.hpp>
-#include <glm/ext.hpp>
-
+#ifndef glm
+#define glm
+#include <glm/glm.hpp> // vec2, vec3, mat4, radians
+#include <glm/ext.hpp> // perspective, translate, rotate
 using namespace glm;
+#endif 
 
-class Sphere {
-
-	public:
-		vec3 center;
-
-		Sphere(float x, float y, float z){
-			center = vec3(x,y,z);
-		}
-
-		
+#include "Ray.h"
+#include "Obj.h"
+#include "Sphere.h"
 
 
+Sphere::Sphere(float x, float y, float z, float r){
+	origin = vec3(x,y,z);
+	radius = r;
 }

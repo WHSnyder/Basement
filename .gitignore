@@ -1,3 +1,6 @@
 **/include
 include
 Makefile
+include/tst
+output
+**/output

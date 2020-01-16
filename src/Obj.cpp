@@ -6,16 +6,10 @@ using namespace glm;
 #endif 
 
 
-#ifndef ray
-#define ray
+#include "Ray.h"
+#include "Obj.h"
 
 
-class Ray {
-
-	public:
-		vec3 dir;
-		vec3 origin;
-		Ray(vec3 o, vec3 d);
-};
-
-#endif
+vec3 Obj::intersect_ray(Ray r){
+	return NULL;
+}
