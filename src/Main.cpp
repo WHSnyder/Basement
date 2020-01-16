@@ -3,12 +3,11 @@
 #include <iostream>
 #include <vector>
 
-#ifndef glm
-#define glm
+#ifndef glmi
+#define glmi
 #include <glm/glm.hpp> // vec2, vec3, mat4, radians
 #include <glm/ext.hpp> // perspective, translate, rotate
-using namespace glm;
-#endif 
+#endif
 
 #include <opencv2/opencv.hpp> 
 
@@ -20,6 +19,7 @@ using namespace glm;
 
 
 using namespace std;
+using namespace glm;
 
 
 
@@ -34,7 +34,6 @@ int main(){
 	int _stride = outimg.step;
 
 	Sphere s = Sphere(0.0,.5,-3,2);
-	Obj* test = &s;
 
 
 	for (int i = 0; i < dim; i++){
@@ -48,7 +47,7 @@ int main(){
 
 			Ray ray = Ray(vec3(0.0,0.0,0.0),pixelcoord);
 
-			vec3 hit = test -> intersect_ray(ray);
+			vec3 hit = s.intersect_ray(ray);
 
 			if (hit.z > .5){
 				image_data[_stride * i + j] = 254;

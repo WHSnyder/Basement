@@ -1,13 +1,13 @@
-#ifndef glm
-#define glm
+#ifndef glmi
+#define glmi
 #include <glm/glm.hpp> // vec2, vec3, mat4, radians
 #include <glm/ext.hpp> // perspective, translate, rotate
-using namespace glm;
 #endif 
 
 
 #ifndef ray
 #define ray
+using namespace glm;
 
 
 class Ray {

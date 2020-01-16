@@ -1,29 +1,29 @@
 #include "Ray.h"
 
-#ifndef glm
-#define glm
+#ifndef glmi
+#define glmi
 #include <glm/glm.hpp> // vec2, vec3, mat4, radians
 #include <glm/ext.hpp> // perspective, translate, rotate
-using namespace glm;
 #endif 
 
 #include <math.h>
-#include "Obj.h"
 
 
 #ifndef sphere
 #define sphere
+using namespace glm;
 
 
-class Sphere : public Obj {
+class Sphere {
 
 	using Obj::intersect_ray;
 
 	public:
 		float radius;
+		vec3 origin;
 		Sphere(float x, float y, float z, float r);
 
-		vec3 intersect_ray(Ray r) override {
+		vec3 intersect_ray(Ray r) {
 
 			vec3 to_center = origin - r.origin;
 
