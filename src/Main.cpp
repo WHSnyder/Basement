@@ -45,9 +45,9 @@ int main(){
 
 			vec3 pixelcoord = vec3(x,y,z);
 
-			Ray ray = Ray(vec3(0.0,0.0,0.0),pixelcoord);
+			Ray r = Ray(vec3(0.0,0.0,0.0), pixelcoord);
 
-			vec3 hit = s.intersect_ray(ray);
+			vec3 hit = s.intersect_ray(r);
 
 			if (hit.z > .5){
 				image_data[_stride * i + j] = 254;
@@ -56,6 +56,7 @@ int main(){
 	}
 
 	cv::imwrite("output/test.jpg", outimg);	
+	return 0;
 }
 
 

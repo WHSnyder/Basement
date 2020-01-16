@@ -16,8 +16,6 @@ using namespace glm;
 
 class Sphere {
 
-	using Obj::intersect_ray;
-
 	public:
 		float radius;
 		vec3 origin;
