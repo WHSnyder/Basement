@@ -5,49 +5,77 @@
 #endif 
 
 using namespace glm;
+using namespace std;
+
+#include <iostream>
 
 #include "Ray.h"
 #include "Plane.h"
 
 
+void printVec(string name,vec3 v){
+	cout << name << ": (" << v.x << ", " << v.y << ", " << v.z << ")" << endl;
+}
+
+
 Plane::Plane(vec3 _b1, vec3 _b2, vec3 _b3, vec3 _b4){
 
-	origin = (_b1 + _b2 + _b3 + _b4)/4;
+	origin = (_b1 + _b2 + _b3 + _b4)/4.0f;
 
-	_xvec = (_b1 + _b2)/2 - origin;
-	_yvec = (_b2 + _b3)/2 - origin;
+	vec3 _xvec = (_b1 + _b2)/2.0f - origin;
+	vec3 _yvec = (_b2 + _b3)/2.0f - origin;
 
-	length = length(_xvec);
-	height = length(_yvec);
+	this->length = glm::length(_xvec);
+	this->height = glm::length(_yvec);
 
 	xvec = normalize(_xvec);
 	yvec = normalize(_yvec);
 	zvec = cross(xvec,yvec);
 
 	if (zvec.y < 0){
-		zvec *= -1;
+		zvec.y *= -1.0f;
 	}
+
+	cout << "============" << endl;
+	printVec("xvec",xvec);
+	printVec("yvec",yvec);
+	printVec("zvec",zvec);
+	printVec("origin",origin);
+	cout << "Length: " << this->length << " Width: " << this->height << endl;
 }
 
 
 vec3 Plane::intersect_ray(Ray r) {
 
-    float denom = dotProduct(zvec, r.dir); 
+    float denom = -1.0 * dot(zvec, r.dir); 
 
     if (denom > 1e-6) { 
+
+
         vec3 to_plane = origin - r.origin; 
-        t = dotProduct(to_plane, zvec) / denom; 
+        float t = dot(to_plane, zvec) / denom; 
 
         vec3 hit = r.origin + t * r.dir; 
+
+        t = (dot(zvec,origin) - dot(zvec,r.origin))/dot(zvec,r.dir);
+
+
+        //cout << "t: " << t << endl;
+        //printVec("hit",hit);
+        return vec3(.6,.5,1.0); 
+
+
         vec3 fromOrg = hit - origin;
 
-        u = dot(fromOrg, xvec) / length;
-        v = dot(fromOrg, yvec) / height;
+        float u = dot(fromOrg, xvec) / this->length;
+        float v = dot(fromOrg, yvec) / this->height;
 
-        if (abs(u) > 1 || abs(v) > 1){
+        if (abs(u) > 1.0 || abs(v) > 1.0){
         	return vec3(0.0,0.0,0.0); 	
         }
-        return vec3(u,v,1);
+        cout << "yep" << endl;
+
+        return vec3((1+u)/2,(1+v)/2,1.0);
     } 
  
     return vec3(0.0,0.0,0.0); 
