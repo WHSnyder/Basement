@@ -15,7 +15,7 @@ class Obj {
 
 	public:
 		vec3 origin;
-		virtual vec3 intersect_ray(Ray r);
+		virtual vec3 intersect_ray(Ray r)=0;
 };
 
 #endif

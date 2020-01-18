@@ -10,16 +10,17 @@
 #include "Obj.h"
 
 
-#ifndef sphere
-#define sphere
+#ifndef planem
+#define planem
 using namespace glm;
 
 
-class Sphere : public Obj {
+class Plane : public Obj {
 
 	public:
-		float radius;
-		Sphere(float x, float y, float z, float r);
+		vec3 xvec,yvec,zvec;
+		float length,height;
+		Plane(vec3 b1, vec3 b2, vec3 b3, vec3 b4);
 		virtual vec3 intersect_ray(Ray r);
 };
 

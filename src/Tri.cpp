@@ -19,8 +19,10 @@ class Tri : public Obj {
 			origin = (p1 + p2 + p3)/3;
 		}
 
-		vec3 intersect_ray(Ray r){
+		vec3 intersect(Ray r){
 
 				
 		}
 }
+
+
