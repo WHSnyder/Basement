@@ -37,15 +37,15 @@ int main(){
 	cv::Mat tableimg = imread("/Users/will/projects/blender/dungeon/textures/MetalSpottyDiscoloration001/Previews/Flat.jpg", cv::IMREAD_COLOR);
 	cv::resize(tableimg, tableimg, cv::Size(512,512), 0, 0, cv::INTER_LINEAR);
 
-	vec3 p1 = vec3(-.5,0.0,-3);
-	vec3 p2 = vec3(.5,0.0,-3);
-	vec3 p3 = vec3(.5,0.0,-1);
-	vec3 p4 = vec3(-.5,0.0,-1);
+	vec3 p1 = vec3(-2,0.5,-3);
+	vec3 p2 = vec3(2,0.5,-3);
+	vec3 p3 = vec3(2,0.1,-1);
+	vec3 p4 = vec3(-2,0.1,-1);
 
 	Plane p = Plane(p1,p2,p3,p4);
 	Obj *op = &p;
 
-	Sphere s = Sphere(0.0,.5,-3,.5);
+	Sphere s = Sphere(0.0,-.1,-3,1);
 	Obj *os = &s;
 
 	vec3 lightpos = vec3(0.0,1.0,-2.5);
@@ -73,7 +73,7 @@ int main(){
 					continue;
 				}
 				int magnitude = (int) 255 * (1 - dotprod);
-				outimg.at<cv::Vec3b>(cv::Point(j,i)) = cv::Vec3b(magnitude,100,30);
+				outimg.at<cv::Vec3b>(cv::Point(j,i)) = cv::Vec3b(magnitude,0,0);
 				//image_data[_stride * i + j] = (uint8_t) magnitude;
 			}
 			else {

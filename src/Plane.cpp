@@ -49,22 +49,10 @@ vec3 Plane::intersect_ray(Ray r) {
 
     float denom = -1.0 * dot(zvec, r.dir); 
 
-    if (denom > 1e-6) { 
+    if (denom > 0.01) { 
 
-
-        vec3 to_plane = origin - r.origin; 
-        float t = dot(to_plane, zvec) / denom; 
-
+        float t = dot(zvec,origin-r.origin)/denom;
         vec3 hit = r.origin + t * r.dir; 
-
-        t = (dot(zvec,origin) - dot(zvec,r.origin))/dot(zvec,r.dir);
-
-
-        //cout << "t: " << t << endl;
-        //printVec("hit",hit);
-        return vec3(.6,.5,1.0); 
-
-
         vec3 fromOrg = hit - origin;
 
         float u = dot(fromOrg, xvec) / this->length;
@@ -73,10 +61,7 @@ vec3 Plane::intersect_ray(Ray r) {
         if (abs(u) > 1.0 || abs(v) > 1.0){
         	return vec3(0.0,0.0,0.0); 	
         }
-        cout << "yep" << endl;
-
         return vec3((1+u)/2,(1+v)/2,1.0);
     } 
- 
     return vec3(0.0,0.0,0.0); 
 } 
