@@ -21,7 +21,7 @@ class Plane : public Obj {
 		vec3 xvec,yvec,zvec;
 		float length,height;
 		Plane(vec3 b1, vec3 b2, vec3 b3, vec3 b4);
-		virtual vec3 intersect_ray(Ray r);
+		virtual RayHit *intersect_ray(Ray r);
 };
 
 #endif

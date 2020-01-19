@@ -16,7 +16,7 @@ Sphere::Sphere(float x, float y, float z, float r){
 }
 
 
-vec3 Sphere::intersect_ray(Ray r) {
+RayHit *Sphere::intersect_ray(Ray r) {
 
 	vec3 to_center = origin - r.origin;
 
@@ -26,12 +26,12 @@ vec3 Sphere::intersect_ray(Ray r) {
 	vec3 center_to_line = origin - dotprod * r.dir + r.origin;
 	float d = length(center_to_line);
 
-	if (d >= radius){
-		return vec3(0.0,0.0,0.0);
+	if (d >= radius - .0001){
+		return nullptr;
 	}
 
-	float hit_length = dotprod - sqrt( pow(radius,2) - pow(d,2) );
-	hit_length = hit_length < 0 ? -1*hit_length : hit_length;
+	float hit_length = abs(dotprod - sqrt( pow(radius,2) - pow(d,2) ));
+	vec3 hit = r.origin + hit_length * r.dir;
 
-	return normalize( r.origin + hit_length * r.dir - origin);
+	return new RayHit(hit, vec2(0,0), (hit - origin)/radius, hit_length);
 }

@@ -45,13 +45,13 @@ Plane::Plane(vec3 _b1, vec3 _b2, vec3 _b3, vec3 _b4){
 }
 
 
-vec3 Plane::intersect_ray(Ray r) {
+RayHit *Plane::intersect_ray(Ray r) {
 
     float denom = -1.0 * dot(zvec, r.dir); 
 
     if (denom > 0.01) { 
 
-        float t = dot(zvec,origin-r.origin)/denom;
+        float t = dot(zvec,origin - r.origin)/denom;
         vec3 hit = r.origin + t * r.dir; 
         vec3 fromOrg = hit - origin;
 
@@ -59,9 +59,9 @@ vec3 Plane::intersect_ray(Ray r) {
         float v = dot(fromOrg, yvec) / this->height;
 
         if (abs(u) > 1.0 || abs(v) > 1.0){
-        	return vec3(0.0,0.0,0.0); 	
+        	return nullptr; 	
         }
-        return vec3((1+u)/2,(1+v)/2,1.0);
+        return new RayHit(hit,vec2(u,v),zvec,t);
     } 
-    return vec3(0.0,0.0,0.0); 
+    return nullptr; 
 } 

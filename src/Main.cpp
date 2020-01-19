@@ -26,78 +26,94 @@ using namespace glm;
 
 int main(){
 
-	int dim = 256;
+	int dim = 512;
 	int plane_dist = 1;
-	float plane_width = 2;
+	float plane_width = 1;
 
-	cv::Mat outimg(256, 256, CV_8UC3, cv::Scalar(0,0,0));
+	cv::Mat outimg(dim, dim, CV_8UC3, cv::Scalar(0,0,0));
 	uint8_t *image_data = outimg.data;
 	int _stride = outimg.step;
 
 	cv::Mat tableimg = imread("/Users/will/projects/blender/dungeon/textures/MetalSpottyDiscoloration001/Previews/Flat.jpg", cv::IMREAD_COLOR);
 	cv::resize(tableimg, tableimg, cv::Size(512,512), 0, 0, cv::INTER_LINEAR);
 
-	vec3 p1 = vec3(-2,0.5,-3);
-	vec3 p2 = vec3(2,0.5,-3);
-	vec3 p3 = vec3(2,0.1,-1);
-	vec3 p4 = vec3(-2,0.1,-1);
+	vec3 p1 = vec3(-4,0.6,-3);
+	vec3 p2 = vec3(2,0.6,-3);
+	vec3 p3 = vec3(2,0.1,0);
+	vec3 p4 = vec3(-4,0.1,0);
 
 	Plane p = Plane(p1,p2,p3,p4);
 	Obj *op = &p;
 
-	Sphere s = Sphere(0.0,-.1,-3,1);
+	Sphere s = Sphere(1.0,-.1,-3,1);
 	Obj *os = &s;
 
-	vec3 lightpos = vec3(0.0,1.0,-2.5);
-	vec3 lightlook = vec3(0.0,.5,-3);
+	Obj *objects[2];
+	objects[0] = op;
+	objects[1] = os;
+
+	vec3 lightpos = vec3(2.0,1.0,-2);
+	vec3 lightlook = vec3(0.0,-.1,-3);
 	vec3 lightdir = normalize(lightlook - lightpos);
 
 	for (int i = 0; i < dim; i++){
 		for (int j = 0; j < dim; j++){
 			
-			float x = .5 * plane_width * (j - dim/2)/(dim/2);
-			float y = .5 * plane_width * (dim - i - dim/2)/(dim/2);
+			float x = plane_width * (j - dim/2)/(dim/2);
+			float y = plane_width * (dim - i - dim/2)/(dim/2);
 			float z = -plane_dist;
 
 			vec3 pixelcoord = vec3(x,y,z);
 
 			Ray r = Ray(vec3(0.0,0.0,0.0), pixelcoord);
+			RayHit* rhit = os->intersect_ray(r);
 
-			vec3 hit = os->intersect_ray(r);
+			if (rhit != nullptr){
 
-			if (hit.z > .01){
+				float dotprod = dot(rhit -> normal,lightdir);
+				dotprod = dotprod > 0 ? 1 : dotprod;
 
-				float dotprod = dot(hit,lightdir);
+				uint8_t magnitude = (uint8_t) 255 * (1 - dotprod);
+				magnitude = magnitude < 40 ? 40 : magnitude;
 
-				if (dotprod > -.01){
-					continue;
-				}
-				int magnitude = (int) 255 * (1 - dotprod);
-				outimg.at<cv::Vec3b>(cv::Point(j,i)) = cv::Vec3b(magnitude,0,0);
-				//image_data[_stride * i + j] = (uint8_t) magnitude;
+				vec3 n = 255.0f * normalize(rhit -> normal);
+
+				outimg.at<cv::Vec3b>(cv::Point(j,i)) = cv::Vec3b(magnitude,0,magnitude);
+
+				delete rhit;
+				rhit = nullptr;
 			}
+
 			else {
 
-				hit = op -> intersect_ray(r);
+				rhit = op -> intersect_ray(r);
 
-				if (hit.z > .01){
+				if (rhit != nullptr){
 
-					int u = (int) 512 * hit.x;
-					int v = (int) 512 * hit.y;
+					vec2 uv = rhit -> uv;
 
-					//cout << "hi" << endl;
+					int u = (int) 512 * uv.x;
+					int v = (int) 512 * uv.y;
 
-					outimg.at<cv::Vec3b>(cv::Point(j,i)) = tableimg.at<cv::Vec3b>(cv::Point(u,v)); 
-					//image_data[_stride * i + j] = ;
+					Ray shadow = Ray(rhit -> worldCoord, lightpos - rhit -> worldCoord);
+					RayHit *shadow_hit = os -> intersect_ray(shadow);
+
+					if (shadow_hit != nullptr){
+						outimg.at<cv::Vec3b>(cv::Point(j,i)) = cv::Vec3b(0,0,0);
+					}
+					else {
+						outimg.at<cv::Vec3b>(cv::Point(j,i)) = tableimg.at<cv::Vec3b>(cv::Point(u,v)); 
+					}
+
+					delete shadow_hit;
+					shadow_hit = nullptr;
+
+					delete rhit;
+					rhit = nullptr;
 				}
 			}
 		}
 	}
-
 	cv::imwrite("output/test.jpg", outimg);	
 	return 0;
 }
-
-
-
-

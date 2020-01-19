@@ -20,7 +20,7 @@ class Sphere : public Obj {
 	public:
 		float radius;
 		Sphere(float x, float y, float z, float r);
-		virtual vec3 intersect_ray(Ray r);
+		virtual RayHit *intersect_ray(Ray r);
 };
 
 #endif

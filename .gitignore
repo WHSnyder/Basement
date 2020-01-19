@@ -3,6 +3,9 @@ include
 Makefile
 include/tst
 output
-**/output
+**/output/*
 meshes
-**/meshes
+**/meshes/*
+**/bin/*
+bin/*
+bin
