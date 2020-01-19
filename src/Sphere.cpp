@@ -25,7 +25,7 @@ RayHit *Sphere::intersect_ray(Ray r) {
 	vec3 center_to_line = origin - (dotprod * r.dir + r.origin);
 	
 	float d = length(center_to_line);
-	if (d >= radius){
+	if (d >= radius){	
 		return nullptr;
 	}
 

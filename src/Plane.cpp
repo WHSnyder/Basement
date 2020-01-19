@@ -19,8 +19,8 @@ Plane::Plane(vec3 _b1, vec3 _b2, vec3 _b3, vec3 _b4){
 	vec3 _xvec = (_b1 + _b2)/2.0f - origin;
 	vec3 _yvec = (_b2 + _b3)/2.0f - origin;
 
-	this->length = glm::length(_xvec);
-	this->height = glm::length(_yvec);
+	this->length = glm::length(_yvec);
+	this->height = glm::length(_xvec);
 
 	xvec = normalize(_xvec);
 	yvec = normalize(_yvec);
@@ -34,11 +34,12 @@ Plane::Plane(vec3 _b1, vec3 _b2, vec3 _b3, vec3 _b4){
 
 RayHit *Plane::intersect_ray(Ray r) {
 
-    float denom = -1.0 * dot(zvec, r.dir); 
+    float denom = dot(zvec,r.dir); 
 
-    if (denom > 0.01) { 
+    if (denom < -0.001) { 
+    	//cout << "passed first" << endl;
 
-        float t = dot(zvec,origin - r.origin)/denom;
+        float t = (dot(zvec,origin) - dot(zvec,r.origin))/denom;
         vec3 *hit = new vec3(r.origin + t * r.dir); 
         vec3 fromOrg = *hit - origin;
 
@@ -46,10 +47,11 @@ RayHit *Plane::intersect_ray(Ray r) {
         float v = dot(fromOrg, yvec) / this->height;
 
         if (abs(u) > 1.0 || abs(v) > 1.0){
-        	//cout << u << " " << v << endl;
         	return nullptr; 	
         }
-        return new RayHit(hit,new vec2((1+u)/2,(1+v)/2),new vec3(zvec),t);
+
+        RayHit *planehit = new RayHit(hit,new vec2((1+u)/2,(1+v)/2),new vec3(zvec),t);
+        return planehit;
     } 
     return nullptr; 
 } 
