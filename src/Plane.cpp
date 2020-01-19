@@ -61,7 +61,7 @@ RayHit *Plane::intersect_ray(Ray r) {
         if (abs(u) > 1.0 || abs(v) > 1.0){
         	return nullptr; 	
         }
-        return new RayHit(hit,vec2(u,v),zvec,t);
+        return new RayHit(hit,vec2((1+u)/2,(1+v)/2),zvec,t);
     } 
     return nullptr; 
 } 

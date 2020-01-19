@@ -31,16 +31,13 @@ int main(){
 	float plane_width = 1;
 
 	cv::Mat outimg(dim, dim, CV_8UC3, cv::Scalar(0,0,0));
-	uint8_t *image_data = outimg.data;
-	int _stride = outimg.step;
-
 	cv::Mat tableimg = imread("/Users/will/projects/blender/dungeon/textures/MetalSpottyDiscoloration001/Previews/Flat.jpg", cv::IMREAD_COLOR);
 	cv::resize(tableimg, tableimg, cv::Size(512,512), 0, 0, cv::INTER_LINEAR);
 
-	vec3 p1 = vec3(-4,0.6,-3);
-	vec3 p2 = vec3(2,0.6,-3);
-	vec3 p3 = vec3(2,0.1,0);
-	vec3 p4 = vec3(-4,0.1,0);
+	vec3 p1 = vec3(-2,0.6,-3);
+	vec3 p2 = vec3(4,0.6,-3);
+	vec3 p3 = vec3(4,0.1,0);
+	vec3 p4 = vec3(-2,0.1,0);
 
 	Plane p = Plane(p1,p2,p3,p4);
 	Obj *op = &p;
@@ -68,6 +65,7 @@ int main(){
 			Ray r = Ray(vec3(0.0,0.0,0.0), pixelcoord);
 			RayHit* rhit = os->intersect_ray(r);
 
+
 			if (rhit != nullptr){
 
 				float dotprod = dot(rhit -> normal,lightdir);
@@ -78,7 +76,7 @@ int main(){
 
 				vec3 n = 255.0f * normalize(rhit -> normal);
 
-				outimg.at<cv::Vec3b>(cv::Point(j,i)) = cv::Vec3b(magnitude,0,magnitude);
+				outimg.at<cv::Vec3b>(i,j) = cv::Vec3b(magnitude,magnitude,magnitude);
 
 				delete rhit;
 				rhit = nullptr;
@@ -99,10 +97,14 @@ int main(){
 					RayHit *shadow_hit = os -> intersect_ray(shadow);
 
 					if (shadow_hit != nullptr){
-						outimg.at<cv::Vec3b>(cv::Point(j,i)) = cv::Vec3b(0,0,0);
+						outimg.at<cv::Vec3b>(i,j) = cv::Vec3b(0,0,0);
 					}
 					else {
-						outimg.at<cv::Vec3b>(cv::Point(j,i)) = tableimg.at<cv::Vec3b>(cv::Point(u,v)); 
+						outimg.at<cv::Vec3b>(i,j) = tableimg.at<cv::Vec3b>(u,v); 
+						if (j > 20 && j < 25 && i <= 450 && i >= 445){
+							outimg.at<cv::Vec3b>(i,j) = cv::Vec3b(0,0,240); 
+							cout << u << "  " << v << endl;
+						}
 					}
 
 					delete shadow_hit;
@@ -111,7 +113,7 @@ int main(){
 					delete rhit;
 					rhit = nullptr;
 				}
-			}
+			}			
 		}
 	}
 	cv::imwrite("output/test.jpg", outimg);	
