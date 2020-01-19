@@ -8,19 +8,26 @@
 #define ray
 using namespace glm;
 
+
 class RayHit {
 
 	public:
-		vec3 worldCoord;
-		vec2 uv;
-		vec3 normal;
+		vec3 *worldCoord;
+		vec2 *uv;
+		vec3 *normal;
 		float distance;
 
-		RayHit(vec3 w, vec2 _uv, vec3 n, float d){
+		RayHit(vec3 *w, vec2 *_uv, vec3 *n, float d){
 			worldCoord = w;
 			uv = _uv;
 			normal = n;
 			distance = d;
+		}
+
+		~RayHit(){
+			delete worldCoord;
+			delete uv;
+			delete normal;
 		}
 };
 

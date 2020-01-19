@@ -21,17 +21,16 @@ RayHit *Sphere::intersect_ray(Ray r) {
 	vec3 to_center = origin - r.origin;
 
 	float dotprod = dot(to_center, r.dir);
-	float cos = dotprod / length(to_center);
 
-	vec3 center_to_line = origin - dotprod * r.dir + r.origin;
+	vec3 center_to_line = origin - (dotprod * r.dir + r.origin);
+	
 	float d = length(center_to_line);
-
-	if (d >= radius - .0001){
+	if (d >= radius){
 		return nullptr;
 	}
 
-	float hit_length = abs(dotprod - sqrt( pow(radius,2) - pow(d,2) ));
-	vec3 hit = r.origin + hit_length * r.dir;
+	float hit_length = dotprod - abs(sqrt(pow(radius,2) - pow(d,2)));
+	vec3 *hit = new vec3( r.origin + hit_length * r.dir );
 
-	return new RayHit(hit, vec2(0,0), (hit - origin)/radius, hit_length);
+	return new RayHit(hit, new vec2(0,0), new vec3((*hit - origin)/radius), hit_length);
 }

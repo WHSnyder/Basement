@@ -5,18 +5,12 @@
 #endif 
 
 using namespace glm;
-using namespace std;
-
-#include <iostream>
 
 #include "Ray.h"
 #include "Plane.h"
 
-
-void printVec(string name,vec3 v){
-	cout << name << ": (" << v.x << ", " << v.y << ", " << v.z << ")" << endl;
-}
-
+#include <iostream>
+using namespace std;
 
 Plane::Plane(vec3 _b1, vec3 _b2, vec3 _b3, vec3 _b4){
 
@@ -32,16 +26,9 @@ Plane::Plane(vec3 _b1, vec3 _b2, vec3 _b3, vec3 _b4){
 	yvec = normalize(_yvec);
 	zvec = cross(xvec,yvec);
 
-	if (zvec.y < 0){
-		zvec.y *= -1.0f;
+	if (zvec.z < 0){
+		zvec *= -1.0f;
 	}
-
-	cout << "============" << endl;
-	printVec("xvec",xvec);
-	printVec("yvec",yvec);
-	printVec("zvec",zvec);
-	printVec("origin",origin);
-	cout << "Length: " << this->length << " Width: " << this->height << endl;
 }
 
 
@@ -52,16 +39,17 @@ RayHit *Plane::intersect_ray(Ray r) {
     if (denom > 0.01) { 
 
         float t = dot(zvec,origin - r.origin)/denom;
-        vec3 hit = r.origin + t * r.dir; 
-        vec3 fromOrg = hit - origin;
+        vec3 *hit = new vec3(r.origin + t * r.dir); 
+        vec3 fromOrg = *hit - origin;
 
         float u = dot(fromOrg, xvec) / this->length;
         float v = dot(fromOrg, yvec) / this->height;
 
         if (abs(u) > 1.0 || abs(v) > 1.0){
+        	//cout << u << " " << v << endl;
         	return nullptr; 	
         }
-        return new RayHit(hit,vec2((1+u)/2,(1+v)/2),zvec,t);
+        return new RayHit(hit,new vec2((1+u)/2,(1+v)/2),new vec3(zvec),t);
     } 
     return nullptr; 
 } 
