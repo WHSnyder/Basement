@@ -7,23 +7,22 @@
 #include "Ray.h"
 #include "Tri.h"
 
-using namespace glm
+using namespace glm;
 
 
-		
-Tri::Tri(vec3 _p0, vec3 _p1, vec3 _p2){
-	v0 = _p0;
-	v1 = _p1;
-	v2 = _p2;
-	origin = (v0 + v1 + v2)/3;
+Tri::Tri(vec3 p0, vec3 p1, vec3 p2){
+	v0 = p0;
+	v1 = p1;
+	v2 = p2;
+	origin = (v0 + v1 + v2)/3.0f;
 }
 
 RayHit *Tri::intersect_ray(Ray r) {
 
 	//Credits to scratchpixel...
 
-	orig = r.origin;
-	dir = r.dir;
+	vec3 orig = r.origin;
+	vec3 dir = r.dir;
  
     float t,u,v;
 
@@ -39,7 +38,7 @@ RayHit *Tri::intersect_ray(Ray r) {
  
     // check if ray and plane are parallel ?
     float NdotRayDirection = dot(N,dir); 
-    if (fabs(NdotRayDirection) < kEpsilon) // almost 0 
+    if (fabs(NdotRayDirection) < 0.0001f) // almost 0 
         return nullptr; // they are parallel so they don't intersect ! 
  
     // compute d parameter using equation 2
@@ -58,15 +57,15 @@ RayHit *Tri::intersect_ray(Ray r) {
  
     // edge 0
     vec3 edge0 = v1 - v0; 
-    vec3 vp0 = P - v0; 
+    vec3 vp0 = hit - v0; 
     C = cross(edge0,vp0); 
 
     if (dot(N,C) < 0) return nullptr; // P is on the right side 
  
- 
+
     // edge 1
     vec3 edge1 = v2 - v1; 
-    vec3 vp1 = P - v1; 
+    vec3 vp1 = hit - v1; 
     C = cross(edge1,vp1); 
 
     if ((u = dot(N,C)) < 0)  return nullptr; // P is on the right side 
@@ -74,7 +73,7 @@ RayHit *Tri::intersect_ray(Ray r) {
 
     // edge 2
     vec3 edge2 = v0 - v2; 
-    vec3 vp2 = P - v2; 
+    vec3 vp2 = hit - v2; 
     C = cross(edge2,vp2); 
 
     if ((v = dot(N,C)) < 0) return nullptr; // P is on the right side; 

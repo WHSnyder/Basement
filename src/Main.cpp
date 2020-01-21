@@ -60,7 +60,12 @@ int main(){
 	Sphere s = Sphere(0,-1.5,.7,.3);
 	Obj *os = &s;
 
-	Tri
+	vec3 t1 = vec3(-1,-2,-.2);
+	vec3 t2 = vec3(1,-2,-.2);
+	vec3 t3 = vec3(0,-2,.7);
+
+	Tri t = Tri(t1,t2,t3);
+	Obj *ot = &t;
 
 	Obj *objects[2];
 	objects[0] = op;
@@ -135,9 +140,12 @@ int main(){
 					rhit = nullptr;
 				}
 
-				rhit = 
-			}
-					
+				rhit = ot -> intersect_ray(r);
+				if (rhit != nullptr){
+					outimg.at<cv::Vec3b>(i,j) = cv::Vec3b(1,200,1);
+					delete rhit;
+				}
+			}	
 		}
 	}
 	cout << "Num hits: " << numhits << endl;
