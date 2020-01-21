@@ -7,7 +7,11 @@
 #include "Ray.h"
 #include "Tri.h"
 
+#include <iostream>
+
 using namespace glm;
+using namespace std;
+
 
 
 Tri::Tri(vec3 p0, vec3 p1, vec3 p2){
@@ -17,6 +21,38 @@ Tri::Tri(vec3 p0, vec3 p1, vec3 p2){
 	origin = (v0 + v1 + v2)/3.0f;
 }
 
+RayHit *Tri::intersect_ray(Ray r) {
+
+    vec3 v0v1 = v1 - v0; 
+    vec3 v0v2 = v2 - v0; 
+
+    // no need to normalize
+    vec3 zvec = -1.0f * cross(v0v1,v0v2);
+
+    float denom = dot(zvec,r.dir); 
+
+    if (denom < -0.001) { 
+        //cout << r.origin.x << " " << r.origin.y << " " << r.origin.z << endl;
+
+        float t = (dot(zvec,origin) - dot(zvec,r.origin))/denom;
+        vec3 *hit = new vec3(r.origin + t * r.dir); 
+        vec3 fromOrg = *hit - origin;
+
+        float u = 0;// dot(fromOrg, xvec) / this->height;
+        float v = 0;//dot(fromOrg, yvec) / this->length;
+
+        if (length(fromOrg) > 1.5f){
+            return nullptr;     
+        }
+
+        RayHit *planehit = new RayHit(new vec3(*hit),new vec2((1+u)/2,(1+v)/2),new vec3(zvec),t);
+        return planehit;
+    } 
+    return nullptr; 
+}
+
+
+/*
 RayHit *Tri::intersect_ray(Ray r) {
 
 	//Credits to scratchpixel...
@@ -50,6 +86,8 @@ RayHit *Tri::intersect_ray(Ray r) {
     if (t < 0) return nullptr; // the triangle is behind 
  
     // compute the intersection point using equation 1
+    //cout << "Hit length " << t << endl;
+    
     vec3 hit = orig + t * dir; 
  
     // Step 2: inside-outside test
@@ -82,7 +120,4 @@ RayHit *Tri::intersect_ray(Ray r) {
     v /= denom; 
  
     return new RayHit(new vec3(hit), new vec2(u,v), new vec3(normalize(N)), t); // this ray hits the triangle 				
-}
-
-
-
+}*/

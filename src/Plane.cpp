@@ -37,7 +37,7 @@ RayHit *Plane::intersect_ray(Ray r) {
     float denom = dot(zvec,r.dir); 
 
     if (denom < -0.001) { 
-    	//cout << "passed first" << endl;
+    	//cout << r.origin.x << " " << r.origin.y << " " << r.origin.z << endl;
 
         float t = (dot(zvec,origin) - dot(zvec,r.origin))/denom;
         vec3 *hit = new vec3(r.origin + t * r.dir); 
