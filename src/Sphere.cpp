@@ -32,5 +32,5 @@ RayHit *Sphere::intersect_ray(Ray r) {
 	float hit_length = dotprod - abs(sqrt(pow(radius,2) - pow(d,2)));
 	vec3 *hit = new vec3( r.origin + hit_length * r.dir );
 
-	return new RayHit(hit, new vec2(0,0), new vec3((*hit - origin)/radius), hit_length);
+	return new RayHit(hit, new vec2(0,0), new vec3(normalize(*hit - origin)), hit_length);
 }

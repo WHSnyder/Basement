@@ -15,6 +15,7 @@
 #include "Obj.h"
 #include "Sphere.h"
 #include "Plane.h"
+#include "Tri.h"
 
 #include <math.h>
 
@@ -35,16 +36,18 @@ int main(){
 	vec3 forward = vec3(0.0,-1.0,0.0);
 	vec3 up = -1.0f * normalize(cross(right,forward));// vec3(0.0,0.0,1.0);
 
-	vec3 pos = vec3(0.0,0.0,0.0);
+	vec3 pos = vec3(0.0,0.0,0.5);
 
 	float dim = 512;
-	float plane_dist = 1;
-	float plane_width = 2;
+	float plane_dist = 2;
+	float plane_width = 3;
 
 	cv::Mat outimg(dim, dim, CV_8UC3, cv::Scalar(100,100,100));
 	cv::Mat rawimg = imread("/Users/will/projects/blender/dungeon/textures/MetalSpottyDiscoloration001/Previews/Flat.jpg", cv::IMREAD_COLOR);
 	cv::Mat tableimg(rawimg);
 	rawimg.convertTo(tableimg, CV_8UC3);
+	cv::resize(tableimg, tableimg, cv::Size(1024,1024), 0, 0, cv::INTER_LINEAR);
+
 
 	vec3 p1 = vec3(-2,-2,-.2);
 	vec3 p2 = vec3(2,-2,-.2);
@@ -54,22 +57,16 @@ int main(){
 	Plane p = Plane(p1,p2,p3,p4);
 	Obj *op = &p;
 
-	Sphere s = Sphere(0,-2,.7,.3);
+	Sphere s = Sphere(0,-1.5,.7,.3);
 	Obj *os = &s;
 
-	/*cout << "====================================" << endl;
-	printVec("xvec",p.xvec);
-	printVec("yvec",p.yvec);
-	printVec("zvec",p.zvec);
-	printVec("origin",p.origin);
-	cout << "Length: " << p.length << " Width: " << p.height << endl;
-	cout << "====================================" << endl;*/
+	Tri
 
 	Obj *objects[2];
 	objects[0] = op;
 	objects[1] = os;
 
-	vec3 lightpos = vec3(0,-2,2);
+	vec3 lightpos = vec3(-.5,-1.25,4);
 	vec3 lightlook = s.origin;
 	vec3 lightdir = normalize(lightlook - lightpos);
 
@@ -92,21 +89,18 @@ int main(){
 				numhits++;
 
 				float dotprod = dot(*(rhit -> normal),lightdir);
-				dotprod = dotprod >= 0 ? 1 : dotprod;
+				dotprod = dotprod > -0.1000001 ? 1 : dotprod;
 
 				uint8_t magnitude = (uint8_t) 255 * (1 - dotprod);
 				magnitude = magnitude < 40 ? 40 : magnitude;
 
-				vec3 n = 255.0f * normalize(*(rhit -> normal));
-
 				outimg.at<cv::Vec3b>(i,j) = cv::Vec3b(magnitude,magnitude,magnitude);
-				//outimg.at<cv::Vec3b>(i,j) = cv::Vec3b((int) abs(n.z),(int) abs(n.y),(int) abs(n.x));
 
 				delete rhit;
 				rhit = nullptr;
 			}
 			
-			if (1) {
+			else {
 
 				RayHit* rhit = op -> intersect_ray(r);
 
@@ -124,29 +118,15 @@ int main(){
 
 
 					if (shadow_hit != nullptr){
-						//cout << "======================" << endl;
-						/*printVec("hitpos",hit_pos);
-						printVec("lightpos",lightpos);
-						printVec("Shadow hit",*(shadow_hit -> worldCoord));*/
-
 						outimg.at<cv::Vec3b>(i,j) = tableimg.at<cv::Vec3b>(u,v)/2;// cv::Vec3b(0,0,0);
 					}
 					else {
-						outimg.at<cv::Vec3b>(i,j) = tableimg.at<cv::Vec3b>(u,v); 
+						float dotprod = -1.0f * dot(*(rhit -> normal),lightdir);
+						dotprod = dotprod < 0 ? 0 : dotprod;
+
+						outimg.at<cv::Vec3b>(i,j) = dotprod * tableimg.at<cv::Vec3b>(u,v); 
 					}
 
-					//if (i <= 450 && i >= 445 && j <= 340 && j >= 335){
-						//cout << "============================" << endl;
-					//printVec("hitpos",hit_pos);
-						//printVec("Shadow dir",shadow.dir);
-
-					vec3 no = hit_pos;
-					//yes it's BGR...
-					//outimg.at<cv::Vec3b>(i,j) = cv::Vec3b((uint8_t) 255.0f * abs(0.0f*no.z),(uint8_t) 255.0f * abs(no.y),(uint8_t) 255.0f * abs(no.x));
-
-
-						//outimg.at<cv::Vec3b>(i,j) = cv::Vec3b(200,200,0);
-					//}
 
 					delete shadow_hit;
 					shadow_hit = nullptr;
@@ -154,6 +134,8 @@ int main(){
 					delete rhit;
 					rhit = nullptr;
 				}
+
+				rhit = 
 			}
 					
 		}
