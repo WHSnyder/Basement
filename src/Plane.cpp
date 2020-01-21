@@ -43,8 +43,8 @@ RayHit *Plane::intersect_ray(Ray r) {
         vec3 *hit = new vec3(r.origin + t * r.dir); 
         vec3 fromOrg = *hit - origin;
 
-        float u = dot(fromOrg, xvec) / this->length;
-        float v = dot(fromOrg, yvec) / this->height;
+        float u = dot(fromOrg, xvec) / this->height;
+        float v = dot(fromOrg, yvec) / this->length;
 
         if (abs(u) > 1.0 || abs(v) > 1.0){
         	return nullptr; 	

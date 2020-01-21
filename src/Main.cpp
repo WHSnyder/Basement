@@ -49,10 +49,10 @@ int main(){
 	cv::resize(tableimg, tableimg, cv::Size(1024,1024), 0, 0, cv::INTER_LINEAR);
 
 
-	vec3 p1 = vec3(-2,-2,-.2);
-	vec3 p2 = vec3(2,-2,-.2);
-	vec3 p3 = vec3(2,0,-.2);
-	vec3 p4 = vec3(-2,0,-.2);
+	vec3 p1 = vec3(-.6,-2,-.1);
+	vec3 p2 = vec3(.6,-2,-.1);
+	vec3 p3 = vec3(.6,0,-.2);
+	vec3 p4 = vec3(-.6,0,-.2);
 
 	Plane p = Plane(p1,p2,p3,p4);
 	Obj *op = &p;
@@ -60,9 +60,9 @@ int main(){
 	Sphere s = Sphere(0,-1.5,.7,.3);
 	Obj *os = &s;
 
-	vec3 t1 = vec3(-1,-2,-.2);
-	vec3 t2 = vec3(1,-2,-.2);
-	vec3 t3 = vec3(0,-2,.7);
+	vec3 t1 = vec3(-.6,-2,-.1);
+	vec3 t2 = vec3(.6,-2,-.1);
+	vec3 t3 = vec3(0,-2,1.0);
 
 	Tri t = Tri(t1,t2,t3);
 	Obj *ot = &t;
