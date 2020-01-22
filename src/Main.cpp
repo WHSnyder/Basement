@@ -21,6 +21,7 @@
 
 using namespace std;
 using namespace glm;
+using namespace std::chrono;
 
 
 
@@ -33,10 +34,30 @@ vec3 reflect(vec3 normal, vec3 direction){
 	return -2.0f * dot(normal,direction) * normal + direction;
 }
 
+/*
+RayHit *intersect_scene(Obj *objs, Ray& r){
+	int i = 0, min_dist = 1000;
+	RayHit hit = nullptr, cur = nullptr;
+	
+	while (objs[i] != nullptr){
+
+		cur = objs[i] -> intersect_ray(r);
+
+		if (){
+
+		}
+	}
+	return nullptr;
+}
+*/
+
+
 
 int main(){
 
-	vec3 pos = vec3(0.0,-0.5,1.75);
+	auto start = high_resolution_clock::now(); 
+
+	vec3 pos = vec3(-.5,-.5,1.75);
 
 	vec3 right = vec3(1.0,0.0,0.0);
 	vec3 forward = normalize( vec3(0,-2,.5) - pos );
@@ -44,7 +65,7 @@ int main(){
 
 	if (up.z < 0) up *= -1.0f;
 
-	float dim = 256;
+	float dim = 2048;
 	float plane_dist = 2;
 	float plane_width = 3;
 
@@ -65,12 +86,14 @@ int main(){
 	Sphere s = Sphere(.25,-1.5,1,.3);
 	Obj *os = &s;
 
-	vec3 t0 = vec3(-.6,-3,-.1);
-	vec3 t1 = vec3(.6,-3,-.1);
-	vec3 t2 = vec3(0,-3,1.0);
+	vec3 t0 = vec3(-1,-2,-.1);
+	vec3 t1 = vec3(1,-2,-.1);
+	vec3 t2 = vec3(0,-2,3.0);
 
 	Tri t = Tri(t0,t1,t2);
 	Obj *ot = &t;
+
+	//Obj objs[] = {op,ot,os};
 
 	vec3 lightpos = vec3(-.5,-1.25,4);
 	vec3 lightlook = s.origin;
@@ -170,7 +193,11 @@ int main(){
 			}	
 		}
 	}
-	cout << "Num hits: " << numhits << endl;
+	auto stop = high_resolution_clock::now(); 
+
+	auto duration = duration_cast<milliseconds>(stop - start); 
+	cout << duration.count() << endl; 
+
 	cv::imwrite("output/test.png", outimg);	
 	return 0;
 }

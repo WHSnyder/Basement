@@ -21,7 +21,7 @@ Tri::Tri(vec3 p0, vec3 p1, vec3 p2){
 	origin = (v0 + v1 + v2)/3.0f;
 }
 
-RayHit *Tri::intersect_ray(Ray r) {
+/*RayHit *Tri::intersect_ray(Ray r) {
 
     vec3 v0v1 = v1 - v0; 
     vec3 v0v2 = v2 - v0; 
@@ -49,10 +49,10 @@ RayHit *Tri::intersect_ray(Ray r) {
         return planehit;
     } 
     return nullptr; 
-}
+}*/
 
 
-/*
+
 RayHit *Tri::intersect_ray(Ray r) {
 
 	//Credits to scratchpixel...
@@ -74,7 +74,7 @@ RayHit *Tri::intersect_ray(Ray r) {
  
     // check if ray and plane are parallel ?
     float NdotRayDirection = dot(N,dir); 
-    if (fabs(NdotRayDirection) < 0.0001f) // almost 0 
+    if (abs(NdotRayDirection) < 0.0001f) // almost 0 
         return nullptr; // they are parallel so they don't intersect ! 
  
     // compute d parameter using equation 2
@@ -120,4 +120,4 @@ RayHit *Tri::intersect_ray(Ray r) {
     v /= denom; 
  
     return new RayHit(new vec3(hit), new vec2(u,v), new vec3(normalize(N)), t); // this ray hits the triangle 				
-}*/
+}
