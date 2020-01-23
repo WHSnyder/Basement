@@ -65,7 +65,7 @@ int main(){
 
 	if (up.z < 0) up *= -1.0f;
 
-	float dim = 2048;
+	float dim = 512;
 	float plane_dist = 2;
 	float plane_width = 3;
 
@@ -88,14 +88,12 @@ int main(){
 
 	vec3 t0 = vec3(-1,-2,-.1);
 	vec3 t1 = vec3(1,-2,-.1);
-	vec3 t2 = vec3(0,-2,3.0);
+	vec3 t2 = vec3(0,-2,1.0);
 
 	Tri t = Tri(t0,t1,t2);
 	Obj *ot = &t;
 
-	//Obj objs[] = {op,ot,os};
-
-	vec3 lightpos = vec3(-.5,-1.25,4);
+	vec3 lightpos = vec3(-.2,-1.5,4);
 	vec3 lightlook = s.origin;
 	vec3 lightdir = normalize(lightlook - lightpos);
 
@@ -160,34 +158,35 @@ int main(){
 					delete rhit;
 					rhit = nullptr;
 				}
+				else {
+					rhit = ot -> intersect_ray(r);
 
-				rhit = ot -> intersect_ray(r);
+					if (rhit != nullptr){
 
-				if (rhit != nullptr){
+						Ray reflection = Ray(*rhit->worldCoord,reflect(*rhit->normal,r.dir));
+						RayHit *reflect_hit = op -> intersect_ray(reflection);
 
-					Ray reflection = Ray(*rhit->worldCoord,reflect(*rhit->normal,r.dir));
-					RayHit *reflect_hit = op -> intersect_ray(reflection);
+						cv::Vec3b col = cv::Vec3b(50,50,50);
 
-					cv::Vec3b col = cv::Vec3b(50,50,50);
+						if (reflect_hit != nullptr){
 
-					if (reflect_hit != nullptr){
+							vec2 uv = *reflect_hit -> uv;
 
-						vec2 uv = *reflect_hit -> uv;
+							int u = (int) (tableimg.rows - 1) * uv.x;
+							int v = (int) (tableimg.cols - 1 )* uv.y;
 
-						int u = (int) (tableimg.rows - 1) * uv.x;
-						int v = (int) (tableimg.cols - 1 )* uv.y;
+							col = cv::Vec3b(200,0,0); 
+						}
 
-						col = cv::Vec3b(200,0,0); 
+						reflect_hit = os -> intersect_ray(reflection);
+						if (reflect_hit != nullptr){
+							col = cv::Vec3b(0,0,200);
+						}
+
+						outimg.at<cv::Vec3b>(i,j) = col;
+
+						delete reflect_hit;
 					}
-
-					reflect_hit = os -> intersect_ray(reflection);
-					if (reflect_hit != nullptr){
-						col = cv::Vec3b(0,0,200);
-					}
-
-					outimg.at<cv::Vec3b>(i,j) = col;
-
-					delete reflect_hit;
 				}
 				delete rhit;
 			}	
