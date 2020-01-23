@@ -57,7 +57,7 @@ int main(){
 
 	auto start = high_resolution_clock::now(); 
 
-	vec3 pos = vec3(-.5,-.5,1.75);
+	vec3 pos = vec3(0.0,-.5,1.75);
 
 	vec3 right = vec3(1.0,0.0,0.0);
 	vec3 forward = normalize( vec3(0,-2,.5) - pos );
@@ -86,9 +86,9 @@ int main(){
 	Sphere s = Sphere(.25,-1.5,1,.3);
 	Obj *os = &s;
 
-	vec3 t0 = vec3(-1,-2,-.1);
-	vec3 t1 = vec3(1,-2,-.1);
-	vec3 t2 = vec3(0,-2,1.0);
+	vec3 t0 = vec3(0,-2,1.5);
+	vec3 t1 = vec3(-1,-2,-.1);
+	vec3 t2 = vec3(1,-2,-.1); 
 
 	Tri t = Tri(t0,t1,t2);
 	Obj *ot = &t;

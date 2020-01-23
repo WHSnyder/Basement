@@ -26,11 +26,11 @@ RayHit *Tri::intersect_ray(Ray r) {
     vec3 v0v1 = v1 - v0; 
     vec3 v0v2 = v2 - v0; 
 
-    vec3 zvec = normalize(-1.0f*cross(v0v1,v0v2));
+    vec3 zvec = normalize(cross(v0v1,v0v2));
 
     float denom = dot(zvec,r.dir); 
 
-    if (denom < -0.001) { 
+    if (denom > 0.001) { 
 
         float t = (dot(zvec,v0) - dot(zvec,r.origin))/denom;
 
@@ -46,11 +46,11 @@ RayHit *Tri::intersect_ray(Ray r) {
         float d21 = dot(fromOrg, v0v2);
         denom = d00 * d11 - d01 * d01;
 
-        float w = (d11 * d20 - d01 * d21) / denom;
-        float v = (d00 * d21 - d01 * d20) / denom;
-        float u = 1.0f - v - w;
+        float u = 1.0f - (d11 * d20 - d01 * d21) / denom;
+        float v = 1.0f - (d00 * d21 - d01 * d20) / denom;
+        float w = 1.0f - v - u;
 
-        if (abs(u) > 1.0 || abs(v) > 1.0 || abs(w > 1.0)){
+        if (u > 1.0 || v > 1.0 || u < 0.0 || v < 0.0){
             return nullptr;
         }
 
