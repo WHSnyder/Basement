@@ -9,28 +9,26 @@ using namespace glm;
 #include "Ray.h"
 #include "Sphere.h"
 
-cv::Vec3b Sphere::shade(RayHit *rh, cv::Mat *img, Obj *objects[], Light *lights[]){
-
-	vec2 uv = *rhit -> uv;
-
-	int u = (int) (img.rows - 1) * uv.x;
-	int v = (int) (img.cols - 1 )* uv.y;
+cv::Vec3b Sphere::shade(RayHit *rhit, cv::Mat *img, Obj *objects[], Light *lights[]){
 
 	vec3 hit_pos = *rhit -> worldCoord;
+	vec3 col = lights[0] -> color;
 
+	float dotprod = -1.0f*dot(*rhit -> normal,lights[0]->direction);
 
+	if (dotprod < 0.0){
+		dotprod = .2;
+	}
+	else {
 
-	Ray shadow = Ray(hit_pos, lights[0]->location - hit_pos);
-	RayHit *shadow_hit = intersect_scene(, shadow);
+		Ray shadow = Ray(hit_pos, lights[0]->location - hit_pos);
+		RayHit *shadow_hit = intersect_scene(objects, shadow);
 
-	float dotprod = -1.0f * dot(*rhit -> normal,lightdir);
-	dotprod = dotprod < .2 ? .2 : dotprod;
+		if (shadow_hit != nullptr) dotprod = .2;
+		delete shadow_hit;
+	}
 
-	if (shadow_hit != nullptr) dotprod = .2;
-
-	delete shadow_hit;
-
-	return dotprod * img->at<cv::Vec3b>(u,v);  
+	return dotprod * Vec3b(col.x,col.y,col,z) * Vec3b(200,100,200)/255;  
 }
 
 Sphere::Sphere(float x, float y, float z, float r){
@@ -38,7 +36,7 @@ Sphere::Sphere(float x, float y, float z, float r){
 	radius = r;
 }
 
-RayHit *Sphere::intersect_ray(Ray r) {
+RayHit *Sphere::intersect_ray(Ray& r) {
 
 	vec3 to_center = origin - r.origin;
 
@@ -57,5 +55,5 @@ RayHit *Sphere::intersect_ray(Ray r) {
 
 	vec3 *hit = new vec3( r.origin + hit_length * r.dir );
 
-	return new RayHit(hit, new vec2(0,0), new vec3(normalize(*hit - origin)), hit_length);
+	return new RayHit(hit, new vec2(0,0), new vec3(normalize(*hit - origin)), hit_length, *this, &r);
 }

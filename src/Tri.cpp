@@ -12,19 +12,36 @@
 using namespace glm;
 using namespace std;
 
-cv::Vec3b Tri::shade(RayHit *rh, cv::Mat *tex, Obj *objects[], Light *lights[]){
+/*cv::Vec3b Tri::shade(RayHit *rh, cv::Mat *tex, Obj *objects[], Light *lights[]){
 
-    /*vec2 uv_hit = *rh -> uv;
+    vec2 uv_hit = *rh -> uv;
     vec2 uv = uv_hit.u * p0 -> uv + uv_hit.v * p1 -> uv + (1 - uv_hit.u - uv_hit.v) * p2 -> uv;
 
     int u = (int) (tex->rows - 1) * uv.x;
-    int v = (int) (tax->cols - 1) * uv.y;*/
+    int v = (int) (tax->cols - 1) * uv.y;
 
     return Vec3b(0,0,0);//tableimg.at<cv::Vec3b>(u,v);
+}*/
+
+cv::Vec3b Tri::shade(RayHit *rhit, cv::Mat *tex, Obj *objects[], Light *lights[]){
+
+    Vec3b col = Vec3b(50,50,50);
+
+    Ray reflection = Ray(*rhit->worldCoord,reflect(*rhit->normal, rhit ->r->dir));
+    RayHit *reflect_hit = intersect_scene(objects,reflection);
+
+    if (reflect_hit == nullptr) return col;
+
+    col = reflect_hit -> object_hit -> shade(reflect_hit, tex, objects, lights);
+
+    delete reflect_hit;
+
+    return col;
 }
+ 
 
 
-RayHit *Tri::intersect_ray(Ray r) {
+RayHit *Tri::intersect_ray(Ray& r) {
 
     vec3 v0 = p0->coord, v1 = p1->coord, v2 = p2->coord;
     vec3 v0v1 = v1 - v0, v0v2 = v2 - v0; 
@@ -56,7 +73,7 @@ RayHit *Tri::intersect_ray(Ray r) {
             return nullptr;
         }
 
-        return new RayHit(hit,new vec2(u,v),new vec3(zvec),t);
+        return new RayHit(hit, new vec2(u,v), new vec3(zvec), t, *this, &r);
     } 
     return nullptr; 
 }

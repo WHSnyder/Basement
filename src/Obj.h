@@ -20,7 +20,7 @@ class Obj {
 
 	public:
 		vec3 origin;
-		virtual RayHit *intersect_ray(Ray r)=0;
+		virtual RayHit *intersect_ray(Ray& r)=0;
 		virtual cv::Vec3b shade(RayHit *rh, cv::Mat image, Obj *objects[], Light *lights[])=0;
 };
 

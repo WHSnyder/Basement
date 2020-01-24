@@ -42,7 +42,7 @@ class Tri : public Obj {
 			origin = (_p0 + _p1 + _p2)/3.0f;
 		}
 
-		virtual RayHit *intersect_ray(Ray r);
+		virtual RayHit *intersect_ray(Ray& r);
 		virtual cv::Vec3b shade(RayHit *rh, cv::Mat image, Obj *objects[], Light *lights[]);
 };
 #endif

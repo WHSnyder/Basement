@@ -27,6 +27,10 @@ using namespace glm;
 using namespace std::chrono;
 
 
+
+
+
+
 void printVec(string name,vec3 v){
 	cout << name << ": (" << v.x << ", " << v.y << ", " << v.z << ")" << endl;
 }
@@ -76,7 +80,9 @@ int main(){
 
 	vec3 lightpos = vec3(-.2,-1.5,4);
 	vec3 lightlook = s.origin;
-	vec3 lightdir = normalize(lightlook - lightpos);
+	vec3 lightdir = lightlook - lightpos;
+
+	Light *lights[1] = {new Light(lightpos, lightdir, vec3(100,20,100))};
 
 	int numhits = 0;
 
@@ -91,7 +97,12 @@ int main(){
 
 			Ray r = Ray(pos, pixelcoord - pos);
 
-			RayHit *hit =  intersect_scene();
+			RayHit *hit = intersect_scene(objects,r);
+
+			if (hit != nullptr){
+				outimg.at<cv::Vec3b>(i,j) = hit -> object_hit -> shade(hit, &tableimg, objects, lights);
+			}
+
 
 
 			/*

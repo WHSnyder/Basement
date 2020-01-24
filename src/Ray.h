@@ -29,13 +29,17 @@ class RayHit {
 		vec3 *worldCoord;
 		vec2 *uv;
 		vec3 *normal;
+		Obj *object_hit;
+		Ray *ray;
 		float distance;
 
-		RayHit(vec3 *w, vec2 *_uv, vec3 *n, float d){
+		RayHit(vec3 *w, vec2 *_uv, vec3 *n, float d, Obj *hit, Ray *r){
 			worldCoord = w;
 			uv = _uv;
 			normal = n;
 			distance = d;
+			object_hit = hit;
+			ray = r;
 		}
 
 		~RayHit(){

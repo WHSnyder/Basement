@@ -14,9 +14,10 @@ using namespace std;
 
 
 
-cv::Vec3b Plane::shade(RayHit *rh, cv::Mat *image, Obj *objects[], Light *lights[]){
+cv::Vec3b Plane::shade(RayHit *rhit, cv::Mat *image, Obj *objects[], Light *lights[]){
 
 	vec2 uv = *rhit -> uv;
+	vec3 col = lights[0]->color;
 
 	int u = (int) (img.rows - 1) * uv.x;
 	int v = (int) (img.cols - 1 )* uv.y;
@@ -24,7 +25,7 @@ cv::Vec3b Plane::shade(RayHit *rh, cv::Mat *image, Obj *objects[], Light *lights
 	vec3 hit_pos = *rhit -> worldCoord;
 
 	Ray shadow = Ray(hit_pos, lights[0]->location - hit_pos);
-	RayHit *shadow_hit = intersect_scene(, shadow);
+	RayHit *shadow_hit = intersect_scene(objects, shadow);
 
 	float dotprod = -1.0f * dot(*rhit -> normal,lightdir);
 	dotprod = dotprod < .2 ? .2 : dotprod;
@@ -33,7 +34,7 @@ cv::Vec3b Plane::shade(RayHit *rh, cv::Mat *image, Obj *objects[], Light *lights
 
 	delete shadow_hit;
 
-	return dotprod * img->at<cv::Vec3b>(u,v); 
+	return dotprod * Vec3b(col.x,col.y,col,z) * img->at<cv::Vec3b>(u,v)/255; 
 }
 
 
@@ -57,7 +58,7 @@ Plane::Plane(vec3 _b1, vec3 _b2, vec3 _b3, vec3 _b4){
 }
 
 
-RayHit *Plane::intersect_ray(Ray r) {
+RayHit *Plane::intersect_ray(Ray& r) {
 
     float denom = dot(zvec,r.dir); 
 
@@ -78,7 +79,7 @@ RayHit *Plane::intersect_ray(Ray r) {
         	return nullptr; 	
         }
 
-        RayHit *planehit = new RayHit(hit,new vec2((1+u)/2,(1+v)/2),new vec3(zvec),t);
+        RayHit *planehit = new RayHit(hit, new vec2((1+u)/2,(1+v)/2), new vec3(zvec), t, *this, &r);
         return planehit;
     } 
     return nullptr; 
