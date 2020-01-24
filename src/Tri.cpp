@@ -12,15 +12,15 @@
 using namespace glm;
 using namespace std;
 
-cv::Vec3b Tri::shade(RayHit *rh, cv::Mat *tex){
+cv::Vec3b Tri::shade(RayHit *rh, cv::Mat *tex, Obj *objects[], Light *lights[]){
 
-    vec2 uv_hit = *rh -> uv;
+    /*vec2 uv_hit = *rh -> uv;
     vec2 uv = uv_hit.u * p0 -> uv + uv_hit.v * p1 -> uv + (1 - uv_hit.u - uv_hit.v) * p2 -> uv;
 
     int u = (int) (tex->rows - 1) * uv.x;
-    int v = (int) (tax->cols - 1) * uv.y;
+    int v = (int) (tax->cols - 1) * uv.y;*/
 
-    return tableimg.at<cv::Vec3b>(u,v);
+    return Vec3b(0,0,0);//tableimg.at<cv::Vec3b>(u,v);
 }
 
 

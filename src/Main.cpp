@@ -31,33 +31,6 @@ void printVec(string name,vec3 v){
 	cout << name << ": (" << v.x << ", " << v.y << ", " << v.z << ")" << endl;
 }
 
-vec3 reflect(vec3 normal, vec3 direction){
-	return -2.0f * dot(normal,direction) * normal + direction;
-}
-
-RayHit *intersect_scene(Obj *objs, Ray& r){
-
-	int i = 0, min_dist = 1000;
-	RayHit *hit = nullptr, *cur = nullptr;
-	
-	while (objs[i] != nullptr){
-
-		cur = objs[i] -> intersect_ray(r);
-
-		if (cur != nullptr){
-			if (cur -> distance < min_dist){
-				delete hit;
-				hit = cur;
-			}
-			else {
-				delete hit;
-			} 
-		}
-		i++;
-	}
-	return hit;
-}
-
 
 int main(){
 
@@ -117,11 +90,14 @@ int main(){
 			vec3 pixelcoord = pos + x * right + y * forward + z * up;
 
 			Ray r = Ray(pos, pixelcoord - pos);
-			RayHit* rhit = os->intersect_ray(r);
 
+			RayHit *hit =  intersect_scene();
+
+
+			/*
 			if (rhit != nullptr){
 
-				numhits++;
+				numhits++
 
 				float dotprod = dot(*rhit -> normal,lightdir);
 				dotprod = dotprod > -0.1000001 ? 1 : dotprod;
@@ -197,7 +173,7 @@ int main(){
 					}
 				}
 				delete rhit;
-			}	
+			}*/	
 		}
 	}
 	auto stop = high_resolution_clock::now(); 

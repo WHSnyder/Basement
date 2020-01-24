@@ -12,6 +12,31 @@ using namespace glm;
 #include <iostream>
 using namespace std;
 
+
+
+cv::Vec3b Plane::shade(RayHit *rh, cv::Mat *image, Obj *objects[], Light *lights[]){
+
+	vec2 uv = *rhit -> uv;
+
+	int u = (int) (img.rows - 1) * uv.x;
+	int v = (int) (img.cols - 1 )* uv.y;
+
+	vec3 hit_pos = *rhit -> worldCoord;
+
+	Ray shadow = Ray(hit_pos, lights[0]->location - hit_pos);
+	RayHit *shadow_hit = intersect_scene(, shadow);
+
+	float dotprod = -1.0f * dot(*rhit -> normal,lightdir);
+	dotprod = dotprod < .2 ? .2 : dotprod;
+
+	if (shadow_hit != nullptr) dotprod = .2;
+
+	delete shadow_hit;
+
+	return dotprod * img->at<cv::Vec3b>(u,v); 
+}
+
+
 Plane::Plane(vec3 _b1, vec3 _b2, vec3 _b3, vec3 _b4){
 
 	origin = (_b1 + _b2 + _b3 + _b4)/4.0f;
@@ -40,6 +65,9 @@ RayHit *Plane::intersect_ray(Ray r) {
     	//cout << r.origin.x << " " << r.origin.y << " " << r.origin.z << endl;
 
         float t = (dot(zvec,origin) - dot(zvec,r.origin))/denom;
+
+        if (t < .001) return nullptr; 
+
         vec3 *hit = new vec3(r.origin + t * r.dir); 
         vec3 fromOrg = *hit - origin;
 

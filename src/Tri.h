@@ -43,6 +43,6 @@ class Tri : public Obj {
 		}
 
 		virtual RayHit *intersect_ray(Ray r);
-		virtual cv::Vec3b shade(RayHit *rh, cv::Mat image);
+		virtual cv::Vec3b shade(RayHit *rh, cv::Mat image, Obj *objects[], Light *lights[]);
 };
 #endif

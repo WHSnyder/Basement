@@ -8,6 +8,21 @@
 #define ray
 using namespace glm;
 
+
+class Light {
+
+	public:
+		vec3 location;
+		vec3 direction;
+		vec3 color;
+
+	Light(vec3 l, vec3 d, vec3 c){
+		location = l;
+		direction = normalize(d);
+		color = c;
+	}
+}
+
 class RayHit {
 
 	public:
@@ -41,4 +56,32 @@ class Ray {
 			origin = o;
 		}		
 };
+
+
+RayHit *intersect_scene(Obj *objs[], Ray& r){
+
+	int i = 0, min_dist = 1000;
+	RayHit *hit = nullptr, *cur = nullptr;
+	
+	while (objs[i] != nullptr){
+
+		cur = objs[i] -> intersect_ray(r);
+
+		if (cur != nullptr){
+			if (cur -> distance < min_dist){
+				delete hit;
+				hit = cur;
+			}
+			else {
+				delete hit;
+			} 
+		}
+		i++;
+	}
+	return hit;
+}
+
+vec3 reflect(vec3 normal, vec3 direction){
+	return -2.0f * dot(normal,direction) * normal + direction;
+}
 #endif

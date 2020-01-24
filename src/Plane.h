@@ -22,7 +22,7 @@ class Plane : public Obj {
 		float length,height;
 		Plane(vec3 b1, vec3 b2, vec3 b3, vec3 b4);
 		virtual RayHit *intersect_ray(Ray r);
-		virtual cv::Vec3b shade(RayHit *rh, cv::Mat *image)=0;
+		virtual cv::Vec3b shade(RayHit *rh, cv::Mat *image, Obj *objects[], Light *lights[])=0;
 };
 
 #endif
