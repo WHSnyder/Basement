@@ -8,7 +8,6 @@
 #define ray
 using namespace glm;
 
-
 class RayHit {
 
 	public:
@@ -40,7 +39,6 @@ class Ray {
 		Ray(vec3 o, vec3 d){
 			dir = normalize(d);
 			origin = o;
-		}
+		}		
 };
-
 #endif

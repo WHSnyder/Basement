@@ -9,7 +9,10 @@
 #include <glm/ext.hpp> // perspective, translate, rotate
 #endif
 
+#ifndef cvinc
+#define cvinc
 #include <opencv2/opencv.hpp> 
+#endif
 
 #include "Ray.h"
 #include "Obj.h"
@@ -24,33 +27,36 @@ using namespace glm;
 using namespace std::chrono;
 
 
-
 void printVec(string name,vec3 v){
 	cout << name << ": (" << v.x << ", " << v.y << ", " << v.z << ")" << endl;
 }
-
 
 vec3 reflect(vec3 normal, vec3 direction){
 	return -2.0f * dot(normal,direction) * normal + direction;
 }
 
-/*
 RayHit *intersect_scene(Obj *objs, Ray& r){
+
 	int i = 0, min_dist = 1000;
-	RayHit hit = nullptr, cur = nullptr;
+	RayHit *hit = nullptr, *cur = nullptr;
 	
 	while (objs[i] != nullptr){
 
 		cur = objs[i] -> intersect_ray(r);
 
-		if (){
-
+		if (cur != nullptr){
+			if (cur -> distance < min_dist){
+				delete hit;
+				hit = cur;
+			}
+			else {
+				delete hit;
+			} 
 		}
+		i++;
 	}
-	return nullptr;
+	return hit;
 }
-*/
-
 
 
 int main(){
@@ -83,15 +89,17 @@ int main(){
 	Plane p = Plane(p1,p2,p3,p4);
 	Obj *op = &p;
 
-	Sphere s = Sphere(.25,-1.5,1,.3);
+	Sphere s = Sphere(.25,-1.0,1,.3);
 	Obj *os = &s;
 
-	vec3 t0 = vec3(0,-2,1.5);
-	vec3 t1 = vec3(-1,-2,-.1);
-	vec3 t2 = vec3(1,-2,-.1); 
+	vec3 t0 = vec3(0,-2.5,1.3);
+	vec3 t1 = vec3(-1.5,-2,-.1);
+	vec3 t2 = vec3(1.5,-2,-.1); 
 
 	Tri t = Tri(t0,t1,t2);
 	Obj *ot = &t;
+
+	Obj *objects[3] = {op,os,ot};
 
 	vec3 lightpos = vec3(-.2,-1.5,4);
 	vec3 lightlook = s.origin;

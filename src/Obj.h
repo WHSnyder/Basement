@@ -5,6 +5,11 @@
 using namespace glm;
 #endif 
 
+#ifndef cvinc
+#define cvinc
+#include <opencv2/opencv.hpp> 
+#endif
+
 
 #include "Ray.h"
 
@@ -16,6 +21,7 @@ class Obj {
 	public:
 		vec3 origin;
 		virtual RayHit *intersect_ray(Ray r)=0;
+		virtual cv::Vec3b shade(RayHit *rh, cv::Mat image)=0;
 };
 
 #endif

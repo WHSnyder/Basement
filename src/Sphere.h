@@ -21,6 +21,7 @@ class Sphere : public Obj {
 		float radius;
 		Sphere(float x, float y, float z, float r);
 		virtual RayHit *intersect_ray(Ray r);
+		virtual cv::Vec3b shade(RayHit *rh, cv::Mat image);
 };
 
 #endif
