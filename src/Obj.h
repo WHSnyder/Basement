@@ -23,30 +23,6 @@ class Obj {
 		virtual cv::Vec3b shade(RayHit *rh, cv::Mat *image, Obj *objects[], Light *lights[])=0;
 };
 
-
-RayHit *intersect_scene(Obj *objs[], Ray& r, int *index){
-
-	int i = 0, min_dist = 1000;
-	RayHit *hit = nullptr, *cur = nullptr;
-	
-	while (objs[i] != nullptr){
-
-		cur = objs[i] -> intersect_ray(r);
-
-		if (cur != nullptr){
-			if (cur -> distance < min_dist){
-				delete hit;
-				hit = cur;
-				*index = i;
-				min_dist = cur -> distance;
-			}
-			else {
-				delete hit;
-			} 
-		}
-		i++;
-	}
-	return hit;
-}
-
+RayHit *intersect_scene(Obj *objs[], Ray& r, int *index);
+vec3 reflect(vec3 normal, vec3 direction);
 #endif

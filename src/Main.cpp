@@ -14,20 +14,15 @@
 #include <opencv2/opencv.hpp> 
 #endif
 
-#include "Ray.h"
 #include "Obj.h"
+#include "Ray.h"
 #include "Sphere.h"
 #include "Plane.h"
 #include "Tri.h"
 
-#include <math.h>
-
 using namespace std;
 using namespace glm;
 using namespace std::chrono;
-
-
-
 
 
 
@@ -48,7 +43,7 @@ int main(){
 
 	if (up.z < 0) up *= -1.0f;
 
-	float dim = 512;
+	float dim = 128;
 	float plane_dist = 2;
 	float plane_width = 3;
 
@@ -76,7 +71,7 @@ int main(){
 	Tri t = Tri(t0,t1,t2);
 	Obj *ot = &t;
 
-	Obj *objects[3] = {op,os,ot};
+	Obj *objects[4] = {op,os,ot};
 
 	vec3 lightpos = vec3(-.2,-1.5,4);
 	vec3 lightlook = s.origin;
@@ -87,7 +82,11 @@ int main(){
 	int numhits = 0;
 
 	for (int i = 0; i < dim; i++){
+
+		if (i % 20 == 0 ) cout << "On row " << i << endl;
+
 		for (int j = 0; j < dim; j++){
+
 			
 			float x = .5f * plane_width * (j - dim/2.0f)/(dim/2.0f);
 			float y = plane_dist;
@@ -98,11 +97,15 @@ int main(){
 			int hit_index = -1;
 
 			Ray r = Ray(pos, pixelcoord - pos);
-			RayHit *hit = intersect_scene(objects,r,&i);
+			RayHit *hit = intersect_scene(objects,r,&hit_index);
+
+			//cout << "F" << endl;
 
 			if (hit != nullptr){
-				outimg.at<cv::Vec3b>(i,j) = objects[i] -> shade(hit, &tableimg, objects, lights);
+				outimg.at<cv::Vec3b>(i,j) = objects[hit_index] -> shade(hit, &tableimg, objects, lights);
 			}
+
+			//cout << "Done" << endl;
 
 			/*
 			if (rhit != nullptr){

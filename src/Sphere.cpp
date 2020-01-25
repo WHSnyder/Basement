@@ -6,7 +6,6 @@
 
 using namespace glm;
 
-#include "Ray.h"
 #include "Sphere.h"
 
 #ifndef cvinc

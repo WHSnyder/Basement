@@ -1,1 +1,1 @@
-clang++ -Iinclude $(pkg-config --cflags --libs opencv4)  -std=c++17 ./src/Main.cpp ./src/Tri.cpp ./src/Plane.cpp ./src/Sphere.cpp -o ./bin/out
+clang++ -Iinclude $(pkg-config --cflags --libs opencv4)  -std=c++17 ./src/Main.cpp ./src/Obj.cpp ./src/Tri.cpp ./src/Plane.cpp ./src/Sphere.cpp -o ./bin/out

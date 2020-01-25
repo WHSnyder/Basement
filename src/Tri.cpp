@@ -4,7 +4,6 @@
 #include <glm/ext.hpp> // perspective, translate, rotate
 #endif 
 
-#include "Ray.h"
 #include "Tri.h"
 
 #include <iostream>

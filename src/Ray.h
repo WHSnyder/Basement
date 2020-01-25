@@ -4,11 +4,9 @@
 #include <glm/ext.hpp> // perspective, translate, rotate
 #endif 
 
-
 #ifndef rayi
 #define rayi
 using namespace glm;
-
 
 
 class Light {
@@ -60,9 +58,4 @@ class RayHit {
 			delete normal;
 		}
 };
-
-
-vec3 reflect(vec3 normal, vec3 direction){
-	return -2.0f * dot(normal,direction) * normal + direction;
-}
 #endif

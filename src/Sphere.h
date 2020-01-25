@@ -1,5 +1,3 @@
-#include "Ray.h"
-
 #ifndef glmi
 #define glmi
 #include <glm/glm.hpp> // vec2, vec3, mat4, radians
