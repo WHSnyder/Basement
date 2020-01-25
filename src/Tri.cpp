@@ -9,6 +9,11 @@
 
 #include <iostream>
 
+#ifndef cvinc
+#define cvinc
+#include <opencv2/opencv.hpp> 
+#endif
+
 using namespace glm;
 using namespace std;
 
@@ -25,14 +30,16 @@ using namespace std;
 
 cv::Vec3b Tri::shade(RayHit *rhit, cv::Mat *tex, Obj *objects[], Light *lights[]){
 
-    Vec3b col = Vec3b(50,50,50);
+    cv::Vec3b col = cv::Vec3b(50,50,50);
+    
+    int i = -1;
 
-    Ray reflection = Ray(*rhit->worldCoord,reflect(*rhit->normal, rhit ->r->dir));
-    RayHit *reflect_hit = intersect_scene(objects,reflection);
+    Ray reflection = Ray(*rhit->worldCoord,reflect(*rhit->normal, rhit->ray->dir));
+    RayHit *reflect_hit = intersect_scene(objects,reflection,&i);
 
     if (reflect_hit == nullptr) return col;
 
-    col = reflect_hit -> object_hit -> shade(reflect_hit, tex, objects, lights);
+    col = objects[i] -> shade(reflect_hit, tex, objects, lights);
 
     delete reflect_hit;
 
@@ -73,7 +80,7 @@ RayHit *Tri::intersect_ray(Ray& r) {
             return nullptr;
         }
 
-        return new RayHit(hit, new vec2(u,v), new vec3(zvec), t, *this, &r);
+        return new RayHit(hit, new vec2(u,v), new vec3(zvec), t, &r);
     } 
     return nullptr; 
 }

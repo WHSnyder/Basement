@@ -4,9 +4,11 @@
 #include <glm/ext.hpp> // perspective, translate, rotate
 #endif 
 
-#ifndef ray
-#define ray
+
+#ifndef rayi
+#define rayi
 using namespace glm;
+
 
 
 class Light {
@@ -21,32 +23,6 @@ class Light {
 		direction = normalize(d);
 		color = c;
 	}
-}
-
-class RayHit {
-
-	public:
-		vec3 *worldCoord;
-		vec2 *uv;
-		vec3 *normal;
-		Obj *object_hit;
-		Ray *ray;
-		float distance;
-
-		RayHit(vec3 *w, vec2 *_uv, vec3 *n, float d, Obj *hit, Ray *r){
-			worldCoord = w;
-			uv = _uv;
-			normal = n;
-			distance = d;
-			object_hit = hit;
-			ray = r;
-		}
-
-		~RayHit(){
-			delete worldCoord;
-			delete uv;
-			delete normal;
-		}
 };
 
 class Ray {
@@ -61,29 +37,30 @@ class Ray {
 		}		
 };
 
+class RayHit {
 
-RayHit *intersect_scene(Obj *objs[], Ray& r){
+	public:
+		vec3 *worldCoord;
+		vec2 *uv;
+		vec3 *normal;
+		Ray *ray;
+		float distance;
 
-	int i = 0, min_dist = 1000;
-	RayHit *hit = nullptr, *cur = nullptr;
-	
-	while (objs[i] != nullptr){
-
-		cur = objs[i] -> intersect_ray(r);
-
-		if (cur != nullptr){
-			if (cur -> distance < min_dist){
-				delete hit;
-				hit = cur;
-			}
-			else {
-				delete hit;
-			} 
+		RayHit(vec3 *w, vec2 *_uv, vec3 *n, float d, Ray *r){
+			worldCoord = w;
+			uv = _uv;
+			normal = n;
+			distance = d;
+			ray = r;
 		}
-		i++;
-	}
-	return hit;
-}
+
+		~RayHit(){
+			delete worldCoord;
+			delete uv;
+			delete normal;
+		}
+};
+
 
 vec3 reflect(vec3 normal, vec3 direction){
 	return -2.0f * dot(normal,direction) * normal + direction;

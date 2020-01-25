@@ -95,15 +95,14 @@ int main(){
 
 			vec3 pixelcoord = pos + x * right + y * forward + z * up;
 
-			Ray r = Ray(pos, pixelcoord - pos);
+			int hit_index = -1;
 
-			RayHit *hit = intersect_scene(objects,r);
+			Ray r = Ray(pos, pixelcoord - pos);
+			RayHit *hit = intersect_scene(objects,r,&i);
 
 			if (hit != nullptr){
-				outimg.at<cv::Vec3b>(i,j) = hit -> object_hit -> shade(hit, &tableimg, objects, lights);
+				outimg.at<cv::Vec3b>(i,j) = objects[i] -> shade(hit, &tableimg, objects, lights);
 			}
-
-
 
 			/*
 			if (rhit != nullptr){

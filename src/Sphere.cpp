@@ -9,10 +9,17 @@ using namespace glm;
 #include "Ray.h"
 #include "Sphere.h"
 
+#ifndef cvinc
+#define cvinc
+#include <opencv2/opencv.hpp> 
+#endif
+
 cv::Vec3b Sphere::shade(RayHit *rhit, cv::Mat *img, Obj *objects[], Light *lights[]){
 
 	vec3 hit_pos = *rhit -> worldCoord;
 	vec3 col = lights[0] -> color;
+
+	int i = -1;
 
 	float dotprod = -1.0f*dot(*rhit -> normal,lights[0]->direction);
 
@@ -22,13 +29,13 @@ cv::Vec3b Sphere::shade(RayHit *rhit, cv::Mat *img, Obj *objects[], Light *light
 	else {
 
 		Ray shadow = Ray(hit_pos, lights[0]->location - hit_pos);
-		RayHit *shadow_hit = intersect_scene(objects, shadow);
+		RayHit *shadow_hit = intersect_scene(objects, shadow, &i);
 
 		if (shadow_hit != nullptr) dotprod = .2;
 		delete shadow_hit;
 	}
 
-	return dotprod * Vec3b(col.x,col.y,col,z) * Vec3b(200,100,200)/255;  
+	return dotprod * cv::Vec3b(col.x,col.y,col.z).mul( cv::Vec3b(200,100,200) )/255;  
 }
 
 Sphere::Sphere(float x, float y, float z, float r){
@@ -55,5 +62,5 @@ RayHit *Sphere::intersect_ray(Ray& r) {
 
 	vec3 *hit = new vec3( r.origin + hit_length * r.dir );
 
-	return new RayHit(hit, new vec2(0,0), new vec3(normalize(*hit - origin)), hit_length, *this, &r);
+	return new RayHit(hit, new vec2(0,0), new vec3(normalize(*hit - origin)), hit_length, &r);
 }

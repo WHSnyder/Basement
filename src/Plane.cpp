@@ -12,29 +12,33 @@ using namespace glm;
 #include <iostream>
 using namespace std;
 
+#ifndef cvinc
+#define cvinc
+#include <opencv2/opencv.hpp> 
+#endif
 
-
-cv::Vec3b Plane::shade(RayHit *rhit, cv::Mat *image, Obj *objects[], Light *lights[]){
+cv::Vec3b Plane::shade(RayHit *rhit, cv::Mat *img, Obj *objects[], Light *lights[]){
 
 	vec2 uv = *rhit -> uv;
 	vec3 col = lights[0]->color;
 
-	int u = (int) (img.rows - 1) * uv.x;
-	int v = (int) (img.cols - 1 )* uv.y;
+	int i = -1;
+	int u = (int) (img->rows - 1) * uv.x;
+	int v = (int) (img->cols - 1 )* uv.y;
 
 	vec3 hit_pos = *rhit -> worldCoord;
 
 	Ray shadow = Ray(hit_pos, lights[0]->location - hit_pos);
-	RayHit *shadow_hit = intersect_scene(objects, shadow);
+	RayHit *shadow_hit = intersect_scene(objects, shadow, &i);
 
-	float dotprod = -1.0f * dot(*rhit -> normal,lightdir);
+	float dotprod = -1.0f * dot(*rhit -> normal,lights[0]->direction);
 	dotprod = dotprod < .2 ? .2 : dotprod;
 
-	if (shadow_hit != nullptr) dotprod = .2;
+	if (shadow_hit != nullptr) dotprod = .2f;
 
 	delete shadow_hit;
 
-	return dotprod * Vec3b(col.x,col.y,col,z) * img->at<cv::Vec3b>(u,v)/255; 
+	return dotprod * cv::Vec3b(col.x,col.y,col.z).mul( img->at<cv::Vec3b>(u,v) )/255; 
 }
 
 
@@ -79,7 +83,7 @@ RayHit *Plane::intersect_ray(Ray& r) {
         	return nullptr; 	
         }
 
-        RayHit *planehit = new RayHit(hit, new vec2((1+u)/2,(1+v)/2), new vec3(zvec), t, *this, &r);
+        RayHit *planehit = new RayHit(hit, new vec2((1+u)/2,(1+v)/2), new vec3(zvec), t, &r);
         return planehit;
     } 
     return nullptr; 
