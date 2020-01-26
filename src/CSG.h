@@ -8,14 +8,11 @@
 
 #include <math.h>
 
-class Mesh {
+class CSG {
 
 	public:
 
-		Mesh(String filepath){
-
-			
-		}
+		
 
 
 

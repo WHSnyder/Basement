@@ -8,6 +8,10 @@
 #define rayi
 using namespace glm;
 
+struct Surface {
+	vec3 location;
+	vec3 normal;
+};
 
 class Light {
 
