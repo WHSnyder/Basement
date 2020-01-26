@@ -25,7 +25,6 @@ using namespace glm;
 using namespace std::chrono;
 
 
-
 void printVec(string name,vec3 v){
 	cout << name << ": (" << v.x << ", " << v.y << ", " << v.z << ")" << endl;
 }
@@ -43,7 +42,7 @@ int main(){
 
 	if (up.z < 0) up *= -1.0f;
 
-	float dim = 1024;
+	float dim = 512;
 	float plane_dist = 2;
 	float plane_width = 3;
 
@@ -53,10 +52,10 @@ int main(){
 	rawimg.convertTo(tableimg, CV_8UC3);
 	cv::resize(tableimg, tableimg, cv::Size(1024,1024), 0, 0, cv::INTER_LINEAR);
 
-	vec3 p1 = vec3(-1,-2,-.1);
-	vec3 p2 = vec3(1,-2,-.1);
-	vec3 p3 = vec3(1,10,-.1);
-	vec3 p4 = vec3(-1,10,-.1);
+	vec3 p1 = vec3(-2,-2,-.1);
+	vec3 p2 = vec3(2,-2,-.1);
+	vec3 p3 = vec3(2,4,-.1);
+	vec3 p4 = vec3(-2,4,-.1);
 
 	Plane p = Plane(p1,p2,p3,p4);
 	Obj *op = &p;
@@ -80,6 +79,8 @@ int main(){
 
 	Tri tr2 = Tri(t22,t12,t02);
 	Obj *ot2 = &tr2;*/
+
+	printVec("Test", vec3(1,2,1) * vec3(2,3,2));
 
 	Obj *objects[5] = {op,os,ot,os2};
 
@@ -108,100 +109,15 @@ int main(){
 			Ray r = Ray(pos, pixelcoord - pos);
 			RayHit *hit = intersect_scene(objects,r,&hit_index);
 
-			//cout << "F" << endl;
-
 			if (hit != nullptr){
 				outimg.at<cv::Vec3b>(i,j) = objects[hit_index] -> shade(hit, &tableimg, objects, lights);
 			}
 
-			delete hit;
-
-			//cout << "Done" << endl;
-
-			/*
-			if (rhit != nullptr){
-
-				numhits++
-
-				float dotprod = dot(*rhit -> normal,lightdir);
-				dotprod = dotprod > -0.1000001 ? 1 : dotprod;
-
-				uint8_t magnitude = (uint8_t) 255 * (1 - dotprod);
-				magnitude = magnitude < 40 ? 40 : magnitude;
-
-				outimg.at<cv::Vec3b>(i,j) = cv::Vec3b(magnitude,magnitude,magnitude);
-
-				delete rhit;
-				rhit = nullptr;
-			}
-			
-			else {
-
-				RayHit* rhit = op -> intersect_ray(r);
-
-				if (rhit != nullptr){
-
-					vec2 uv = *rhit -> uv;
-
-					int u = (int) (tableimg.rows - 1) * uv.x;
-					int v = (int) (tableimg.cols - 1 )* uv.y;
-
-					vec3 hit_pos = *rhit -> worldCoord;
-
-					Ray shadow = Ray(hit_pos, lightpos - hit_pos);
-					RayHit *shadow_hit = os -> intersect_ray(shadow);
-
-					if (shadow_hit != nullptr){
-						outimg.at<cv::Vec3b>(i,j) = tableimg.at<cv::Vec3b>(u,v)/2;
-					}
-					else {
-						float dotprod = -1.0f * dot(*rhit -> normal,lightdir);
-						dotprod = dotprod < 0 ? 0 : dotprod;
-						outimg.at<cv::Vec3b>(i,j) = dotprod * tableimg.at<cv::Vec3b>(u,v); 
-					}
-
-					delete shadow_hit;
-					shadow_hit = nullptr;
-
-					delete rhit;
-					rhit = nullptr;
-				}
-				else {
-					rhit = ot -> intersect_ray(r);
-
-					if (rhit != nullptr){
-
-						Ray reflection = Ray(*rhit->worldCoord,reflect(*rhit->normal,r.dir));
-						RayHit *reflect_hit = op -> intersect_ray(reflection);
-
-						cv::Vec3b col = cv::Vec3b(50,50,50);
-
-						if (reflect_hit != nullptr){
-
-							vec2 uv = *reflect_hit -> uv;
-
-							int u = (int) (tableimg.rows - 1) * uv.x;
-							int v = (int) (tableimg.cols - 1 )* uv.y;
-
-							col = cv::Vec3b(200,0,0); 
-						}
-
-						reflect_hit = os -> intersect_ray(reflection);
-						if (reflect_hit != nullptr){
-							col = cv::Vec3b(0,0,200);
-						}
-
-						outimg.at<cv::Vec3b>(i,j) = col;
-
-						delete reflect_hit;
-					}
-				}
-				delete rhit;
-			}*/	
+			delete hit;	
 		}
 	}
-	auto stop = high_resolution_clock::now(); 
 
+	auto stop = high_resolution_clock::now(); 
 	auto duration = duration_cast<milliseconds>(stop - start); 
 	cout << duration.count() << endl; 
 
