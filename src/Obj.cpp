@@ -12,7 +12,7 @@ RayHit *intersect_scene(Obj *objs[], Ray& r, int *index){
 	int i = 0, min_dist = 1000;
 	RayHit *hit = nullptr, *cur = nullptr;
 
-	objs[3] = nullptr;
+	objs[4] = nullptr;
 	
 	while (objs[i] != nullptr){
 

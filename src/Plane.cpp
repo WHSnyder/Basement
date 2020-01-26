@@ -33,11 +33,13 @@ cv::Vec3b Plane::shade(RayHit *rhit, cv::Mat *img, Obj *objects[], Light *lights
 	float dotprod = -1.0f * dot(*rhit -> normal,lights[0]->direction);
 	dotprod = dotprod < .2 ? .2 : dotprod;
 
+	dotprod = 1.0f;
 	if (shadow_hit != nullptr) dotprod = .2f;
 
 	delete shadow_hit;
 
-	return dotprod * cv::Vec3b(col.x,col.y,col.z).mul( img->at<cv::Vec3b>(u,v) )/255; 
+	//return dotprod * cv::Vec3b(col.x,col.y,col.z).mul( img->at<cv::Vec3b>(u,v) )/255.0f; 
+	return dotprod * img->at<cv::Vec3b>(u,v);
 }
 
 

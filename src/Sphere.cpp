@@ -22,7 +22,7 @@ cv::Vec3b Sphere::shade(RayHit *rhit, cv::Mat *img, Obj *objects[], Light *light
 
 	float dotprod = -1.0f*dot(*rhit -> normal,lights[0]->direction);
 
-	if (dotprod < 0.0){
+	if (dotprod < 0.2){
 		dotprod = .2;
 	}
 	else {
@@ -34,11 +34,13 @@ cv::Vec3b Sphere::shade(RayHit *rhit, cv::Mat *img, Obj *objects[], Light *light
 		delete shadow_hit;
 	}
 
-	return dotprod * cv::Vec3b(col.x,col.y,col.z).mul( cv::Vec3b(200,100,200) )/255;  
+	//return dotprod * cv::Vec3b(col.x,col.y,col.z).mul( cv::Vec3b(200,100,200) )/255;
+	return dotprod * cv::Vec3b(color.x,color.y,color.z);  
 }
 
-Sphere::Sphere(float x, float y, float z, float r){
-	origin = vec3(x,y,z);
+Sphere::Sphere(vec3 center, vec3 diffuse, float r){
+	origin = center;
+	color = diffuse;
 	radius = r;
 }
 

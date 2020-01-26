@@ -43,7 +43,7 @@ int main(){
 
 	if (up.z < 0) up *= -1.0f;
 
-	float dim = 128;
+	float dim = 1024;
 	float plane_dist = 2;
 	float plane_width = 3;
 
@@ -61,17 +61,27 @@ int main(){
 	Plane p = Plane(p1,p2,p3,p4);
 	Obj *op = &p;
 
-	Sphere s = Sphere(.25,-1.0,1,.3);
+	Sphere s = Sphere(vec3(.5,-1.0,1), vec3(10, 140, 60),.1);
 	Obj *os = &s;
 
-	vec3 t0 = vec3(0,-2.5,1.3);
-	vec3 t1 = vec3(-1.5,-2,-.1);
-	vec3 t2 = vec3(1.5,-2,-.1); 
+	Sphere s2 = Sphere(vec3(0,.75,1.2), vec3(200,100,200),.3);
+	Obj *os2 = &s2;
+
+	vec3 t0 = vec3(0,-2.9,1.3);
+	vec3 t1 = vec3(-1.5,-2.5,-.1);
+	vec3 t2 = vec3(1.6,-2.7,-.1); 
 
 	Tri t = Tri(t0,t1,t2);
 	Obj *ot = &t;
 
-	Obj *objects[4] = {op,os,ot};
+	/*vec3 t02 = vec3(0,2.9,1.3);
+	vec3 t12 = vec3(-1.5,2.5,-.1);
+	vec3 t22 = vec3(1.6,2.7,-.1); 
+
+	Tri tr2 = Tri(t22,t12,t02);
+	Obj *ot2 = &tr2;*/
+
+	Obj *objects[5] = {op,os,ot,os2};
 
 	vec3 lightpos = vec3(-.2,-1.5,4);
 	vec3 lightlook = s.origin;
@@ -83,11 +93,10 @@ int main(){
 
 	for (int i = 0; i < dim; i++){
 
-		if (i % 20 == 0 ) cout << "On row " << i << endl;
+		if (i % 50 == 0 ) cout << "On row " << i << endl;
 
 		for (int j = 0; j < dim; j++){
 
-			
 			float x = .5f * plane_width * (j - dim/2.0f)/(dim/2.0f);
 			float y = plane_dist;
 			float z = .5f * plane_width * (dim/2.0f - i)/(dim/2.0f);
@@ -104,6 +113,8 @@ int main(){
 			if (hit != nullptr){
 				outimg.at<cv::Vec3b>(i,j) = objects[hit_index] -> shade(hit, &tableimg, objects, lights);
 			}
+
+			delete hit;
 
 			//cout << "Done" << endl;
 
