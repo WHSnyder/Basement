@@ -32,6 +32,9 @@ void printVec(string name,vec3 v){
 
 int main(){
 
+	bool exit = false;
+	cout << "tern test: " << (exit ? -1 : 1) << endl;
+
 	auto start = high_resolution_clock::now(); 
 
 	vec3 pos = vec3(0.0,-.5,1.75);

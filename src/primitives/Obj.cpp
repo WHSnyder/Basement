@@ -16,18 +16,14 @@ RayHit *intersect_scene(Obj *objs[], Ray& r, int *index){
 	
 	while (objs[i] != nullptr){
 
-		//cout << "On obj " << i << endl;
-
 		cur = objs[i] -> intersect_ray(r);
 
-		//cout << "Tested intersect" << endl;
-
 		if (cur != nullptr){
-			if (cur -> distance < min_dist){
+			if (cur -> ent_distance < min_dist){
 				delete hit;
 				hit = cur;
 				*index = i;
-				min_dist = cur -> distance;
+				min_dist = cur -> ent_distance;
 			}
 			else {
 				delete cur;

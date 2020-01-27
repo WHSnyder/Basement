@@ -15,12 +15,12 @@ using namespace glm;
 
 cv::Vec3b Sphere::shade(RayHit *rhit, cv::Mat *img, Obj *objects[], Light *lights[]){
 
-	vec3 hit_pos = *rhit -> worldCoord;
+	vec3 hit_pos = *rhit -> entrance;
 	vec3 col = lights[0] -> color;
 
 	int i = -1;
 
-	float dotprod = -1.0f*dot(*rhit -> normal,lights[0]->direction);
+	float dotprod = -1.0f*dot(*rhit -> ent_normal,lights[0]->direction);
 
 	if (dotprod < 0.2){
 		dotprod = .2;
@@ -34,7 +34,6 @@ cv::Vec3b Sphere::shade(RayHit *rhit, cv::Mat *img, Obj *objects[], Light *light
 		delete shadow_hit;
 	}
 
-	//return dotprod * cv::Vec3b(col.x,col.y,col.z).mul( cv::Vec3b(200,100,200) )/255;
 	return dotprod * cv::Vec3b(color.x,color.y,color.z);  
 }
 
@@ -57,11 +56,17 @@ RayHit *Sphere::intersect_ray(Ray& r) {
 		return nullptr;
 	}
 
-	float hit_length = dotprod - abs(sqrt(pow(radius,2) - pow(d,2)));
+	float temp = abs(sqrt(radius*radius - d*d));
+	float ent_length = dotprod - temp;
+	float exit_length = dotprod + temp;
 
-	if (hit_length < .001) return nullptr;
+	if (ent_length < .001) return nullptr;
 
-	vec3 *hit = new vec3( r.origin + hit_length * r.dir );
+	vec3 *ent_hit = new vec3( r.origin + ent_length * r.dir );
+	vec3 *exit_hit = new vec3( r.origin + exit_length * r.dir );
 
-	return new RayHit(hit, new vec2(0,0), new vec3(normalize(*hit - origin)), hit_length, &r);
+	vec3 *ent_normal = new vec3( normalize(*ent_hit - origin) );
+	vec3 *exit_normal = new vec3( normalize(*exit_hit - origin) );
+
+	return new RayHit(ent_hit, ent_normal, ent_length, exit_hit, exit_normal, exit_length, &r);
 }
