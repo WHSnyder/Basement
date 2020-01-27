@@ -60,7 +60,7 @@ class RayHit {
 
 			exit_normal = nullptr;
 			exit = nullptr;
-			
+
 			ray = r;
 		}
 
@@ -75,6 +75,18 @@ class RayHit {
 
 			ray = r;
 		}
+
+		/*RayHit(RayHit *ex, RayHit *en, Ray *r){
+			entrance = w_ent;
+			ent_normal = n_ent;
+			ent_distance = d_ent;
+
+			exit = w_exit;
+			exit_normal = n_exit;
+			exit_distance = exit_distance;
+
+			ray = r;
+		}*/
 
 		~RayHit(){
 			delete entrance;

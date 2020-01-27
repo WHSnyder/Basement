@@ -13,7 +13,7 @@
 
 RayHit *CSG::intersect_ray(Ray &r, bool mode){
 
-	RayHit *other_hit, *this_hit;
+	RayHit *other_hit, *this_hit, *composite;
 
 	switch (op){
 
@@ -32,11 +32,25 @@ RayHit *CSG::intersect_ray(Ray &r, bool mode){
 							return this_hit;
 						}
 
-						if (this_hit ->)
+						if (this_hit -> exit_distance > other_hit -> exit_distance){
+							
+							*other_hit -> exit_normal *= -1.0f;
+							other_hit -> ent_normal = other_hit -> exit_normal;
+							other_hit -> ent_distance = other_hit -> exit_distance;
+							other_hit -> entrance = other_hit -> exit;
 
+							other_hit -> exit = new vec3(*this_hit->exit);
+							other_hit -> exit_normal = new vec3(*this_hit->exit_normal);
+							other_hit -> exit_distance = this_hit->exit_distance;
 
+							delete this_hit;
+							return other_hit;
+						}
 
+						delete this_hit;
+						delete other_hit;
 
+						return nullptr;
 				   }
 				   break;
 
@@ -52,7 +66,7 @@ RayHit *CSG::intersect_ray(Ray &r, bool mode){
 							return this_hit;
 						}
 
-						if (other_hit -> distance < this_hit -> distance){
+						if (other_hit -> ent_distance < this_hit -> ent_distance){
 							delete this_hit;
 							return other_hit;
 						}
@@ -75,7 +89,7 @@ RayHit *CSG::intersect_ray(Ray &r, bool mode){
 	    					return nullptr;
 	    				}
 
-	    				if (other_hit -> distance < this_hit -> distance){
+	    				if (other_hit -> ent_distance < this_hit -> ent_distance){
 	    					delete other_hit;
 	    					return this_hit;
 	    				}
