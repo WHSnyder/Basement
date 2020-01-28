@@ -11,10 +11,11 @@ using namespace glm;
 #endif
 
 #include "Ray.h"
-#include "Scene.h"
 
 #ifndef obji
 #define obji
+
+class Scene;
 
 class Obj {
 

@@ -34,11 +34,11 @@ cv::Vec3b Tri::shade(RayHit *rhit, cv::Mat *tex, Scene *scene){
     int i = -1;
 
     Ray reflection = Ray(*rhit->entrance,reflect(*rhit->ent_normal, rhit->ray->dir));
-    RayHit *reflect_hit = intersect_scene(objects,reflection,&i);
+    RayHit *reflect_hit = scene -> intersect_scene(reflection, &i);
 
     if (reflect_hit == nullptr) return col;
 
-    col = objects[i] -> shade(reflect_hit, tex, objects, lights);
+    col = scene -> objects[i] -> shade(reflect_hit, tex, scene);
 
     delete reflect_hit;
 

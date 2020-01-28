@@ -20,6 +20,7 @@ cv::Vec3b Plane::shade(RayHit *rhit, cv::Mat *img, Scene *scene){
 
 	vec3 hit_pos = *rhit -> entrance;
     vec3 fromOrg = hit_pos - origin;
+    std::vector<Light *> lights = scene -> lights;
 
 	int i = -1;
 	int row = (int) (img->rows - 1) * dot(fromOrg, xvec) / this->height;

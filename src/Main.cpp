@@ -112,10 +112,10 @@ int main(){
 			int hit_index = -1;
 
 			Ray r = Ray(pos, pixelcoord - pos);
-			RayHit *hit = scene.intersect_scene(objects,r,&hit_index);
+			RayHit *hit = scene.intersect_scene(r,&hit_index);
 
 			if (hit != nullptr){
-				outimg.at<cv::Vec3b>(i,j) = scene.objects[hit_index] -> shade(hit, &tableimg, objects, lights);
+				outimg.at<cv::Vec3b>(i,j) = scene.objects[hit_index] -> shade(hit, &tableimg, &scene);
 			}
 
 			delete hit;	

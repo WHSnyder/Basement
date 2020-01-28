@@ -14,7 +14,7 @@ RayHit *Scene::intersect_scene(Ray& r, int *index){
 
 	for (auto it = objects.begin(); it != objects.end(); it++) {
 
-		cur = it -> intersect_ray(r);
+		cur = objects[i] -> intersect_ray(r);
 
 		if (cur != nullptr){
 			if (cur -> ent_distance < min_dist){
