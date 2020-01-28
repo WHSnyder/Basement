@@ -11,6 +11,7 @@ using namespace glm;
 #endif
 
 #include "Ray.h"
+#include "Scene.h"
 
 #ifndef obji
 #define obji
@@ -20,9 +21,6 @@ class Obj {
 	public:
 		vec3 origin;
 		virtual RayHit *intersect_ray(Ray& r)=0;
-		virtual cv::Vec3b shade(RayHit *rh, cv::Mat *image, Obj *objects[], Light *lights[])=0;
+		virtual cv::Vec3b shade(RayHit *rh, cv::Mat *image, Scene *scene)=0;
 };
-
-RayHit *intersect_scene(Obj *objs[], Ray& r, int *index);
-vec3 reflect(vec3 normal, vec3 direction);
 #endif

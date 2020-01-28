@@ -27,13 +27,13 @@ using namespace std;
     return Vec3b(0,0,0);//tableimg.at<cv::Vec3b>(u,v);
 }*/
 
-cv::Vec3b Tri::shade(RayHit *rhit, cv::Mat *tex, Obj *objects[], Light *lights[]){
+cv::Vec3b Tri::shade(RayHit *rhit, cv::Mat *tex, Scene *scene){
 
     cv::Vec3b col = cv::Vec3b(50,50,50);
     
     int i = -1;
 
-    Ray reflection = Ray(*rhit->worldCoord,reflect(*rhit->normal, rhit->ray->dir));
+    Ray reflection = Ray(*rhit->entrance,reflect(*rhit->ent_normal, rhit->ray->dir));
     RayHit *reflect_hit = intersect_scene(objects,reflection,&i);
 
     if (reflect_hit == nullptr) return col;
@@ -57,7 +57,7 @@ RayHit *Tri::intersect_ray(Ray& r) {
 
     if (denom > 0.001) { 
 
-        float t = (dot(zvec,v0) - dot(zvec,r.origin))/denom;
+        float t = (dot(zvec,v0) - dot(zvec,r.origin)) / denom;
 
         if (t < 0) return nullptr;
 
@@ -76,10 +76,11 @@ RayHit *Tri::intersect_ray(Ray& r) {
         float u = 1.0f - v - w;
 
         if (u > 1.0 || v > 1.0 || w > 1.0 || u < 0.0 || v < 0.0 || w < 0.0){
+            delete hit;
             return nullptr;
         }
 
-        return new RayHit(hit, new vec2(u,v), new vec3(zvec), t, &r);
+        return new RayHit(hit, new vec3(zvec), t, &r);
     } 
     return nullptr; 
 }

@@ -23,8 +23,7 @@ class CSG {
 		Obj *shape;
 		CSG *link;
 		optype op;
-
-
+		
 		CSG(Obj *object){
 			shape = object;
 			op = leaf;
@@ -53,8 +52,6 @@ class CSG {
 		CSG * operator - (CSG *other){
 			return new CSG(other, sub);
 		}
-
-	
 };
 
 #endif

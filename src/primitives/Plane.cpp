@@ -16,9 +16,8 @@ using namespace std;
 #include <opencv2/opencv.hpp> 
 #endif
 
-cv::Vec3b Plane::shade(RayHit *rhit, cv::Mat *img, Obj *objects[], Light *lights[]){
+cv::Vec3b Plane::shade(RayHit *rhit, cv::Mat *img, Scene *scene){
 
-	vec2 uv = *rhit -> uv;
 	vec3 hit_pos = *rhit -> entrance;
     vec3 fromOrg = hit_pos - origin;
 
@@ -27,7 +26,7 @@ cv::Vec3b Plane::shade(RayHit *rhit, cv::Mat *img, Obj *objects[], Light *lights
 	int col = (int) (img->cols - 1 ) * dot(fromOrg, yvec) / this->length;
 
 	Ray shadow = Ray(hit_pos, lights[0]->location - hit_pos);
-	RayHit *shadow_hit = intersect_scene(objects, shadow, &i);
+	RayHit *shadow_hit = scene -> intersect_scene(shadow, &i);
 
 	float dotprod = -1.0f * dot(*rhit -> ent_normal, lights[0]->direction);
 	dotprod = dotprod < .2 ? .2 : dotprod;
@@ -66,9 +65,8 @@ RayHit *Plane::intersect_ray(Ray& r) {
     float denom = dot(zvec,r.dir); 
 
     if (denom < -0.001) { 
-    	//cout << r.origin.x << " " << r.origin.y << " " << r.origin.z << endl;
 
-        float t = (dot(zvec,origin) - dot(zvec,r.origin))/denom;
+        float t = (dot(zvec,origin) - dot(zvec,r.origin)) / denom;
 
         if (t < .001) return nullptr; 
 
@@ -76,6 +74,7 @@ RayHit *Plane::intersect_ray(Ray& r) {
         vec3 fromOrg = *hit - origin;
 
         if (abs(dot(fromOrg, xvec) / this->height) > 1.0 || abs(dot(fromOrg, yvec) / this->length) > 1.0){
+        	delete hit;
         	return nullptr; 	
         }
 

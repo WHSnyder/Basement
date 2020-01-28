@@ -14,11 +14,12 @@
 #include <opencv2/opencv.hpp> 
 #endif
 
-#include "Obj.h"
+#include "primitives/Obj.h"
 #include "Ray.h"
-#include "Sphere.h"
-#include "Plane.h"
-#include "Tri.h"
+#include "primitives/Sphere.h"
+#include "primitives/Plane.h"
+#include "primitives/Tri.h"
+#include "Scene.h"
 
 using namespace std;
 using namespace glm;
@@ -31,9 +32,6 @@ void printVec(string name,vec3 v){
 
 
 int main(){
-
-	bool exit = false;
-	cout << "tern test: " << (exit ? -1 : 1) << endl;
 
 	auto start = high_resolution_clock::now(); 
 
@@ -85,13 +83,17 @@ int main(){
 
 	printVec("Test", vec3(1,2,1) * vec3(2,3,2));
 
-	Obj *objects[5] = {op,os,ot,os2};
+	Scene scene;
+	scene.add_object(op);
+	scene.add_object(os);
+	scene.add_object(ot);
+	scene.add_object(os2);
 
 	vec3 lightpos = vec3(-.2,-1.5,4);
 	vec3 lightlook = s.origin;
 	vec3 lightdir = lightlook - lightpos;
 
-	Light *lights[1] = {new Light(lightpos, lightdir, vec3(100,20,100))};
+	scene.add_light(new Light(lightpos, lightdir, vec3(100,20,100)));
 
 	int numhits = 0;
 
@@ -110,10 +112,10 @@ int main(){
 			int hit_index = -1;
 
 			Ray r = Ray(pos, pixelcoord - pos);
-			RayHit *hit = intersect_scene(objects,r,&hit_index);
+			RayHit *hit = scene.intersect_scene(objects,r,&hit_index);
 
 			if (hit != nullptr){
-				outimg.at<cv::Vec3b>(i,j) = objects[hit_index] -> shade(hit, &tableimg, objects, lights);
+				outimg.at<cv::Vec3b>(i,j) = scene.objects[hit_index] -> shade(hit, &tableimg, objects, lights);
 			}
 
 			delete hit;	
