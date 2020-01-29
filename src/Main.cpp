@@ -21,6 +21,8 @@
 #include "primitives/Tri.h"
 #include "Scene.h"
 
+#include "CSG.h"
+
 using namespace std;
 using namespace glm;
 using namespace std::chrono;
@@ -35,7 +37,7 @@ int main(){
 
 	auto start = high_resolution_clock::now(); 
 
-	vec3 pos = vec3(0.0,-.5,1.75);
+	vec3 pos = vec3(0.0,0.0,1.75);
 
 	vec3 right = vec3(1.0,0.0,0.0);
 	vec3 forward = normalize( vec3(0,-2,.5) - pos );
@@ -43,7 +45,7 @@ int main(){
 
 	if (up.z < 0) up *= -1.0f;
 
-	float dim = 512;
+	float dim = 256;
 	float plane_dist = 2;
 	float plane_width = 3;
 
@@ -61,15 +63,15 @@ int main(){
 	Plane p = Plane(p1,p2,p3,p4);
 	Obj *op = &p;
 
-	Sphere s = Sphere(vec3(.5,-1.0,1), vec3(10, 140, 60),.1);
+	Sphere s = Sphere(vec3(.2,-1.0,1.2), vec3(190, 10, 60),.4);
 	Obj *os = &s;
 
-	Sphere s2 = Sphere(vec3(0,.75,1.2), vec3(200,100,200),.3);
+	Sphere s2 = Sphere(vec3(-.2,-1.0,1.2), vec3(200,100,200),.4);
 	Obj *os2 = &s2;
 
-	vec3 t0 = vec3(0,-2.9,1.3);
-	vec3 t1 = vec3(-1.5,-2.5,-.1);
-	vec3 t2 = vec3(1.6,-2.7,-.1); 
+	vec3 t0 = vec3(0,-2.7,2.6);
+	vec3 t1 = vec3(-2.7,-2.7,-.1);
+	vec3 t2 = vec3(2.7,-2.7,-.1); 
 
 	Tri t = Tri(t0,t1,t2);
 	Obj *ot = &t;
@@ -89,7 +91,7 @@ int main(){
 	scene.add_object(ot);
 	scene.add_object(os2);
 
-	vec3 lightpos = vec3(-.2,-1.5,4);
+	vec3 lightpos = vec3(-.2,-.5,4);
 	vec3 lightlook = s.origin;
 	vec3 lightdir = lightlook - lightpos;
 

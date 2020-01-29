@@ -11,7 +11,7 @@
 #include "CSG.h"
 
 
-RayHit *CSG::intersect_ray(Ray &r, bool mode){
+RayHit *CSG::intersect_ray(Ray &r){
 
 	RayHit *other_hit, *this_hit, *composite;
 
@@ -101,8 +101,3 @@ RayHit *CSG::intersect_ray(Ray &r, bool mode){
 	}
 	return nullptr;
 }
-
-
-
-
-
