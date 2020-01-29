@@ -45,8 +45,6 @@ cv::Vec3b Tri::shade(RayHit *rhit, cv::Mat *tex, Scene *scene){
     return col;
 }
  
-
-
 RayHit *Tri::intersect_ray(Ray& r) {
 
     vec3 v0 = p0->coord, v1 = p1->coord, v2 = p2->coord;

@@ -9,7 +9,7 @@ vec3 reflect(vec3 normal, vec3 direction){
 
 RayHit *Scene::intersect_scene(Ray& r, int *index){
 
-	int i = 0, min_dist = 1000;
+	int i = 0, min_dist = 1000000000;
 	RayHit *hit = nullptr, *cur = nullptr;
 
 	for (auto it = objects.begin(); it != objects.end(); it++) {
@@ -17,16 +17,20 @@ RayHit *Scene::intersect_scene(Ray& r, int *index){
 		cur = objects[i] -> intersect_ray(r);
 
 		if (cur != nullptr){
+			
 			if (cur -> ent_distance < min_dist){
+
 				delete hit;
 				hit = cur;
 				*index = i;
 				min_dist = cur -> ent_distance;
 			}
 			else {
+
 				delete cur;
 			} 
 		}
+		
 		i++;
 	}
 	return hit;
