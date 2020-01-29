@@ -7,8 +7,6 @@
 #include <math.h>
 #include "Obj.h"
 
-
-
 #ifndef sphere
 #define sphere
 using namespace glm;
@@ -23,5 +21,4 @@ class Sphere : public Obj {
 		virtual RayHit *intersect_ray(Ray& r);
 		virtual cv::Vec3b shade(RayHit *rh, cv::Mat *image, Scene *scene);
 };
-
 #endif
