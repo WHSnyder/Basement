@@ -16,30 +16,33 @@ class CSG {
 		optype op;
 
 		CSG(Obj *object){
+			
 			shape = object;
 			op = leaf;
+			link = nullptr;
 		}
 
-		CSG(CSG *operand, optype _op){
+		CSG(CSG *orig, CSG *operand, optype _op){
 
 			if (_op == leaf) _op = un;
+
 			link = operand;
 			op = _op;
-			shape = nullptr;
+			shape = orig -> shape;
 		}
 
 		RayHit *intersect_ray(Ray& r);
 
 		CSG * operator || (CSG& other){
-			return new CSG(&other, un);
+			return new CSG(this, &other, un);
 		}
 
 		CSG * operator && (CSG& other){
-			return new CSG(&other, intx);
+			return new CSG(this, &other, intx);
 		}
 
 		CSG * operator - (CSG& other){
-			return new CSG(&other, sub);
+			return new CSG(this, &other, sub);
 		}
 };
 #endif

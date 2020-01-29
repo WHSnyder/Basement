@@ -27,7 +27,7 @@ cv::Vec3b Tri::shade(RayHit *rhit, cv::Mat *tex, Scene *scene){
 
     if (reflect_hit == nullptr) return col;
 
-    col = scene -> objects[i] -> shade(reflect_hit, tex, scene);
+    col = reflect_hit -> object_hit -> shade(reflect_hit, tex, scene);
 
     delete reflect_hit;
 
@@ -67,7 +67,7 @@ RayHit *Tri::intersect_ray(Ray& r) {
             return nullptr;
         }
 
-        return new RayHit(hit, new vec3(zvec), t, &r);
+        return new RayHit(hit, new vec3(zvec), t, &r, this);
     } 
     return nullptr; 
 }

@@ -68,7 +68,7 @@ RayHit *Plane::intersect_ray(Ray& r) {
         	return nullptr; 	
         }
 
-        RayHit *planehit = new RayHit(hit, new vec3(zvec), t, &r);
+        RayHit *planehit = new RayHit(hit, new vec3(zvec), t, &r, this);
         return planehit;
     } 
     return nullptr; 

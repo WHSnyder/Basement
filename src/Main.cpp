@@ -45,7 +45,7 @@ int main(){
 
 	if (up.z < 0) up *= -1.0f;
 
-	float dim = 256;
+	float dim = 512;
 	float plane_dist = 2;
 	float plane_width = 3;
 
@@ -63,10 +63,10 @@ int main(){
 	Plane p = Plane(p1,p2,p3,p4);
 	Obj *op = &p;
 
-	Sphere s =  Sphere(vec3(.22,-.85,1.5), vec3(220,220,220),.2);
+	Sphere s =  Sphere(vec3(0,-1.0,1.2), vec3(220,220,220),.4);
 	Obj *os = &s;
 
-	Sphere s2 = Sphere(vec3(.17,-1.0,1.2), vec3(200,100,200),.4);
+	Sphere s2 = Sphere(vec3(-.1,-.7,1.4), vec3(220,220,220),.2);
 	Obj *os2 = &s2;
 
 	vec3 t0 = vec3(0,-2.7,2.6);
@@ -82,8 +82,8 @@ int main(){
 	scene.add_object(os2);
 	scene.add_object(op);
 
-	vec3 lightpos = vec3(-.2,-.5,4);
-	vec3 lightlook = s.origin;
+	vec3 lightpos = vec3(0,-.5,3);
+	vec3 lightlook = vec3(0,-1.0,1.2);
 	vec3 lightdir = lightlook - lightpos;
 
 	scene.add_light(new Light(lightpos, lightdir, vec3(100,20,100)));
@@ -91,7 +91,13 @@ int main(){
 	CSG sphere_0 = CSG(os);
 	CSG sphere_1 = CSG(os2);
 
-	CSG *combo = sphere_0 && sphere_1;
+	CSG *combo = sphere_0 - sphere_1;
+	CSG planecsg = CSG(op);
+	CSG tricsg = CSG(ot);
+
+	scene.add_csg(combo);
+	scene.add_csg(&planecsg);
+	scene.add_csg(&tricsg);
 
 
 	int numhits = 0;
@@ -114,10 +120,16 @@ int main(){
 			RayHit *hit = scene.intersect_scene(r,&hit_index);
 
 			if (hit != nullptr){
-				outimg.at<cv::Vec3b>(i,j) = scene.objects[hit_index] -> shade(hit, &tableimg, &scene);
+				Obj *obj_hit = hit -> object_hit;
+				outimg.at<cv::Vec3b>(i,j) = obj_hit -> shade(hit, &tableimg, &scene);
 			}
 
 			delete hit;	
+
+			//hit = combo -> intersect_ray(r);
+			//if (hit != nullptr) outimg.at<cv::Vec3b>(i,j) = os2 -> shade(hit, &tableimg, &scene);
+
+			//delete hit;
 		}
 	}
 

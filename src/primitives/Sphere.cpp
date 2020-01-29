@@ -59,5 +59,5 @@ RayHit *Sphere::intersect_ray(Ray& r) {
 	vec3 *ent_normal = new vec3( normalize(*ent_hit - origin) );
 	vec3 *exit_normal = new vec3( normalize(*exit_hit - origin) );
 
-	return new RayHit(ent_hit, ent_normal, ent_length, exit_hit, exit_normal, exit_length, &r);
+	return new RayHit(ent_hit, ent_normal, ent_length, exit_hit, exit_normal, exit_length, &r, this);
 }

@@ -1,14 +1,19 @@
 #include <math.h>
 #include "CSG.h"
+#include <iostream>
 
+using namespace std;
 
 RayHit *CSG::intersect_ray(Ray &r){
 
 	RayHit *other_hit, *this_hit, *composite;
 
+	//cout << "INTERSECTING CSG..." << endl;
+
 	switch (op){
 
-		case leaf: return shape -> intersect_ray(r);
+		case leaf: //cout << "Reached leaf.." << endl;
+				   return shape -> intersect_ray(r);
 				   break;
 
 		case sub:  {	this_hit = shape -> intersect_ray(r);  
@@ -45,29 +50,33 @@ RayHit *CSG::intersect_ray(Ray &r){
 				   }
 				   break;
 
-		case un:   {	this_hit = shape -> intersect_ray(r);
+		case un:   	//cout << "Union hit..." << endl;
+					this_hit = shape -> intersect_ray(r);
+					//cout << "Shape tested.." << endl;
 
-						if (this_hit == nullptr){
-							return link -> intersect_ray(r);
-						}
+					if (this_hit == nullptr){
+						return link -> intersect_ray(r);
+					}
 
-						other_hit = link -> intersect_ray(r);
+					other_hit = link -> intersect_ray(r);
 
-						if (other_hit == nullptr){
-							return this_hit;
-						}
-
-						if (other_hit -> ent_distance < this_hit -> ent_distance){
-							delete this_hit;
-							return other_hit;
-						}
-
-						delete other_hit;
+					if (other_hit == nullptr){
 						return this_hit;
-				   }
+					}
+
+					if (other_hit -> ent_distance < this_hit -> ent_distance){
+						delete this_hit;
+						return other_hit;
+					}
+
+					delete other_hit;
+					return this_hit;
+				   
 				   break;
 
-	    case intx: {	this_hit = shape -> intersect_ray(r);
+	    case intx: {	//cout << "Intx hit..." << endl;
+	    				this_hit = shape -> intersect_ray(r);
+	    				//cout << "Tested orig hit... " << endl;
 
 	    				if (this_hit == nullptr){
 	    					return nullptr;

@@ -13,9 +13,9 @@ RayHit *Scene::intersect_scene(Ray& r, int *index){
 	float min_dist = 1000000000.0f;
 	RayHit *hit = nullptr, *cur = nullptr;
 
-	for (auto it = objects.begin(); it != objects.end(); it++) {
+	for (auto it = csgs.begin(); it != csgs.end(); it++) {
 
-		cur = objects[i] -> intersect_ray(r);
+		cur = csgs[i] -> intersect_ray(r);
 
 		if (cur != nullptr){
 			
