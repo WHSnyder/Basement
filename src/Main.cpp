@@ -2,6 +2,7 @@
 #include <cstdio>
 #include <vector>
 #include <iostream>
+#include <pthread.h>
 
 #ifndef glmi
 #define glmi
@@ -32,6 +33,30 @@ void printVec(string name,vec3 v){
 	cout << name << ": (" << v.x << ", " << v.y << ", " << v.z << ")" << endl;
 }
 
+/*
+struct thread_input {
+
+	cv::Mat *write_img;
+	int start_index;
+	int end_index;
+	Scene *scene;
+
+};
+
+void *trace_pixels(void *thread_args){
+
+	//cv::Mat *write_img, int start_index, int end_index
+
+	int row = write_img->rows;
+
+
+
+
+}*/
+
+
+
+
 
 int main(){
 
@@ -41,9 +66,11 @@ int main(){
 
 	vec3 right = vec3(1.0,0.0,0.0);
 	vec3 forward = normalize( vec3(0,-2,.5) - pos );
-	vec3 up = -1.0f * normalize(cross(right,forward));// vec3(0.0,0.0,1.0);
+	vec3 up = -1.0f * normalize(cross(right,forward));
 
 	if (up.z < 0) up *= -1.0f;
+
+	View view = View(forward,up,right);
 
 	float dim = 512;
 	float plane_dist = 2;
@@ -63,10 +90,10 @@ int main(){
 	Plane p = Plane(p1,p2,p3,p4);
 	Obj *op = &p;
 
-	Sphere s =  Sphere(vec3(0,-1.0,1.2), vec3(220,220,220),.4);
+	Sphere s =  Sphere(vec3(0,-1.1,1.2), vec3(220,220,220),.4);
 	Obj *os = &s;
 
-	Sphere s2 = Sphere(vec3(-.1,-.7,1.4), vec3(220,220,220),.2);
+	Sphere s2 = Sphere(vec3(-.02,-.8,1.4), vec3(220,220,220),.17);
 	Obj *os2 = &s2;
 
 	vec3 t0 = vec3(0,-2.7,2.6);
@@ -76,7 +103,7 @@ int main(){
 	Tri t = Tri(t0,t1,t2);
 	Obj *ot = &t;
 
-	Scene scene;
+	Scene scene = Scene(&view);
 	scene.add_object(os);
 	scene.add_object(ot);
 	scene.add_object(os2);
@@ -91,7 +118,7 @@ int main(){
 	CSG sphere_0 = CSG(os);
 	CSG sphere_1 = CSG(os2);
 
-	CSG *combo = sphere_0 - sphere_1;
+	CSG *combo = sphere_0 && sphere_1;
 	CSG planecsg = CSG(op);
 	CSG tricsg = CSG(ot);
 

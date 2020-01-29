@@ -20,12 +20,28 @@ using namespace glm;
 
 class CSG;
 
+
+class View {
+	public:
+		vec3 forward;
+		vec3 up;
+		vec3 right;
+
+		View(vec3 f, vec3 u, vec3 r){
+			forward=f;
+			up=u;
+			right=r;
+		}
+};
+
+
 class Scene {
 
 	public:
 		std::vector<Obj *> objects; 
 		std::vector<Light *> lights; 
 		std::vector<CSG *> csgs;
+		View *view;
 
 		RayHit *intersect_scene(Ray& r, int *index);
 
@@ -39,6 +55,10 @@ class Scene {
 
 		void add_csg(CSG *c){
 			csgs.push_back(c);
+		}
+
+		Scene(View *v){
+			view=v;
 		}
 };
 

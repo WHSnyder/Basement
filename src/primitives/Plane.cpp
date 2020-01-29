@@ -18,11 +18,9 @@ cv::Vec3b Plane::shade(RayHit *rhit, cv::Mat *img, Scene *scene){
 	Ray shadow = Ray(hit_pos, lights[0]->location - hit_pos);
 	RayHit *shadow_hit = scene -> intersect_scene(shadow, &i);
 
-	//float dotprod = -1.0f * dot(*rhit -> ent_normal, lights[0]->direction);
+	float dotprod = -1.0f * dot(*rhit -> ent_normal, lights[0]->direction);
 
-	float dotprod = 1.0f;
-
-	if (shadow_hit != nullptr) dotprod = .2f;
+	if (shadow_hit != nullptr || dotprod < .2f) dotprod = .2f;
 
 	delete shadow_hit;
 
