@@ -1,8 +1,10 @@
+#ifndef scenei
+#define scenei
+
 #ifndef glmi
 #define glmi
 #include <glm/glm.hpp>
 #include <glm/ext.hpp>
-using namespace glm;
 #endif 
 
 #ifndef cvinc
@@ -12,17 +14,18 @@ using namespace glm;
 
 #include "Ray.h"
 #include "primitives/Obj.h"
+#include "CSG.h"
 
+using namespace glm;
 
-#ifndef scenei
-#define scenei
-
+class CSG;
 
 class Scene {
 
 	public:
 		std::vector<Obj *> objects; 
 		std::vector<Light *> lights; 
+		std::vector<CSG *> csgs;
 
 		RayHit *intersect_scene(Ray& r, int *index);
 
@@ -32,6 +35,10 @@ class Scene {
 
 		void add_object(Obj *o){
 			objects.push_back(o);
+		}
+
+		void add_csg(CSG *c){
+			csgs.push_back(c);
 		}
 };
 

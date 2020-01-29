@@ -45,7 +45,7 @@ int main(){
 
 	if (up.z < 0) up *= -1.0f;
 
-	float dim = 32;
+	float dim = 256;
 	float plane_dist = 2;
 	float plane_width = 3;
 
@@ -63,10 +63,10 @@ int main(){
 	Plane p = Plane(p1,p2,p3,p4);
 	Obj *op = &p;
 
-	Sphere s =  Sphere(vec3(.2,-1.0,1.2), vec3(220,220,220),.2);
+	Sphere s =  Sphere(vec3(.22,-.85,1.5), vec3(220,220,220),.2);
 	Obj *os = &s;
 
-	Sphere s2 = Sphere(vec3(.2,-1.0,1.2), vec3(200,100,200),.25);
+	Sphere s2 = Sphere(vec3(.17,-1.0,1.2), vec3(200,100,200),.4);
 	Obj *os2 = &s2;
 
 	vec3 t0 = vec3(0,-2.7,2.6);
@@ -78,15 +78,21 @@ int main(){
 
 	Scene scene;
 	scene.add_object(os);
-	//scene.add_object(ot);
+	scene.add_object(ot);
 	scene.add_object(os2);
-	//scene.add_object(op);
+	scene.add_object(op);
 
 	vec3 lightpos = vec3(-.2,-.5,4);
 	vec3 lightlook = s.origin;
 	vec3 lightdir = lightlook - lightpos;
 
 	scene.add_light(new Light(lightpos, lightdir, vec3(100,20,100)));
+
+	CSG sphere_0 = CSG(os);
+	CSG sphere_1 = CSG(os2);
+
+	CSG *combo = sphere_0 && sphere_1;
+
 
 	int numhits = 0;
 

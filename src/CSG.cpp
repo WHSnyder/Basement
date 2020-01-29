@@ -1,13 +1,4 @@
-#include "Ray.h"
-
-#ifndef glmi
-#define glmi
-#include <glm/glm.hpp> 
-#include <glm/ext.hpp>
-#endif 
-
 #include <math.h>
-
 #include "CSG.h"
 
 

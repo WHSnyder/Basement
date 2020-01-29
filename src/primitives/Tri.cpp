@@ -1,20 +1,9 @@
-#ifndef glmi
-#define glmi
-#include <glm/glm.hpp> // vec2, vec3, mat4, radians
-#include <glm/ext.hpp> // perspective, translate, rotate
-#endif 
-
 #include "Tri.h"
-
 #include <iostream>
-
-#ifndef cvinc
-#define cvinc
-#include <opencv2/opencv.hpp> 
-#endif
 
 using namespace glm;
 using namespace std;
+
 
 /*cv::Vec3b Tri::shade(RayHit *rh, cv::Mat *tex, Obj *objects[], Light *lights[]){
 

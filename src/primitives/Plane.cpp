@@ -1,20 +1,9 @@
-#ifndef glmi
-#define glmi
-#include <glm/glm.hpp> // vec2, vec3, mat4, radians
-#include <glm/ext.hpp> // perspective, translate, rotate
-#endif 
+#include "Plane.h"
+#include <iostream>
 
 using namespace glm;
-
-#include "Plane.h"
-
-#include <iostream>
 using namespace std;
 
-#ifndef cvinc
-#define cvinc
-#include <opencv2/opencv.hpp> 
-#endif
 
 cv::Vec3b Plane::shade(RayHit *rhit, cv::Mat *img, Scene *scene){
 
@@ -23,16 +12,16 @@ cv::Vec3b Plane::shade(RayHit *rhit, cv::Mat *img, Scene *scene){
     std::vector<Light *> lights = scene -> lights;
 
 	int i = -1;
-	int row = (int) (img->rows - 1) * dot(fromOrg, xvec) / this->height;
-	int col = (int) (img->cols - 1 ) * dot(fromOrg, yvec) / this->length;
+	int row = (int) (img->rows - 1) * ((dot(fromOrg, xvec) / this->height) + 1.0f)/2.0f;
+	int col = (int) (img->cols - 1) * ((dot(fromOrg, yvec) / this->length) + 1.0f)/2.0f;
 
 	Ray shadow = Ray(hit_pos, lights[0]->location - hit_pos);
 	RayHit *shadow_hit = scene -> intersect_scene(shadow, &i);
 
-	float dotprod = -1.0f * dot(*rhit -> ent_normal, lights[0]->direction);
-	dotprod = dotprod < .2 ? .2 : dotprod;
+	//float dotprod = -1.0f * dot(*rhit -> ent_normal, lights[0]->direction);
 
-	dotprod = 1.0f;
+	float dotprod = 1.0f;
+
 	if (shadow_hit != nullptr) dotprod = .2f;
 
 	delete shadow_hit;
@@ -53,7 +42,7 @@ Plane::Plane(vec3 _b1, vec3 _b2, vec3 _b3, vec3 _b4){
 
 	xvec = normalize(_xvec);
 	yvec = normalize(_yvec);
-	zvec = cross(xvec,yvec);
+	zvec = normalize(cross(xvec,yvec));
 
 	if (zvec.z < 0){
 		zvec *= -1.0f;
