@@ -33,26 +33,64 @@ void printVec(string name,vec3 v){
 	cout << name << ": (" << v.x << ", " << v.y << ", " << v.z << ")" << endl;
 }
 
-/*
+
 struct thread_input {
 
 	cv::Mat *write_img;
 	int start_index;
 	int end_index;
 	Scene *scene;
-
 };
+
+
+
 
 void *trace_pixels(void *thread_args){
 
-	//cv::Mat *write_img, int start_index, int end_index
+	thread_input *input = (thread_input *) thread_args;
 
-	int row = write_img->rows;
+	cv::Mat *write_img = input -> write_img;
+	unsigned char *output = (unsigned char*)(write_img->data);
 
+	int start_index = input -> start_index;
+	int end_index = input -> end_index;
+	Scene *scene = input -> scene; 
 
+	int cols = write_img->cols,row,col,hit_index;
+	float x,y,z;
+	vec3 pixelcoord;
+	RayHit *hit;
+	Ray r;
 
+	vec3 pos = scene -> view.pos;
+	vec3 up = scene -> view.up;
+	vec3 right = scene -> view.right;
+	vec3 forward = scene -> view.forward;
 
-}*/
+	for (int i = start_index; i < end_index; i++){
+
+		row = i / cols;
+		col = i % cols;
+
+		x = .5f * plane_width * (col - dim/2.0f)/(dim/2.0f);
+		y = plane_dist;
+		z = .5f * plane_width * (dim/2.0f - row)/(dim/2.0f);
+
+		pixelcoord = pos + x * right + y * forward + z * up;
+
+		hit_index = -1;
+
+		r = Ray(pos, pixelcoord - pos);
+		*hit = scene.intersect_scene(r, &hit_index);
+
+		if (hit != nullptr){
+			Obj *obj_hit = hit -> object_hit;
+			outimg.at<cv::Vec3b>(row,col) = obj_hit -> shade(hit, &tableimg, &scene);
+		}
+
+		delete hit;	
+	}
+}
 
 
 
@@ -70,7 +108,7 @@ int main(){
 
 	if (up.z < 0) up *= -1.0f;
 
-	View view = View(forward,up,right);
+	View view = View(forward,up,right,pos);
 
 	float dim = 512;
 	float plane_dist = 2;
@@ -93,7 +131,7 @@ int main(){
 	Sphere s =  Sphere(vec3(0,-1.1,1.2), vec3(220,220,220),.4);
 	Obj *os = &s;
 
-	Sphere s2 = Sphere(vec3(-.02,-.8,1.4), vec3(220,220,220),.17);
+	Sphere s2 = Sphere(vec3(.2,-.9,1.1), vec3(220,50,180),.33);
 	Obj *os2 = &s2;
 
 	vec3 t0 = vec3(0,-2.7,2.6);
@@ -118,7 +156,7 @@ int main(){
 	CSG sphere_0 = CSG(os);
 	CSG sphere_1 = CSG(os2);
 
-	CSG *combo = sphere_0 && sphere_1;
+	CSG *combo = sphere_0 - sphere_1;
 	CSG planecsg = CSG(op);
 	CSG tricsg = CSG(ot);
 
@@ -127,9 +165,12 @@ int main(){
 	scene.add_csg(&tricsg);
 
 
-	int numhits = 0;
+	int num_threads = 4, range = outimg.rows * outimg.cols, div = range/4;
 
-	for (int i = 0; i < dim; i++){
+	for (int i = 0; i < 4; i )
+
+
+	/*for (int i = 0; i < dim; i++){
 
 		if (i % 50 == 0 ) cout << "On row " << i << endl;
 
@@ -152,13 +193,8 @@ int main(){
 			}
 
 			delete hit;	
-
-			//hit = combo -> intersect_ray(r);
-			//if (hit != nullptr) outimg.at<cv::Vec3b>(i,j) = os2 -> shade(hit, &tableimg, &scene);
-
-			//delete hit;
 		}
-	}
+	}*/
 
 	auto stop = high_resolution_clock::now(); 
 	auto duration = duration_cast<milliseconds>(stop - start); 

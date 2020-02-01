@@ -26,11 +26,13 @@ class View {
 		vec3 forward;
 		vec3 up;
 		vec3 right;
+		vec3 pos;
 
-		View(vec3 f, vec3 u, vec3 r){
+		View(vec3 f, vec3 u, vec3 r, vec3 p){
 			forward=f;
 			up=u;
 			right=r;
+			pos = p;
 		}
 };
 
