@@ -47,7 +47,6 @@ string arg_to_string(char* a) {
 
 
 /*
-
 struct thread_input {
 
 	cv::Mat *write_img;
@@ -55,10 +54,10 @@ struct thread_input {
 	int end_index;
 	Scene *scene;
 };
+*/
 
 
-
-
+/*
 void *trace_pixels(void *thread_args){
 
 	thread_input *input = (thread_input *) thread_args;
@@ -113,14 +112,11 @@ void *trace_pixels(void *thread_args){
 		delete hit;	
 	}
 }
-
-
 */
 
 
 int main(int argc, char **argv){
 
-	auto start = high_resolution_clock::now(); 
 
 	vec3 pos = vec3(0.0,0.0,1.75);
 
@@ -134,8 +130,7 @@ int main(int argc, char **argv){
 
 	string::size_type sz;
   	float dim = stoi(arg_to_string(argv[1]),&sz);
-	float plane_dist = 2;
-	float plane_width = 3;
+	float plane_dist = 2, plane_width = 3,x,y,z;
 
 	cv::Mat outimg(dim, dim, CV_8UC3, cv::Scalar(100,100,100));
 	cv::Mat rawimg = imread("/Users/will/projects/blender/dungeon/textures/MetalSpottyDiscoloration001/Previews/Flat.jpg", cv::IMREAD_COLOR);
@@ -151,10 +146,10 @@ int main(int argc, char **argv){
 	Plane p = Plane(p1,p2,p3,p4);
 	Obj *op = &p;
 
-	Sphere s =  Sphere(vec3(0,-1.1,1.2), vec3(220,220,220),.4);
+	Sphere s =  Sphere(vec3(-.2,-1.1,1.2), vec3(240,240,240),.4);
 	Obj *os = &s;
 
-	Sphere s2 = Sphere(vec3(.2,-.9,1.1), vec3(220,50,180),.33);
+	Sphere s2 = Sphere(vec3(-.2,-1.1,1.3), vec3(50,30,220),.4);//Sphere(vec3(.2,-1.0,1.1), vec3(220,250,240),.33);
 	Obj *os2 = &s2;
 
 	vec3 t0 = vec3(0,-2.7,2.6);
@@ -182,16 +177,10 @@ int main(int argc, char **argv){
 	CSG *combo;
 
 	string csgop = arg_to_string(argv[2]);
-	if (csgop.compare("union") == 0){
-		combo = sphere_0 || sphere_1;
-	}
-	else if (csgop.compare("intx") == 0){
-		combo = sphere_0 && sphere_1;
-	}
-	else {
-		combo = sphere_0 - sphere_1;
-	}
-
+	if (csgop.compare("union") == 0) combo = sphere_0 || sphere_1;
+	else if (csgop.compare("intx") == 0) combo = sphere_0 && sphere_1;
+	else combo = sphere_0 - sphere_1;
+	
 	CSG planecsg = CSG(op);
 	CSG tricsg = CSG(ot);
 
@@ -208,21 +197,22 @@ int main(int argc, char **argv){
 	//int num_threads = 4, range = outimg.rows * outimg.cols, div = range/4;
 
 	//for (int i = 0; i < 4; i )
+	auto start = high_resolution_clock::now(); 
 
 
 	for (int i = 0; i < dim; i++){
 
 		index = 3*i*dim;
 
-		if (i % 50 == 0 ) cout << "On row " << i << endl;
+		//if (i % 50 == 0 ) cout << "On row " << i << endl;
 
 		for (int j = 0; j < dim; j++){
 
 			index += 3;
 
-			float x = .5f * plane_width * (j - dim/2.0f)/(dim/2.0f);
-			float y = plane_dist;
-			float z = .5f * plane_width * (dim/2.0f - i)/(dim/2.0f);
+			x = .5f * plane_width * (j - dim/2.0f)/(dim/2.0f);
+			y = plane_dist;
+			z = .5f * plane_width * (dim/2.0f - i)/(dim/2.0f);
 
 			vec3 pixelcoord = pos + x * right + y * forward + z * up;
 
@@ -238,7 +228,6 @@ int main(int argc, char **argv){
 				output[index] = color[0];
 				output[index + 1] = color[1];
 				output[index + 2] = color[2];
-				//outimg.at<cv::Vec3b>(i,j) = obj_hit -> shade(hit, &tableimg, &scene);
 			}
 
 			delete hit;	
