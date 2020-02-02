@@ -29,6 +29,8 @@ using namespace glm;
 using namespace std::chrono;
 
 
+
+
 void printVec(string name,vec3 v){
 	cout << name << ": (" << v.x << ", " << v.y << ", " << v.z << ")" << endl;
 }
@@ -46,64 +48,75 @@ string arg_to_string(char* a) {
 
 
 
-/*
+
 struct thread_input {
 
 	cv::Mat *write_img;
 	int start_index;
 	int end_index;
 	Scene *scene;
+	cv::Mat *tableimg;
 };
-*/
 
 
-/*
+
+
 void *trace_pixels(void *thread_args){
+
+	//pthread_detach(pthread_self()); 
 
 	thread_input *input = (thread_input *) thread_args;
 
 	cv::Mat *write_img = input -> write_img;
+	cv::Mat *tableimg = input -> tableimg;
+
 	unsigned char *output = (unsigned char*)(write_img->data);
 
-	int start_index = input -> start_index;
-	int end_index = input -> end_index;
 	Scene *scene = input -> scene; 
 
-	int cols = write_img->cols,row,col,index,hit_index;
-	float x,y,z;
+	int start_index = input -> start_index, end_index = input -> end_index;
+	int cols = write_img->cols,rows = write_img->rows,index,hit_index,i,j;
+	
+	float plane_dist = 2, plane_width = 3,x,y,z;
+
 	vec3 pixelcoord;
 	RayHit *hit;
-	Ray r;
+	Ray *r;
 
-	vec3 pos = scene -> view.pos;
-	vec3 up = scene -> view.up;
-	vec3 right = scene -> view.right;
-	vec3 forward = scene -> view.forward;
+	vec3 pos = scene -> view -> pos;
+	vec3 up = scene -> view -> up;
+	vec3 right = scene -> view -> right;
+	vec3 forward = scene -> view -> forward;
 
 	cv::Vec3b color;
 
-	for (int i = start_index; i < end_index; i++){
+	for (int p = start_index; p < end_index; p++){
 
-		row = i / cols;
-		col = i % cols;
-		index = row * i + col;
-		x = .5f * plane_width * (col - dim/2.0f)/(dim/2.0f);
+		i = p / cols;
+		j = p % cols;
+
+		if (i % 30 == 0 && j == 0){
+			cout << "On row " << i << endl;
+		}
+
+		index = 3 * p;
+
+		x = .5f * plane_width * (j - cols*.5f)/(cols*.5f);
 		y = plane_dist;
-		z = .5f * plane_width * (dim/2.0f - row)/(dim/2.0f);
+		z = .5f * plane_width * (rows*.5f - i)/(rows*.5f);
 
 		pixelcoord = pos + x * right + y * forward + z * up;
 
 		hit_index = -1;
 
-		r = Ray(pos, pixelcoord - pos);
-		*hit = scene.intersect_scene(r, &hit_index);
+		r = new Ray(pos, pixelcoord - pos);
+		hit = scene -> intersect_scene(*r, &hit_index);
 
 		if (hit != nullptr){
-			Obj *obj_hit = hit -> object_hit;
-			color = obj_hit -> shade(hit, &tableimg, &scene);
-			
-			//outimg.at<cv::Vec3b>(row,col) = obj_hit -> shade(hit, &tableimg, &scene);
 
+			Obj *obj_hit = hit -> object_hit;
+			color = obj_hit -> shade(hit, tableimg, scene);
+			
 			output[index] = color[0];
 			output[index + 1] = color[1];
 			output[index + 2] = color[2];
@@ -111,8 +124,10 @@ void *trace_pixels(void *thread_args){
 
 		delete hit;	
 	}
+
+	pthread_exit(NULL);
 }
-*/
+
 
 
 int main(int argc, char **argv){
@@ -191,11 +206,48 @@ int main(int argc, char **argv){
 	cv::Vec3b color;
 	unsigned char *output = (unsigned char*)(outimg.data);
 
-	int index,limit = outimg.rows * outimg.cols,i,j;
+	int index,limit = outimg.rows * outimg.cols,i,num_threads = 2, start_index, end_index, rc;
 
 	auto start = high_resolution_clock::now(); 
 
+    pthread_t threads[num_threads];
+    pthread_attr_t attr;
+    void *status;
 
+    // Initialize and set thread joinable
+    pthread_attr_init(&attr);
+    pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
+
+    for (i = 0; i < num_threads; i++) {
+    	thread_input *input = new thread_input();
+    	input -> start_index = i * limit / num_threads;
+    	input -> end_index = (i + 1) * limit / num_threads;
+    	input -> write_img = &outimg;
+    	input -> scene = &scene;
+    	input -> tableimg = &tableimg;
+
+    	rc = pthread_create(&threads[i], &attr, trace_pixels, (void *) input); 
+    }
+
+    pthread_attr_destroy(&attr);
+
+    for (i = 0; i < num_threads; i++) {
+        
+        rc = pthread_join(threads[i], &status);
+        
+        if (rc) {
+            cout << "Error:unable to join," << rc << endl;
+            exit(-1);
+        }
+        
+        cout << "Main: completed thread id :" << i ;
+        cout << "  exiting with status :" << status << endl;
+    }
+
+    cout << "Main: program exiting." << endl;
+
+
+	/*
 	for (int p = 0; p < limit; p++){
 
 		i = p / outimg.cols;
@@ -223,7 +275,7 @@ int main(int argc, char **argv){
 		}
 
 		delete hit;	
-	}
+	}*/
 
 	auto stop = high_resolution_clock::now(); 
 	auto duration = duration_cast<milliseconds>(stop - start); 
