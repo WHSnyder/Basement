@@ -34,15 +34,14 @@ void printVec(string name,vec3 v){
 }
 
 
-int arg_to_num(char* a) { 
+string arg_to_string(char* a) { 
     int i; 
     string s = ""; 
     for (i = 0; i < 1000; i++) { 
     	if (a[i] == 0) break;
         s = s + a[i]; 
     } 
-    string::size_type sz;   // alias of size_t
-  	return stoi(s,&sz);
+    return s;
 } 
 
 
@@ -133,7 +132,8 @@ int main(int argc, char **argv){
 
 	View view = View(forward,up,right,pos);
 
-	float dim = arg_to_num(argv[1]);
+	string::size_type sz;
+  	float dim = stoi(arg_to_string(argv[1]),&sz);
 	float plane_dist = 2;
 	float plane_width = 3;
 
@@ -179,13 +179,30 @@ int main(int argc, char **argv){
 	CSG sphere_0 = CSG(os);
 	CSG sphere_1 = CSG(os2);
 
-	CSG *combo = sphere_0 - sphere_1;
+	CSG *combo;
+
+	string csgop = arg_to_string(argv[2]);
+	if (csgop.compare("union") == 0){
+		combo = sphere_0 || sphere_1;
+	}
+	else if (csgop.compare("intx") == 0){
+		combo = sphere_0 && sphere_1;
+	}
+	else {
+		combo = sphere_0 - sphere_1;
+	}
+
 	CSG planecsg = CSG(op);
 	CSG tricsg = CSG(ot);
 
 	scene.add_csg(combo);
 	scene.add_csg(&planecsg);
 	scene.add_csg(&tricsg);
+
+	cv::Vec3b color;
+	unsigned char *output = (unsigned char*)(outimg.data);
+
+	int index;
 
 
 	//int num_threads = 4, range = outimg.rows * outimg.cols, div = range/4;
@@ -195,9 +212,13 @@ int main(int argc, char **argv){
 
 	for (int i = 0; i < dim; i++){
 
+		index = 3*i*dim;
+
 		if (i % 50 == 0 ) cout << "On row " << i << endl;
 
 		for (int j = 0; j < dim; j++){
+
+			index += 3;
 
 			float x = .5f * plane_width * (j - dim/2.0f)/(dim/2.0f);
 			float y = plane_dist;
@@ -212,7 +233,12 @@ int main(int argc, char **argv){
 
 			if (hit != nullptr){
 				Obj *obj_hit = hit -> object_hit;
-				outimg.at<cv::Vec3b>(i,j) = obj_hit -> shade(hit, &tableimg, &scene);
+				color = obj_hit -> shade(hit, &tableimg, &scene);
+			
+				output[index] = color[0];
+				output[index + 1] = color[1];
+				output[index + 2] = color[2];
+				//outimg.at<cv::Vec3b>(i,j) = obj_hit -> shade(hit, &tableimg, &scene);
 			}
 
 			delete hit;	
