@@ -132,7 +132,6 @@ void *trace_pixels(void *thread_args){
 
 int main(int argc, char **argv){
 
-
 	vec3 pos = vec3(0.0,0.0,1.75);
 
 	vec3 right = vec3(1.0,0.0,0.0);
@@ -145,6 +144,7 @@ int main(int argc, char **argv){
 
 	string::size_type sz;
   	float dim = stoi(arg_to_string(argv[1]),&sz);
+  	int num_threads = stoi(arg_to_string(argv[3]),&sz);
 	float plane_dist = 2, plane_width = 3,x,y,z;
 
 	cv::Mat outimg(dim, dim, CV_8UC3, cv::Scalar(100,100,100));
@@ -206,7 +206,7 @@ int main(int argc, char **argv){
 	cv::Vec3b color;
 	unsigned char *output = (unsigned char*)(outimg.data);
 
-	int index,limit = outimg.rows * outimg.cols,i,num_threads = 2, start_index, end_index, rc;
+	int index,limit = outimg.rows * outimg.cols,i, start_index, end_index, rc;
 
 	auto start = high_resolution_clock::now(); 
 
@@ -214,7 +214,6 @@ int main(int argc, char **argv){
     pthread_attr_t attr;
     void *status;
 
-    // Initialize and set thread joinable
     pthread_attr_init(&attr);
     pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
 
@@ -236,46 +235,10 @@ int main(int argc, char **argv){
         rc = pthread_join(threads[i], &status);
         
         if (rc) {
-            cout << "Error:unable to join," << rc << endl;
+            cout << "Join error!" << rc << endl;
             exit(-1);
         }
-        
-        cout << "Main: completed thread id :" << i ;
-        cout << "  exiting with status :" << status << endl;
     }
-
-    cout << "Main: program exiting." << endl;
-
-
-	/*
-	for (int p = 0; p < limit; p++){
-
-		i = p / outimg.cols;
-		j = p % outimg.cols;
-		index = 3 * p;
-
-		x = .5f * plane_width * (j - outimg.cols/2.0f)/(outimg.cols/2.0f);
-		y = plane_dist;
-		z = .5f * plane_width * (outimg.rows/2.0f - i)/(outimg.rows/2.0f);
-
-		vec3 pixelcoord = pos + x * right + y * forward + z * up;
-
-		int hit_index = -1;
-
-		Ray r = Ray(pos, pixelcoord - pos);
-		RayHit *hit = scene.intersect_scene(r,&hit_index);
-
-		if (hit != nullptr){
-			Obj *obj_hit = hit -> object_hit;
-			color = obj_hit -> shade(hit, &tableimg, &scene);
-		
-			output[index] = color[0];
-			output[index + 1] = color[1];
-			output[index + 2] = color[2];
-		}
-
-		delete hit;	
-	}*/
 
 	auto stop = high_resolution_clock::now(); 
 	auto duration = duration_cast<milliseconds>(stop - start); 
