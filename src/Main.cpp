@@ -136,7 +136,7 @@ int main(int argc, char **argv){
 	cv::Mat rawimg = imread("/Users/will/projects/blender/dungeon/textures/MetalSpottyDiscoloration001/Previews/Flat.jpg", cv::IMREAD_COLOR);
 	cv::Mat tableimg(rawimg);
 	rawimg.convertTo(tableimg, CV_8UC3);
-	cv::resize(tableimg, tableimg, cv::Size(1024,1024), 0, 0, cv::INTER_LINEAR);
+	cv::resize(tableimg, tableimg, cv::Size(2048,2048), 0, 0, cv::INTER_LINEAR);
 
 	vec3 p1 = vec3(-2,-2,-.1);
 	vec3 p2 = vec3(2,-2,-.1);
@@ -191,47 +191,38 @@ int main(int argc, char **argv){
 	cv::Vec3b color;
 	unsigned char *output = (unsigned char*)(outimg.data);
 
-	int index;
+	int index,limit = outimg.rows * outimg.cols,i,j;
 
-
-	//int num_threads = 4, range = outimg.rows * outimg.cols, div = range/4;
-
-	//for (int i = 0; i < 4; i )
 	auto start = high_resolution_clock::now(); 
 
 
-	for (int i = 0; i < dim; i++){
+	for (int p = 0; p < limit; p++){
 
-		index = 3*i*dim;
+		i = p / outimg.cols;
+		j = p % outimg.cols;
+		index = 3 * p;
 
-		//if (i % 50 == 0 ) cout << "On row " << i << endl;
+		x = .5f * plane_width * (j - outimg.cols/2.0f)/(outimg.cols/2.0f);
+		y = plane_dist;
+		z = .5f * plane_width * (outimg.rows/2.0f - i)/(outimg.rows/2.0f);
 
-		for (int j = 0; j < dim; j++){
+		vec3 pixelcoord = pos + x * right + y * forward + z * up;
 
-			index += 3;
+		int hit_index = -1;
 
-			x = .5f * plane_width * (j - dim/2.0f)/(dim/2.0f);
-			y = plane_dist;
-			z = .5f * plane_width * (dim/2.0f - i)/(dim/2.0f);
+		Ray r = Ray(pos, pixelcoord - pos);
+		RayHit *hit = scene.intersect_scene(r,&hit_index);
 
-			vec3 pixelcoord = pos + x * right + y * forward + z * up;
-
-			int hit_index = -1;
-
-			Ray r = Ray(pos, pixelcoord - pos);
-			RayHit *hit = scene.intersect_scene(r,&hit_index);
-
-			if (hit != nullptr){
-				Obj *obj_hit = hit -> object_hit;
-				color = obj_hit -> shade(hit, &tableimg, &scene);
-			
-				output[index] = color[0];
-				output[index + 1] = color[1];
-				output[index + 2] = color[2];
-			}
-
-			delete hit;	
+		if (hit != nullptr){
+			Obj *obj_hit = hit -> object_hit;
+			color = obj_hit -> shade(hit, &tableimg, &scene);
+		
+			output[index] = color[0];
+			output[index + 1] = color[1];
+			output[index + 2] = color[2];
 		}
+
+		delete hit;	
 	}
 
 	auto stop = high_resolution_clock::now(); 
