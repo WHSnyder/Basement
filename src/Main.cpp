@@ -34,6 +34,21 @@ void printVec(string name,vec3 v){
 }
 
 
+int arg_to_num(char* a) { 
+    int i; 
+    string s = ""; 
+    for (i = 0; i < 1000; i++) { 
+    	if (a[i] == 0) break;
+        s = s + a[i]; 
+    } 
+    string::size_type sz;   // alias of size_t
+  	return stoi(s,&sz);
+} 
+
+
+
+/*
+
 struct thread_input {
 
 	cv::Mat *write_img;
@@ -56,7 +71,7 @@ void *trace_pixels(void *thread_args){
 	int end_index = input -> end_index;
 	Scene *scene = input -> scene; 
 
-	int cols = write_img->cols,row,col,hit_index;
+	int cols = write_img->cols,row,col,index,hit_index;
 	float x,y,z;
 	vec3 pixelcoord;
 	RayHit *hit;
@@ -67,11 +82,13 @@ void *trace_pixels(void *thread_args){
 	vec3 right = scene -> view.right;
 	vec3 forward = scene -> view.forward;
 
+	cv::Vec3b color;
+
 	for (int i = start_index; i < end_index; i++){
 
 		row = i / cols;
 		col = i % cols;
-
+		index = row * i + col;
 		x = .5f * plane_width * (col - dim/2.0f)/(dim/2.0f);
 		y = plane_dist;
 		z = .5f * plane_width * (dim/2.0f - row)/(dim/2.0f);
@@ -85,7 +102,13 @@ void *trace_pixels(void *thread_args){
 
 		if (hit != nullptr){
 			Obj *obj_hit = hit -> object_hit;
-			outimg.at<cv::Vec3b>(row,col) = obj_hit -> shade(hit, &tableimg, &scene);
+			color = obj_hit -> shade(hit, &tableimg, &scene);
+			
+			//outimg.at<cv::Vec3b>(row,col) = obj_hit -> shade(hit, &tableimg, &scene);
+
+			output[index] = color[0];
+			output[index + 1] = color[1];
+			output[index + 2] = color[2];
 		}
 
 		delete hit;	
@@ -93,10 +116,10 @@ void *trace_pixels(void *thread_args){
 }
 
 
+*/
 
 
-
-int main(){
+int main(int argc, char **argv){
 
 	auto start = high_resolution_clock::now(); 
 
@@ -110,7 +133,7 @@ int main(){
 
 	View view = View(forward,up,right,pos);
 
-	float dim = 512;
+	float dim = arg_to_num(argv[1]);
 	float plane_dist = 2;
 	float plane_width = 3;
 
@@ -165,12 +188,12 @@ int main(){
 	scene.add_csg(&tricsg);
 
 
-	int num_threads = 4, range = outimg.rows * outimg.cols, div = range/4;
+	//int num_threads = 4, range = outimg.rows * outimg.cols, div = range/4;
 
-	for (int i = 0; i < 4; i )
+	//for (int i = 0; i < 4; i )
 
 
-	/*for (int i = 0; i < dim; i++){
+	for (int i = 0; i < dim; i++){
 
 		if (i % 50 == 0 ) cout << "On row " << i << endl;
 
@@ -194,7 +217,7 @@ int main(){
 
 			delete hit;	
 		}
-	}*/
+	}
 
 	auto stop = high_resolution_clock::now(); 
 	auto duration = duration_cast<milliseconds>(stop - start); 
