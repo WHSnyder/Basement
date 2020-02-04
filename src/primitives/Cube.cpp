@@ -66,68 +66,71 @@ RayHit *Cube::intersect_ray(Ray &r) {
 
     min_norm = xflip * xbase;
     max_norm = xflip * -1.0f * xbase;
+
+    if (abs(r.dir.y) > .00001){
  
-    tymin = (min.y - r.origin.y) / r.dir.y; 
-    tymax = (max.y - r.origin.y) / r.dir.y;
+	    tymin = (min.y - r.origin.y) / r.dir.y; 
+	    tymax = (max.y - r.origin.y) / r.dir.y;
 
-    if (tymin > tymax){
-    	temp = tymax;
-    	tymax = tymin;
-    	tymin = temp;
+	    if (tymin > tymax){
+	    	temp = tymax;
+	    	tymax = tymin;
+	    	tymin = temp;
 
-    	yflip = -1.0f;
-    } 
+	    	yflip = -1.0f;
+	    } 
+	 
+	    if ((tmin > tymax) || (tymin > tmax)){ 
+	        return nullptr; 
+	    }
+
+	    if (tymin > tmin){ 
+	        tmin = tymin;
+	        min_norm = yflip * -1.0f * ybase;
+	    }
+
+	    if (tymax < tmax){ 
+	        tmax = tymax; 
+	        max_norm = yflip * ybase;
+	    }
+	}
+
+	if (abs(r.dir.z) > .00001){
  
-    if ((tmin > tymax) || (tymin > tmax)){ 
-        return nullptr; 
-    }
+	    tzmin = (min.z - r.origin.z) / r.dir.z; 
+	    tzmax = (max.z - r.origin.z) / r.dir.z;
 
-    if (tymin > tmin){ 
-        tmin = tymin;
-        min_norm = yflip * -1.0f * ybase;
-    }
+	    if (tzmin > tzmax){
+	    	temp = tzmax;
+	    	tzmax = tzmin;
+	    	tzmin = temp;
 
-    if (tymax < tmax){ 
-        tmax = tymax; 
-        max_norm = yflip * ybase;
-    }
- 
-    tzmin = (min.z - r.origin.z) / r.dir.z; 
-    tzmax = (max.z - r.origin.z) / r.dir.z;
+	    	zflip = -1.0f;
+	    }  
+	 
+	    if ((tmin > tzmax) || (tzmin > tmax)){
+	        return nullptr; 
+	    }
 
-    if (tzmin > tzmax){
-    	temp = tzmax;
-    	tzmax = tzmin;
-    	tzmin = temp;
+	    if (tzmin > tmin){ 
+	        tmin = tzmin; 
+	        min_norm = zflip * -1.0f * zbase;
+	    }
 
-    	zflip = -1.0f;
-    }  
- 
-    if ((tmin > tzmax) || (tzmin > tmax)){
-        return nullptr; 
-    }
-
-    if (tzmin > tmin){ 
-        tmin = tzmin; 
-        min_norm = zflip * -1.0f * zbase;
-    }
-
-    if (tzmax < tmax){
-        tmax = tzmax;
-        max_norm = yflip * ybase; 
-    }
+	    if (tzmax < tmax){
+	        tmax = tzmax;
+	        max_norm = yflip * ybase; 
+	    }
+	}
 
     if (tmin < 0){
     	return nullptr;
-    }
+	}
 
     ent = new vec3(r.origin + tmin * r.dir);
     exit = new vec3(r.origin + tmax * r.dir);
 
+    hit = new RayHit(ent,min_norm,tmin,exit,max_norm,tmax,&r,this)
 
-
-
-
- 
-    return true; 
+    return hit; 
 } 

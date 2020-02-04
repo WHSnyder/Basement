@@ -1,8 +1,8 @@
 #ifndef scenei
 #define scenei
 
-#include "CSG.h"
-
+#include "Ray.h"
+#include <vector> 
 
 using namespace glm;
 

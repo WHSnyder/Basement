@@ -4,7 +4,14 @@
 #include <iostream>
 #include <pthread.h>
 
+#ifndef cvinc
+#define cvinc
+#include <opencv2/opencv.hpp> 
+#endif
+
 #include "Scene.h"
+#include "primitives/Obj.h"
+#include "CSG.h"
 
 using namespace std;
 using namespace glm;
@@ -132,8 +139,11 @@ int main(int argc, char **argv){
 	Sphere s =  Sphere(vec3(-.2,-1.1,1.2), vec3(240,40,40),.4);
 	Obj *os = &s;
 
-	Sphere s2 = Sphere(vec3(-.2,-1.1,1.4), vec3(50,30,220),.4);//Sphere(vec3(.2,-1.0,1.1), vec3(220,250,240),.33);
+	Sphere s2 = Sphere(vec3(-.2,-.7,1.2), vec3(30,230,30),.3);
 	Obj *os2 = &s2;
+
+	Cube c0 = Cube(vec3(-.4,-.7,1.2),vec3(-.2,-.7,1.2) + 4.0f * vec3(.1,-.1,.1));
+	Obj *oc0 = &c0;
 
 	vec3 t0 = vec3(0,-2.7,2.6);
 	vec3 t1 = vec3(-2.7,-2.7,-.1);
@@ -152,18 +162,20 @@ int main(int argc, char **argv){
 
 	CSG sphere_0 = CSG(os);
 	CSG sphere_1 = CSG(os2);
+	CSG cube_0 = CSG(oc0);
 
 	CSG *combo;
 
 	string csgop = arg_to_string(argv[2]);
-	if (csgop.compare("union") == 0) combo = sphere_0 || sphere_1;
-	else if (csgop.compare("intx") == 0) combo = sphere_0 && sphere_1;
-	else combo = sphere_0 - sphere_1;
+	if (csgop.compare("union") == 0) combo = cube_0 || sphere_1;
+	else if (csgop.compare("intx") == 0) combo = cube_0 && sphere_1;
+	else combo = cube_0 - sphere_1;
 	
 	CSG planecsg = CSG(op);
 	CSG tricsg = CSG(ot);
 
 	scene.add_csg(combo);
+	//scene.add_csg(&cube_0);
 	scene.add_csg(&planecsg);
 	scene.add_csg(&tricsg);
 

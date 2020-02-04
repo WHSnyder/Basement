@@ -83,7 +83,7 @@ class Tri : public Obj {
 		virtual RayHit *intersect_ray(Ray& r);
 		virtual cv::Vec3b shade(RayHit *rh, cv::Mat *image, Scene *scene);
 };
-/*
+
 
 class Cube : public Obj {
 
@@ -91,8 +91,6 @@ class Cube : public Obj {
 		vec3 min,max;
 		Cube(vec3 _lb, vec3 _ub);
 		virtual RayHit *intersect_ray(Ray& r);
-		virtual cv::Vec3b shade(RayHit *rh, cv::Mat *image, Obj *objects[], Light *lights[]);
+		virtual cv::Vec3b shade(RayHit *rh, cv::Mat *image, Scene *scene);
 };
-*/
-#include "Scene.h"
 #endif

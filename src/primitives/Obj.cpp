@@ -1,5 +1,7 @@
 #include "Obj.h"
+#include "Scene.h"
 #include <iostream>
+#include <vector>
 
 using namespace glm;
 using namespace std;
@@ -199,3 +201,135 @@ RayHit *Tri::intersect_ray(Ray& r) {
     } 
     return nullptr; 
 }
+
+
+vec3 xbase = vec3(1,0,0);
+vec3 ybase = vec3(0,1,0);
+vec3 zbase = vec3(0,0,1);
+
+
+cv::Vec3b Cube::shade(RayHit *rhit, cv::Mat *img, Scene *scene){
+
+	vec3 hit_pos = *rhit -> entrance, color = vec3(70,70,70);
+	std::vector<Light *> lights = scene -> lights;
+
+	int i = -1;
+
+	float dotprod = -1.0f*dot(*rhit -> ent_normal,lights[0]->direction);
+
+	if (dotprod < 0.2){
+		dotprod = .2;
+	}
+	else {
+
+		Ray shadow = Ray(hit_pos, lights[0]->location - hit_pos);
+		RayHit *shadow_hit = scene -> intersect_scene(shadow, &i);
+
+		if (shadow_hit != nullptr) dotprod = .2;
+		delete shadow_hit;
+	}
+
+	return dotprod * cv::Vec3b(color.x,color.y,color.z); 
+}
+
+
+Cube::Cube(vec3 lb, vec3 ub){
+
+	origin = (lb + ub)/2.0f;
+	min = lb;
+	max = ub;
+}
+
+RayHit *Cube::intersect_ray(Ray &r) {
+
+    float tmin,tmax,tymin,tymax,tzmin,tzmax,temp,xflip=1.0f,yflip=1.0f,zflip=1.0f;
+    vec3 ent,exit,ent_normal,exit_normal,min_norm,max_norm; 
+    RayHit *hit;
+
+    tmin = 100000000;
+    tmax = -100000000;
+
+    if (abs(r.dir.x) > 0.00001){
+
+	    tmin = (min.x - r.origin.x) / r.dir.x; 
+	    tmax = (max.x - r.origin.x) / r.dir.x;
+
+	    if (tmin > tmax){
+	    	temp = tmax;
+	    	tmax = tmin;
+	    	tmin = temp;
+
+	    	xflip = -1.0f;
+	    }
+	}
+
+    min_norm = xflip * xbase;
+    max_norm = xflip * -1.0f * xbase;
+
+    if (abs(r.dir.y) > .00001){
+ 
+	    tymin = (min.y - r.origin.y) / r.dir.y; 
+	    tymax = (max.y - r.origin.y) / r.dir.y;
+
+	    if (tymin > tymax){
+	    	temp = tymax;
+	    	tymax = tymin;
+	    	tymin = temp;
+
+	    	yflip = -1.0f;
+	    } 
+	 
+	    if ((tmin > tymax) || (tymin > tmax)){ 
+	        return nullptr; 
+	    }
+
+	    if (tymin > tmin){ 
+	        tmin = tymin;
+	        min_norm = yflip * -1.0f * ybase;
+	    }
+
+	    if (tymax < tmax){ 
+	        tmax = tymax; 
+	        max_norm = yflip * ybase;
+	    }
+	}
+
+	if (abs(r.dir.z) > .00001){
+ 
+	    tzmin = (min.z - r.origin.z) / r.dir.z; 
+	    tzmax = (max.z - r.origin.z) / r.dir.z;
+
+	    if (tzmin > tzmax){
+	    	temp = tzmax;
+	    	tzmax = tzmin;
+	    	tzmin = temp;
+
+	    	zflip = -1.0f;
+	    }  
+	 
+	    if ((tmin > tzmax) || (tzmin > tmax)){
+	        return nullptr; 
+	    }
+
+	    if (tzmin > tmin){ 
+	        tmin = tzmin; 
+	        min_norm = zflip * -1.0f * zbase;
+	    }
+
+	    if (tzmax < tmax){
+	        tmax = tzmax;
+	        max_norm = yflip * ybase; 
+	    }
+	}
+
+    if (tmin < 0){
+    	return nullptr;
+	}
+
+    ent = r.origin + tmin * r.dir;
+    exit = r.origin + tmax * r.dir;
+
+    hit = new RayHit(ent,min_norm,tmin,exit,max_norm,tmax,&r,this);
+
+    return hit; 
+} 
