@@ -1,5 +1,5 @@
 CC = clang++
-CFLAGS = -Iinclude -Isrc -std=c++17 -Wall
+CFLAGS = -Iinclude -Isrc -std=c++17 -Wno-everything
 OPENCV = `pkg-config --cflags --libs opencv4`
 LIBS = $(OPENCV)
 
