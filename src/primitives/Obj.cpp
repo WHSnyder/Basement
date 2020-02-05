@@ -8,12 +8,34 @@ using namespace std;
 
 
 
+cv::Vec3b shade_reflective(RayHit *rhit, cv::Mat *tex, Scene *scene, int bounce){
+
+	cv::Vec3b col = cv::Vec3b(50,50,50);
+
+	if (bounce == 0) return col;
+    
+    int i = -1;
+
+    Ray reflection = Ray(*rhit->entrance,reflect(*rhit->ent_normal, rhit->ray->dir));
+    RayHit *reflect_hit = scene -> intersect_scene(reflection, &i);
+
+    if (reflect_hit == nullptr) return col;
+
+    col = reflect_hit -> object_hit -> shade(reflect_hit, tex, scene,bounce - 1);
+
+    delete reflect_hit;
+
+    return col;
+}
+
 
 
 /*
 *  Plane methods.
 */
-cv::Vec3b Plane::shade(RayHit *rhit, cv::Mat *img, Scene *scene){
+cv::Vec3b Plane::shade(RayHit *rhit, cv::Mat *img, Scene *scene, int bounce){
+
+	if (bounce == 0) return cv::Vec3b(50,50,50);
 
 	vec3 hit_pos = *rhit -> entrance;
     vec3 fromOrg = hit_pos - origin;
@@ -53,6 +75,10 @@ Plane::Plane(vec3 _b1, vec3 _b2, vec3 _b3, vec3 _b4){
 	if (zvec.z < 0){
 		zvec *= -1.0f;
 	}
+
+	if (zvec.x < 0){
+		zvec *= -1.0f;
+	}
 }
 
 
@@ -86,7 +112,11 @@ RayHit *Plane::intersect_ray(Ray& r) {
 */
 
 
-cv::Vec3b Sphere::shade(RayHit *rhit, cv::Mat *img, Scene *scene){
+cv::Vec3b Sphere::shade(RayHit *rhit, cv::Mat *img, Scene *scene, int bounce){
+
+	if (bounce == 0) return cv::Vec3b(50,50,50);
+
+	if (shader != nullptr) return shader(RayHit *rhit, cv::Mat *img, Scene *scene, int bounce);
 
 	vec3 hit_pos = *rhit -> entrance;
 	std::vector<Light *> lights = scene -> lights;
@@ -107,14 +137,16 @@ cv::Vec3b Sphere::shade(RayHit *rhit, cv::Mat *img, Scene *scene){
 		delete shadow_hit;
 	}
 
-	return dotprod * cv::Vec3b(color.x,color.y,color.z);  
+	return dotprod * cv::Vec3b(color.x,color.x,color.z);  	
 }
+
 
 Sphere::Sphere(vec3 center, vec3 diffuse, float r){
 	origin = center;
 	color = diffuse;
 	radius = r;
 }
+
 
 RayHit *Sphere::intersect_ray(Ray& r) {
 
@@ -146,9 +178,11 @@ RayHit *Sphere::intersect_ray(Ray& r) {
 *  Triangle methods.
 */
 
-cv::Vec3b Tri::shade(RayHit *rhit, cv::Mat *tex, Scene *scene){
+cv::Vec3b Tri::shade(RayHit *rhit, cv::Mat *tex, Scene *scene, int bounce){
 
-    cv::Vec3b col = cv::Vec3b(50,50,50);
+	cv::Vec3b col = cv::Vec3b(50,50,50);
+
+	if (bounce == 0) return col;
     
     int i = -1;
 
@@ -157,7 +191,7 @@ cv::Vec3b Tri::shade(RayHit *rhit, cv::Mat *tex, Scene *scene){
 
     if (reflect_hit == nullptr) return col;
 
-    col = reflect_hit -> object_hit -> shade(reflect_hit, tex, scene);
+    col = reflect_hit -> object_hit -> shade(reflect_hit, tex, scene,bounce - 1);
 
     delete reflect_hit;
 
@@ -208,7 +242,9 @@ vec3 ybase = vec3(0,1,0);
 vec3 zbase = vec3(0,0,1);
 
 
-cv::Vec3b Cube::shade(RayHit *rhit, cv::Mat *img, Scene *scene){
+cv::Vec3b Cube::shade(RayHit *rhit, cv::Mat *img, Scene *scene, int bounce){
+
+	if (bounce == 0) return cv::Vec3b(50,50,50);
 
 	vec3 hit_pos = *rhit -> entrance, color = vec3(250,20,230);
 	std::vector<Light *> lights = scene -> lights;
@@ -229,7 +265,7 @@ cv::Vec3b Cube::shade(RayHit *rhit, cv::Mat *img, Scene *scene){
 		delete shadow_hit;
 	}
 
-	return dotprod * cv::Vec3b(color.x,color.y,color.z); 
+	return dotprod * cv::Vec3b(color.x,color.y,color.z);
 }
 
 

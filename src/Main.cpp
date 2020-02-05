@@ -17,6 +17,8 @@ using namespace std;
 using namespace glm;
 using namespace std::chrono;
 
+#define MAX_BOUNCES 2
+
 
 void printVec(string name,vec3 v){
 	cout << name << ": (" << v.x << ", " << v.y << ", " << v.z << ")" << endl;
@@ -90,7 +92,7 @@ void *trace_pixels(void *thread_args){
 		if (hit != nullptr){
 
 			Obj *obj_hit = hit -> object_hit;
-			color = obj_hit -> shade(hit, tableimg, scene);
+			color = obj_hit -> shade(hit, tableimg, scene, MAX_BOUNCES);
 			
 			output[index] = color[0];
 			output[index + 1] = color[1];

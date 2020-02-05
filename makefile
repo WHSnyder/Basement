@@ -6,6 +6,8 @@ LIBS = $(OPENCV)
  
 all: bin/obj.o bin/csg.o bin/scene.o bin/main.o bin/out
 
+clean: 
+	rm ./bin/*
 
 bin/obj.o: src/primitives/Obj.cpp src/primitives/Obj.h src/Ray.h src/Scene.h
 	$(CC) $(LIBS) $(CFLAGS) -c src/primitives/Obj.cpp -o bin/obj.o

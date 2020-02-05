@@ -23,7 +23,7 @@ class Scene;
 */
 
 
-cv::Vec3b shade_reflective(RayHit *rhit, cv::Mat *tex, Scene *scene);
+cv::Vec3b shade_reflective(RayHit *rhit, cv::Mat *tex, Scene *scene, int bounce);
 
 
 
@@ -40,7 +40,7 @@ class Obj {
 	public:
 		vec3 origin;
 		virtual RayHit *intersect_ray(Ray& r)=0;
-		virtual cv::Vec3b shade(RayHit *rh, cv::Mat *image, Scene *scene)=0;
+		virtual cv::Vec3b shade(RayHit *rh, cv::Mat *image, Scene *scene, int bounce)=0;
 		cv::Vec3b (*shader)(RayHit *rh, cv::Mat *image, Scene *scene) = nullptr;
 };
 
@@ -52,7 +52,7 @@ class Plane : public Obj {
 		float length,height;
 		Plane(vec3 b1, vec3 b2, vec3 b3, vec3 b4);
 		virtual RayHit *intersect_ray(Ray& r);
-		virtual cv::Vec3b shade(RayHit *rh, cv::Mat *image, Scene *scene);
+		virtual cv::Vec3b shade(RayHit *rh, cv::Mat *image, Scene *scene, int bounce);
 };
 
 
@@ -63,7 +63,7 @@ class Sphere : public Obj {
 		vec3 color;
 		Sphere(vec3 center, vec3 color, float r);
 		virtual RayHit *intersect_ray(Ray& r);
-		virtual cv::Vec3b shade(RayHit *rh, cv::Mat *image, Scene *scene);
+		virtual cv::Vec3b shade(RayHit *rh, cv::Mat *image, Scene *scene, int bounce);
 };
 
 
@@ -91,7 +91,7 @@ class Tri : public Obj {
 		}
 
 		virtual RayHit *intersect_ray(Ray& r);
-		virtual cv::Vec3b shade(RayHit *rh, cv::Mat *image, Scene *scene);
+		virtual cv::Vec3b shade(RayHit *rh, cv::Mat *image, Scene *scene, int bounce);
 };
 
 
@@ -101,6 +101,6 @@ class Cube : public Obj {
 		vec3 min,max;
 		Cube(vec3 _lb, vec3 _ub);
 		virtual RayHit *intersect_ray(Ray& r);
-		virtual cv::Vec3b shade(RayHit *rh, cv::Mat *image, Scene *scene);
+		virtual cv::Vec3b shade(RayHit *rh, cv::Mat *image, Scene *scene, int bounce);
 };
 #endif
