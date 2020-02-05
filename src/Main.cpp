@@ -43,6 +43,7 @@ struct thread_input {
 	int end_index;
 	Scene *scene;
 	cv::Mat *tableimg;
+	int bounces;
 };
 
 
@@ -92,7 +93,7 @@ void *trace_pixels(void *thread_args){
 		if (hit != nullptr){
 
 			Obj *obj_hit = hit -> object_hit;
-			color = obj_hit -> shade(hit, tableimg, scene, MAX_BOUNCES);
+			color = obj_hit -> shade(hit, tableimg, scene, input -> bounces);
 			
 			output[index] = color[0];
 			output[index + 1] = color[1];
@@ -121,10 +122,10 @@ int main(int argc, char **argv){
 
 	string::size_type sz;
   	float dim = stoi(arg_to_string(argv[1]),&sz);
-  	int num_threads = stoi(arg_to_string(argv[3]),&sz);
+  	int bounces = stoi(arg_to_string(argv[3]),&sz), num_threads = 12;
 	float plane_dist = 2, plane_width = 3,x,y,z;
 
-	cv::Mat outimg(dim, dim, CV_8UC3, cv::Scalar(100,100,100));
+	cv::Mat outimg(dim, dim, CV_8UC3, cv::Scalar(10,10,10));
 	cv::Mat rawimg = imread("/Users/will/projects/blender/dungeon/textures/sewer2.png", cv::IMREAD_COLOR);
 	cv::Mat tableimg(rawimg);
 	rawimg.convertTo(tableimg, CV_8UC3);
@@ -138,20 +139,21 @@ int main(int argc, char **argv){
 	Plane p = Plane(p1,p2,p3,p4);
 	Obj *op = &p;
 
-	vec3 p12 = vec3(-2,2,.1);
-	vec3 p22 = vec3(-2,-2,.1);
-	vec3 p32 = vec3(-2,-2,1.9);
-	vec3 p42 = vec3(-2,2,1.9);
+	vec3 p12 = vec3(-1,2,.1);
+	vec3 p22 = vec3(-1,-2,.1);
+	vec3 p32 = vec3(-1,-2,1.9);
+	vec3 p42 = vec3(-1,2,1.9);
 
 	Plane _p1 = Plane(p12,p22,p32,p42);
 	Obj *op1 = &_p1;
+	_p1.shader = &shade_reflective;
 
 	Sphere s =  Sphere(vec3(-.2,-1.1,1.2), vec3(240,40,40),.4);
 	Obj *os = &s;
 
 	Sphere s2 = Sphere(vec3(.1,-.8,1.4), vec3(250,170,170),.25);
 	Obj *os2 = &s2;
-	s2.shader = &shade_reflective;
+	//s2.shader = &shade_reflective;
 
 	vec3 lb = vec3(-.1,-.6,1.2);
 	Cube c0 = Cube(lb,lb + 4.0f * vec3(.1,-.1,.1));
@@ -193,10 +195,8 @@ int main(int argc, char **argv){
 	scene.add_csg(&planecsg2);
 	scene.add_csg(&tricsg);
 
-	cv::Vec3b color;
-	unsigned char *output = (unsigned char*)(outimg.data);
 
-	int index,limit = outimg.rows * outimg.cols,i, start_index, end_index, rc;
+	int limit = outimg.rows * outimg.cols,i, start_index, end_index, rc;
 
 	auto start = high_resolution_clock::now(); 
 
@@ -214,6 +214,7 @@ int main(int argc, char **argv){
     	input -> write_img = &outimg;
     	input -> scene = &scene;
     	input -> tableimg = &tableimg;
+    	input -> bounces = bounces;
 
     	rc = pthread_create(&threads[i], &attr, trace_pixels, (void *) input); 
     }
@@ -232,7 +233,7 @@ int main(int argc, char **argv){
 
 	auto stop = high_resolution_clock::now(); 
 	auto duration = duration_cast<milliseconds>(stop - start); 
-	cout << duration.count() << endl; 
+	cout << "Elapsed: " << duration.count() << endl; 
 
 	cv::resize(outimg, outimg, cv::Size(1500,1500), 0, 0, cv::INTER_LINEAR);
 	cv::imwrite("output/test.png", outimg);	

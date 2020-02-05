@@ -46,6 +46,20 @@ class Scene {
 		Scene(View *v){
 			view=v;
 		}
+		/*
+		~Scene(){
+			delete view;
+			int i = 0;
+			for (auto it = csgs.begin(); it != csgs.end(); it++) {
+				delete csgs[i];
+				i++;
+			}
+			i = 0;
+			for (auto it = lights.begin(); it != lights.end(); it++) {
+				delete lights[i];
+				i++;
+			}
+		}*/
 };
 
 vec3 reflect(vec3 normal, vec3 direction);

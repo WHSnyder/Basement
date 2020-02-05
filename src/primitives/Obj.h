@@ -26,7 +26,6 @@ class Scene;
 cv::Vec3b shade_reflective(RayHit *rhit, cv::Mat *tex, Scene *scene, int bounce);
 
 
-
 struct Vertex {
 
 	vec3 coord;
@@ -41,7 +40,7 @@ class Obj {
 		vec3 origin;
 		virtual RayHit *intersect_ray(Ray& r)=0;
 		virtual cv::Vec3b shade(RayHit *rh, cv::Mat *image, Scene *scene, int bounce)=0;
-		cv::Vec3b (*shader)(RayHit *rh, cv::Mat *image, Scene *scene) = nullptr;
+		cv::Vec3b (*shader)(RayHit *rh, cv::Mat *image, Scene *scene, int bounce) = nullptr;
 };
 
 

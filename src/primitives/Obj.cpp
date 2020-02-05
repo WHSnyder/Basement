@@ -10,7 +10,7 @@ using namespace std;
 
 cv::Vec3b shade_reflective(RayHit *rhit, cv::Mat *tex, Scene *scene, int bounce){
 
-	cv::Vec3b col = cv::Vec3b(50,50,50);
+	cv::Vec3b col = cv::Vec3b(100,100,100);
 
 	if (bounce == 0) return col;
     
@@ -36,6 +36,8 @@ cv::Vec3b shade_reflective(RayHit *rhit, cv::Mat *tex, Scene *scene, int bounce)
 cv::Vec3b Plane::shade(RayHit *rhit, cv::Mat *img, Scene *scene, int bounce){
 
 	if (bounce == 0) return cv::Vec3b(50,50,50);
+
+	if (shader != nullptr) return 0.8f * shader(rhit,img,scene,bounce);
 
 	vec3 hit_pos = *rhit -> entrance;
     vec3 fromOrg = hit_pos - origin;
@@ -116,7 +118,7 @@ cv::Vec3b Sphere::shade(RayHit *rhit, cv::Mat *img, Scene *scene, int bounce){
 
 	if (bounce == 0) return cv::Vec3b(50,50,50);
 
-	if (shader != nullptr) return shader(RayHit *rhit, cv::Mat *img, Scene *scene, int bounce);
+	if (shader != nullptr) return 0.8f * shader(rhit,img,scene,bounce);
 
 	vec3 hit_pos = *rhit -> entrance;
 	std::vector<Light *> lights = scene -> lights;
