@@ -37,7 +37,8 @@ struct Vertex {
 class Obj {
 
 	public:
-		vec3 origin;
+		vec3 origin, force, vel = vec3(0,0,0);
+		int is_static;
 		virtual RayHit *intersect_ray(Ray& r)=0;
 		virtual cv::Vec3b shade(RayHit *rh, cv::Mat *image, Scene *scene, int bounce)=0;
 		cv::Vec3b (*shader)(RayHit *rh, cv::Mat *image, Scene *scene, int bounce) = nullptr;

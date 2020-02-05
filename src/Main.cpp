@@ -3,6 +3,7 @@
 #include <vector>
 #include <iostream>
 #include <pthread.h>
+//#include <format>
 
 #ifndef cvinc
 #define cvinc
@@ -17,7 +18,7 @@ using namespace std;
 using namespace glm;
 using namespace std::chrono;
 
-#define MAX_BOUNCES 2
+#define FRAMES 30
 
 
 void printVec(string name,vec3 v){
@@ -72,6 +73,7 @@ void *trace_pixels(void *thread_args){
 
 	cv::Vec3b color;
 
+
 	for (int p = start_index; p < end_index; p++){
 
 		i = p / cols;
@@ -99,6 +101,12 @@ void *trace_pixels(void *thread_args){
 			output[index + 1] = color[1];
 			output[index + 2] = color[2];
 		}
+		else {
+
+			output[index] = 30;
+			output[index + 1] = 30;
+			output[index + 2] = 30;
+		}
 
 		delete hit;	
 	}
@@ -109,6 +117,9 @@ void *trace_pixels(void *thread_args){
 
 
 int main(int argc, char **argv){
+
+	//VideoWriter video("video_out.avi", CV_FOURCC('M','J','P','G'),10, Size(512,512));
+
 
 	vec3 pos = vec3(0.0,0.0,1.75);
 
@@ -151,7 +162,7 @@ int main(int argc, char **argv){
 	Sphere s =  Sphere(vec3(-.2,-1.1,1.2), vec3(240,40,40),.4);
 	Obj *os = &s;
 
-	Sphere s2 = Sphere(vec3(.1,-.8,1.4), vec3(250,170,170),.25);
+	Sphere s2 = Sphere(vec3(.1,-.7,1.7), vec3(250,170,170),.2);
 	Obj *os2 = &s2;
 	//s2.shader = &shade_reflective;
 
@@ -189,12 +200,10 @@ int main(int argc, char **argv){
 	CSG planecsg2 = CSG(op1);
 	CSG tricsg = CSG(ot);
 
-	scene.add_csg(combo);
-	//scene.add_csg(&cube_0);
+	scene.add_csg(&sphere_1);
 	scene.add_csg(&planecsg);
 	scene.add_csg(&planecsg2);
 	scene.add_csg(&tricsg);
-
 
 	int limit = outimg.rows * outimg.cols,i, start_index, end_index, rc;
 
@@ -204,38 +213,53 @@ int main(int argc, char **argv){
     pthread_attr_t attr;
     void *status;
 
-    pthread_attr_init(&attr);
-    pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
+    std::string strs[3] = {"output/output0.png","output/output1.png","output/output2.png"};
 
-    for (i = 0; i < num_threads; i++) {
-    	thread_input *input = new thread_input();
-    	input -> start_index = i * limit / num_threads;
-    	input -> end_index = (i + 1) * limit / num_threads;
-    	input -> write_img = &outimg;
-    	input -> scene = &scene;
-    	input -> tableimg = &tableimg;
-    	input -> bounces = bounces;
+    scene.test_sphere = os2;
+    scene.test_plane = op;
 
-    	rc = pthread_create(&threads[i], &attr, trace_pixels, (void *) input); 
-    }
+    for (int f = 0; f < FRAMES; f++){
 
-    pthread_attr_destroy(&attr);
+    	scene.update_physics();
 
-    for (i = 0; i < num_threads; i++) {
-        
-        rc = pthread_join(threads[i], &status);
-        
-        if (rc) {
-            cout << "Join error!" << rc << endl;
-            exit(-1);
-        }
-    }
+	    pthread_attr_init(&attr);
+	    pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
+
+	    for (i = 0; i < num_threads; i++) {
+	    	
+	    	thread_input *input = new thread_input();
+	    	
+	    	input -> start_index = i * limit / num_threads;
+	    	input -> end_index = (i + 1) * limit / num_threads;
+	    	input -> write_img = &outimg;
+	    	input -> scene = &scene;
+	    	input -> tableimg = &tableimg;
+	    	input -> bounces = bounces;
+
+	    	rc = pthread_create(&threads[i], &attr, trace_pixels, (void *) input); 
+	    }
+
+	    pthread_attr_destroy(&attr);
+
+	    for (i = 0; i < num_threads; i++) {
+	        
+	        rc = pthread_join(threads[i], &status);
+	        
+	        if (rc) {
+	            cout << "Join error!" << rc << endl;
+	            exit(-1);
+	        }
+	    }
+
+	    cv::resize(outimg, outimg, cv::Size(512,512), 0, 0, cv::INTER_LINEAR);
+		cv::imwrite("output/output_" + std::to_string(f) + ".png" , outimg);	
+
+		cout << "Writing " << f << endl;
+	}
 
 	auto stop = high_resolution_clock::now(); 
 	auto duration = duration_cast<milliseconds>(stop - start); 
 	cout << "Elapsed: " << duration.count() << endl; 
 
-	cv::resize(outimg, outimg, cv::Size(1500,1500), 0, 0, cv::INTER_LINEAR);
-	cv::imwrite("output/test.png", outimg);	
 	return 0;
 }

@@ -6,6 +6,9 @@
 
 using namespace glm;
 
+#define sphere_mass 1
+#define plane_mass 100000 
+
 
 class CSG;
 
@@ -31,7 +34,12 @@ class Scene {
 	public:
 		std::vector<Light *> lights; 
 		std::vector<CSG *> csgs;
+
 		View *view;
+
+		Obj *test_plane, *test_sphere;
+
+		float timestep = 0.0f, incstep = 1.0f/30.0f;
 
 		RayHit *intersect_scene(Ray& r, int *index);
 
@@ -46,6 +54,9 @@ class Scene {
 		Scene(View *v){
 			view=v;
 		}
+
+		void update_physics();
+
 		/*
 		~Scene(){
 			delete view;

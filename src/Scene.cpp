@@ -2,13 +2,22 @@
 #include "CSG.h"
 #include <iostream>
 
-
+#define GRAV vec3(0,0,-.6);
 
 using namespace std;
+
 
 vec3 reflect(vec3 normal, vec3 direction){
 	return -2.0f * dot(normal,direction) * normal + direction;
 }
+
+
+void Scene::update_physics(){
+
+	test_sphere -> vel += incstep * GRAV;
+	test_sphere -> origin += test_sphere -> vel * incstep;
+}
+
 
 RayHit *Scene::intersect_scene(Ray& r, int *index){
 
