@@ -18,7 +18,7 @@ using namespace std;
 using namespace glm;
 using namespace std::chrono;
 
-#define FRAMES 30
+#define FRAMES 60
 
 
 void printVec(string name,vec3 v){
@@ -137,6 +137,7 @@ int main(int argc, char **argv){
 	float plane_dist = 2, plane_width = 3,x,y,z;
 
 	cv::Mat outimg(dim, dim, CV_8UC3, cv::Scalar(10,10,10));
+	cv::Mat outputimg(1024, 1024, CV_8UC3, cv::Scalar(10,10,10));
 	cv::Mat rawimg = imread("/Users/will/projects/blender/dungeon/textures/sewer2.png", cv::IMREAD_COLOR);
 	cv::Mat tableimg(rawimg);
 	rawimg.convertTo(tableimg, CV_8UC3);
@@ -251,8 +252,11 @@ int main(int argc, char **argv){
 	        }
 	    }
 
-	    cv::resize(outimg, outimg, cv::Size(512,512), 0, 0, cv::INTER_LINEAR);
-		cv::imwrite("output/output_" + std::to_string(f) + ".png" , outimg);	
+	    //ffmpeg -pattern_type glob -i 'output_*.png' -vcodec libx264 -vf scale=640:-2,format=yuv420p outvid.mp4
+
+	    cv::resize(outimg, outputimg, cv::Size(1024,1024), 0, 0, cv::INTER_LINEAR);
+		cv::imwrite("output/output_" + std::to_string(100+f) + ".png" , outputimg);
+	    
 
 		cout << "Writing " << f << endl;
 	}
