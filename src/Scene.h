@@ -3,6 +3,7 @@
 
 #include "Ray.h"
 #include <vector> 
+#include <primitives/Obj.h>
 
 using namespace glm;
 
@@ -15,10 +16,8 @@ class CSG;
 
 class View {
 	public:
-		vec3 forward;
-		vec3 up;
-		vec3 right;
-		vec3 pos;
+
+		vec3 forward, up, right, pos;
 
 		View(vec3 f, vec3 u, vec3 r, vec3 p){
 			forward=f;
@@ -29,6 +28,19 @@ class View {
 };
 
 
+class Contact {
+
+	public:
+
+		
+
+
+
+
+}
+
+
+
 class Scene {
 
 	public:
@@ -37,7 +49,8 @@ class Scene {
 
 		View *view;
 
-		Obj *test_plane, *test_sphere;
+		Plane *test_plane;
+		Sphere *test_sphere;
 
 		float timestep = 0.0f, incstep = 1.0f/30.0f;
 

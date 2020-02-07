@@ -18,7 +18,7 @@ using namespace std;
 using namespace glm;
 using namespace std::chrono;
 
-#define FRAMES 60
+//#define FRAMES 60
 
 
 void printVec(string name,vec3 v){
@@ -133,7 +133,8 @@ int main(int argc, char **argv){
 
 	string::size_type sz;
   	float dim = stoi(arg_to_string(argv[1]),&sz);
-  	int bounces = stoi(arg_to_string(argv[3]),&sz), num_threads = 12;
+  	int bounces = 2;//
+  	int FRAMES = stoi(arg_to_string(argv[3]),&sz), num_threads = 12;
 	float plane_dist = 2, plane_width = 3,x,y,z;
 
 	cv::Mat outimg(dim, dim, CV_8UC3, cv::Scalar(10,10,10));
@@ -216,8 +217,8 @@ int main(int argc, char **argv){
 
     std::string strs[3] = {"output/output0.png","output/output1.png","output/output2.png"};
 
-    scene.test_sphere = os2;
-    scene.test_plane = op;
+    scene.test_sphere = &s2;
+    scene.test_plane = &p;
 
     for (int f = 0; f < FRAMES; f++){
 
@@ -252,12 +253,11 @@ int main(int argc, char **argv){
 	        }
 	    }
 
-	    //ffmpeg -pattern_type glob -i 'output_*.png' -vcodec libx264 -vf scale=640:-2,format=yuv420p outvid.mp4
-
+		//ffmpeg -pattern_type glob -i './output/output_*.png' -vcodec libx264 -vf scale=640:-2,format=yuv420p ./output/outvid.mp4
+	
 	    cv::resize(outimg, outputimg, cv::Size(1024,1024), 0, 0, cv::INTER_LINEAR);
 		cv::imwrite("output/output_" + std::to_string(100+f) + ".png" , outputimg);
 	    
-
 		cout << "Writing " << f << endl;
 	}
 

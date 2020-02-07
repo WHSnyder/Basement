@@ -276,6 +276,15 @@ Cube::Cube(vec3 lb, vec3 ub){
 	origin = (lb + ub)/2.0f;
 	min = lb;
 	max = ub;
+
+	up = (max - origin) * vec3(0,0,1);
+	updim = length(up);
+
+	forward = (max - origin) * vec3(0,1,0);
+	forwarddim = length(forward);
+
+	right = (max - origin) * vec3(1,0,0);
+	rightdim = length(right);
 }
 
 RayHit *Cube::intersect_ray(Ray &r) {

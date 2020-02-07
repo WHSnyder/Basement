@@ -2,7 +2,7 @@
 #include "CSG.h"
 #include <iostream>
 
-#define GRAV vec3(0,0,-1.2);
+#define GRAV vec3(0,0,-4.2);
 
 using namespace std;
 
@@ -12,7 +12,21 @@ vec3 reflect(vec3 normal, vec3 direction){
 }
 
 
+vec3 box_sphere
+
+
+
+
+
 void Scene::update_physics(){
+
+	vec3 center_to_plane = test_plane -> origin - test_sphere -> origin;
+	float dist_to_plane = -1.0f * dot(test_plane -> zvec, center_to_plane);
+
+	if (dist_to_plane < test_sphere -> radius){
+		//cout << "Hit: " << dist_to_plane << endl; 
+		test_sphere -> vel = reflect(test_plane -> zvec, test_sphere -> vel);
+	}
 
 	test_sphere -> vel += incstep * GRAV;
 	test_sphere -> origin += test_sphere -> vel * incstep;

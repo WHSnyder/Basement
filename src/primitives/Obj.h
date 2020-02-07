@@ -98,7 +98,8 @@ class Tri : public Obj {
 class Cube : public Obj {
 
 	public:
-		vec3 min,max;
+		vec3 min,max, up, right, forward;
+		float updim,rightdim,forwarddim;
 		Cube(vec3 _lb, vec3 _ub);
 		virtual RayHit *intersect_ray(Ray& r);
 		virtual cv::Vec3b shade(RayHit *rh, cv::Mat *image, Scene *scene, int bounce);
