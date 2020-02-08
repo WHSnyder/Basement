@@ -41,6 +41,7 @@ class Obj {
 		int is_static;
 		virtual RayHit *intersect_ray(Ray& r)=0;
 		virtual cv::Vec3b shade(RayHit *rh, cv::Mat *image, Scene *scene, int bounce)=0;
+		virtual Contact *collide_sphere(Sphere *s, int mode)=0;
 		cv::Vec3b (*shader)(RayHit *rh, cv::Mat *image, Scene *scene, int bounce) = nullptr;
 };
 
@@ -53,6 +54,7 @@ class Plane : public Obj {
 		Plane(vec3 b1, vec3 b2, vec3 b3, vec3 b4);
 		virtual RayHit *intersect_ray(Ray& r);
 		virtual cv::Vec3b shade(RayHit *rh, cv::Mat *image, Scene *scene, int bounce);
+		virtual Contact *collide_sphere(Sphere *s, int mode);
 };
 
 
@@ -64,6 +66,7 @@ class Sphere : public Obj {
 		Sphere(vec3 center, vec3 color, float r);
 		virtual RayHit *intersect_ray(Ray& r);
 		virtual cv::Vec3b shade(RayHit *rh, cv::Mat *image, Scene *scene, int bounce);
+		virtual Contact *collide_sphere(Sphere *s, int mode);
 };
 
 

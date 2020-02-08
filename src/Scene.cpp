@@ -10,8 +10,9 @@ using namespace std;
 vec3 reflect(vec3 normal, vec3 direction){
 	return -2.0f * dot(normal,direction) * normal + direction;
 }
-/*
 
+
+/*
 int box_sphere(Sphere *sphere, Cube *cube, int mode){
 
 	vec3 to_cube = cube -> origin - sphere -> origin;
@@ -29,54 +30,8 @@ int box_sphere(Sphere *sphere, Cube *cube, int mode){
 	else if (ydist <= xdist)
 
 	if (xdist - rightdim < sphere -> radius)
-
-
 }
 */
-
-Contact *sphere_sphere(Sphere *s0, Sphere *s1, int mode){
-
-	vec3 to_center = s1 -> origin - s0 -> origin, new_orig, normal;
-	float dist,l,r;
-	Contact *result = nullptr;
-
-	dist = length(to_center);
-
-	//Test for normal collision
-	if (mode == 1){
-
-		if (dist < s1 -> radius + s0 -> radius){
-		
-			//length(curr_orig + r * t - origin) = s0rad + s1rad;    r*t = r + origin - curr
-			
-			//r = s1 -> radius;
-			//l = -1.0 * abs( (1 + dot(r,s1 -> origin - s0 -> origin)/r*r) );
-			//new_orig = s0 -> origin += normalize(s0 -> vel) * 
-			//pt = new vec3(s0 -> origin + )
-
-			normal = -1.0f * normalize(to_center);
-			new_orig = s0 -> origin + (s0 -> radius - (dist - s1 -> radius)) * normal;
-
-			result = new Contact(normal, new_orig);
-		}
-	}
-
-	//Test for inverse collision
-	else {
-
-		if (dist >  s1 -> radius - s0 -> radius && dot(to_center,s0 -> vel) < 0){
-
-			normal = normalize(to_center);
-			new_orig = s0 -> origin + (dist - s1 -> radius) * normal;
-
-			result = new Contact(normal, new_orig);
-		}
-	}
-
-	return result;
-}
-
-
 
 
 void Scene::update_physics(){

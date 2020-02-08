@@ -159,10 +159,10 @@ int main(int argc, char **argv){
 	_p1.shader = &shade_reflective;
 
 	//static sphere
-	Sphere s0 =  Sphere(vec3(-.2,-1.1,1.0), vec3(240,40,40),.4);
+	Sphere s0 =  Sphere(vec3(-.2,-1.1,1.0), vec3(240,20,20),.4);
 	Obj *os0 = &s0;
 
-	Sphere s1 =  Sphere(vec3(-.2,-1.1,1.4), vec3(240,40,40),.4);
+	Sphere s1 =  Sphere(vec3(-.2,-1.1,1.4), vec3(40,40,140),.4);
 	Obj *os1 = &s1;
 
 	//moving sphere
@@ -170,7 +170,6 @@ int main(int argc, char **argv){
 	Obj *os2 = &s2;
 	//s1.shader = &shade_reflective;
 
-	
 
 
 	vec3 lb = vec3(-.1,-.6,1.2);

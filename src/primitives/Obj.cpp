@@ -92,15 +92,31 @@ RayHit *Cyl::intersect_ray(Ray& r) {
 
 
 
-
-
-
-
-
-
 /*
 *  Plane methods.
 */
+
+Contact *Plane::collide_sphere(Sphere *sphere,int mode){
+
+	vec3 center_to_plane = origin - sphere -> origin, new_orig;
+	float dist_to_plane = -1.0f * dot(zvec, center_to_plane);
+	Contact *ct = nullptr;
+
+	if (dist_to_plane < sphere -> radius){
+		
+		//cout << "Hit: " << dist_to_plane << endl; 
+		//vel_mag = length(test_sphere -> vel);
+		//move_back =  dot(test_sphere -> vel / vel_mag,-1.0 * test_plane -> zvec)
+		//pen_dist =
+
+		ct = new Contact(zvec, sphere -> origin + (sphere -> radius - dist_to_plane) * zvec);
+
+		//test_sphere -> vel = .9f * reflect(test_plane -> zvec, test_sphere -> vel);
+	}
+
+	return ct;
+}
+
 cv::Vec3b Plane::shade(RayHit *rhit, cv::Mat *img, Scene *scene, int bounce){
 
 	if (bounce == 0) return cv::Vec3b(50,50,50);
@@ -182,6 +198,42 @@ RayHit *Plane::intersect_ray(Ray& r) {
 */
 
 
+Contact *Sphere::collide_sphere(Sphere *s0, int mode){
+
+	vec3 to_center = origin - s0 -> origin, new_orig, normal;
+	float dist,l,r;
+	Contact *result = nullptr;
+
+	dist = length(to_center);
+
+	//Test for normal collision
+	if (mode == 1){
+		if (dist < radius + s0 -> radius){
+			//length(curr_orig + r * t - origin) = s0rad + s1rad;    r*t = r + origin - curr
+			//l = -1.0 * abs( (1 + dot(r,s1 -> origin - s0 -> origin)/r*r) );
+			//new_orig = s0 -> origin += normalize(s0 -> vel) * 
+
+			normal = -1.0f * normalize(to_center);
+			new_orig = s0 -> origin + (s0 -> radius - (dist - radius)) * normal;
+
+			result = new Contact(normal, new_orig);
+		}
+	}
+	//Test for inverse collision
+	else {
+		if (dist >  radius - s0 -> radius && dot(to_center,s0 -> vel) < 0){
+
+			normal = normalize(to_center);
+			new_orig = s0 -> origin + (dist - radius) * normal;
+
+			result = new Contact(normal, new_orig);
+		}
+	}
+
+	return result;
+}
+
+
 cv::Vec3b Sphere::shade(RayHit *rhit, cv::Mat *img, Scene *scene, int bounce){
 
 	if (bounce == 0) return cv::Vec3b(50,50,50);
@@ -248,6 +300,11 @@ RayHit *Sphere::intersect_ray(Ray& r) {
 *  Triangle methods.
 */
 
+
+Contact *Tri::collide_sphere(Sphere *sphere,int mode){
+	return nullptr;
+}
+
 cv::Vec3b Tri::shade(RayHit *rhit, cv::Mat *tex, Scene *scene, int bounce){
 
 	cv::Vec3b col = cv::Vec3b(50,50,50);
@@ -307,9 +364,18 @@ RayHit *Tri::intersect_ray(Ray& r) {
 }
 
 
+/*
+* Cube methods.
+*/
+
 vec3 xbase = vec3(1,0,0);
 vec3 ybase = vec3(0,1,0);
 vec3 zbase = vec3(0,0,1);
+
+
+Contact *Cube::collide_sphere(Sphere *sphere,int mode){
+	return nullptr;
+}
 
 
 cv::Vec3b Cube::shade(RayHit *rhit, cv::Mat *img, Scene *scene, int bounce){

@@ -27,16 +27,6 @@ class View {
 		}
 };
 
-class Contact {
-
-	public:
-
-		vec3 normal, point;
-		Contact(vec3 n,vec3 p){
-			normal = n;
-			point = p;
-		}
-};
 
 
 

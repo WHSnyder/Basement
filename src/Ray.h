@@ -10,6 +10,17 @@ using namespace glm;
 
 class Obj;
 
+class Contact {
+
+	public:
+
+		vec3 normal, point;
+		Contact(vec3 n,vec3 p){
+			normal = n;
+			point = p;
+		}
+};
+
 class Light {
 
 	public:

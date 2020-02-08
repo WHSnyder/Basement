@@ -4,6 +4,60 @@
 
 using namespace std;
 
+
+Contact *CSG::collide_sphere(Sphere *sphere, int mode){
+
+	Contact *this_coll,*other_coll;
+
+	case leaf:  return shape -> collide_sphere(sphere,mode);
+
+	case sub:  	
+				this_coll = shape -> collide_sphere(sphere,mode);  
+
+				if (this_coll == nullptr) return nullptr;
+
+				other_coll = link -> collide_sphere(sphere,-1);
+
+				if (other_coll == nullptr) return this_coll;
+
+				delete this_coll;
+
+				return other_coll;
+			   
+			    break;
+
+	case un:   	
+				this_coll = shape -> collide_sphere(sphere,mode);
+				
+				if (this_coll == nullptr) return link -> collide_sphere(sphere,mode);
+
+				return this_coll;
+
+				break;
+
+    case intx: 
+    			this_hit = shape -> collide_sphere(sphere,mode);
+				
+				if (this_hit == nullptr) return nullptr;
+    			
+    			other_hit = link -> collide_sphere(sphere,mode);
+
+				if (other_hit == nullptr){
+					delete this_hit;
+					return nullptr;
+				}
+
+				delete this_hit;
+				return other_hit;
+
+    		    break;
+
+	return nullptr;
+}
+
+
+
+
 RayHit *CSG::intersect_ray(Ray &r){
 
 	RayHit *other_hit, *this_hit, *composite;
