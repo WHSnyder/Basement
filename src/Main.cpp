@@ -156,7 +156,9 @@ int main(int argc, char **argv){
 
 	Plane _p1 = Plane(p12,p22,p32,p42);
 	Obj *op1 = &_p1;
-	_p1.shader = &shade_reflective;
+	//_p1.shader = &shade_reflective;
+
+
 
 	//static sphere
 	Sphere s0 =  Sphere(vec3(-.2,-1.1,1.0), vec3(240,20,20),.4);
@@ -164,12 +166,12 @@ int main(int argc, char **argv){
 
 	Sphere s1 =  Sphere(vec3(-.2,-1.1,1.4), vec3(40,40,140),.4);
 	Obj *os1 = &s1;
+	s1.shader = &shade_reflective;
 
 	//moving sphere
 	Sphere s2 = Sphere(vec3(-.19,-1.1,1.7), vec3(250,170,170),.1);
 	Obj *os2 = &s2;
-	//s1.shader = &shade_reflective;
-
+	
 
 
 	vec3 lb = vec3(-.1,-.6,1.2);
@@ -209,6 +211,7 @@ int main(int argc, char **argv){
 	CSG tricsg = CSG(ot);
 
 	scene.add_csg(combo);
+	scene.add_csg(&sphere_2);
 	scene.add_csg(&planecsg);
 	scene.add_csg(&planecsg2);
 	scene.add_csg(&tricsg);
@@ -223,9 +226,8 @@ int main(int argc, char **argv){
 
     std::string strs[3] = {"output/output0.png","output/output1.png","output/output2.png"};
 
-    scene.test_sphere = &s1;
-    scene.test_plane = &p;
-    scene.static_sphere = &s0;
+    scene.test_sphere = &s2;
+
 
     for (int f = 0; f < FRAMES; f++){
 

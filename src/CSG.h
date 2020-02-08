@@ -31,6 +31,7 @@ class CSG {
 		}
 
 		RayHit *intersect_ray(Ray& r);
+		Contact *collide_sphere(Sphere *s, int mode);
 
 		CSG * operator || (CSG& other){
 			return new CSG(this, &other, un);

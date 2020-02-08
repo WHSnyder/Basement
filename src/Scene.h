@@ -38,9 +38,7 @@ class Scene {
 
 		View *view;
 
-		Plane *test_plane;
 		Sphere *test_sphere;
-		Sphere *static_sphere;
 
 		float timestep = 0.0f, incstep = 1.0f/30.0f;
 

@@ -36,29 +36,24 @@ int box_sphere(Sphere *sphere, Cube *cube, int mode){
 
 void Scene::update_physics(){
 
-	vec3 center_to_plane = test_plane -> origin - test_sphere -> origin;
-	float move_back,pen_dist,vel_mag,dist_to_plane = -1.0f * dot(test_plane -> zvec, center_to_plane);
-	Contact *ct;
+	int i = 0;
+	Contact *cur = nullptr;
 
-	if (dist_to_plane < test_sphere -> radius){
-		
-		//cout << "Hit: " << dist_to_plane << endl; 
-		//vel_mag = length(test_sphere -> vel);
-		//move_back =  dot(test_sphere -> vel / vel_mag,-1.0 * test_plane -> zvec)
-		//pen_dist =
+	for (auto it = csgs.begin(); it != csgs.end(); it++) {
 
-		test_sphere -> origin += (test_sphere -> radius - dist_to_plane) * test_plane -> zvec; 
-		test_sphere -> vel = .9f * reflect(test_plane -> zvec, test_sphere -> vel);
-	}
+		cur = csgs[i] -> collide_sphere(test_sphere,1);
 
-	ct = sphere_sphere(test_sphere,static_sphere,-1);
+		if (cur != nullptr){
+			
+			test_sphere -> origin = ct -> point; 
+			test_sphere -> vel = .9f * reflect(ct -> normal, test_sphere -> vel);
 
-	if (ct != nullptr){
+			delete cur;
 
-		test_sphere -> origin = ct -> point; 
-		test_sphere -> vel = .9f * reflect(ct -> normal, test_sphere -> vel );
+			break;
+		}
 
-		delete ct;
+		i++;
 	}
 
 	test_sphere -> vel += incstep * GRAV;
