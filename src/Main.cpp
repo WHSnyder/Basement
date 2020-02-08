@@ -118,9 +118,6 @@ void *trace_pixels(void *thread_args){
 
 int main(int argc, char **argv){
 
-	//VideoWriter video("video_out.avi", CV_FOURCC('M','J','P','G'),10, Size(512,512));
-
-
 	vec3 pos = vec3(0.0,0.0,1.75);
 
 	vec3 right = vec3(1.0,0.0,0.0);
@@ -161,12 +158,20 @@ int main(int argc, char **argv){
 	Obj *op1 = &_p1;
 	_p1.shader = &shade_reflective;
 
-	Sphere s =  Sphere(vec3(-.2,-1.1,1.2), vec3(240,40,40),.4);
-	Obj *os = &s;
+	//static sphere
+	Sphere s0 =  Sphere(vec3(-.2,-1.1,1.0), vec3(240,40,40),.4);
+	Obj *os0 = &s0;
 
-	Sphere s2 = Sphere(vec3(.1,-.7,1.7), vec3(250,170,170),.2);
+	Sphere s1 =  Sphere(vec3(-.2,-1.1,1.4), vec3(240,40,40),.4);
+	Obj *os1 = &s1;
+
+	//moving sphere
+	Sphere s2 = Sphere(vec3(-.19,-1.1,1.7), vec3(250,170,170),.1);
 	Obj *os2 = &s2;
-	//s2.shader = &shade_reflective;
+	//s1.shader = &shade_reflective;
+
+	
+
 
 	vec3 lb = vec3(-.1,-.6,1.2);
 	Cube c0 = Cube(lb,lb + 4.0f * vec3(.1,-.1,.1));
@@ -179,6 +184,7 @@ int main(int argc, char **argv){
 	Tri t = Tri(t0,t1,t2);
 	Obj *ot = &t;
 
+
 	Scene scene = Scene(&view);
 
 	vec3 lightpos = vec3(0,-.5,3);
@@ -187,22 +193,23 @@ int main(int argc, char **argv){
 
 	scene.add_light(new Light(lightpos, lightdir, vec3(100,20,100)));
 
-	CSG sphere_0 = CSG(os);
-	CSG sphere_1 = CSG(os2);
+	CSG sphere_0 = CSG(os0);
+	CSG sphere_1 = CSG(os1);
+	CSG sphere_2 = CSG(os2);
 	CSG cube_0 = CSG(oc0);
 
 	CSG *combo;
 
 	string csgop = arg_to_string(argv[2]);
-	if (csgop.compare("union") == 0) combo = cube_0 || sphere_1;
-	else if (csgop.compare("intx") == 0) combo = cube_0 && sphere_1;
-	else combo = cube_0 - sphere_1;
+	if (csgop.compare("union") == 0) combo = sphere_0 || sphere_1;
+	else if (csgop.compare("intx") == 0) combo = sphere_0 && sphere_1;
+	else combo = sphere_0 - sphere_1;
 	
 	CSG planecsg = CSG(op);
 	CSG planecsg2 = CSG(op1);
 	CSG tricsg = CSG(ot);
 
-	scene.add_csg(&sphere_1);
+	scene.add_csg(combo);
 	scene.add_csg(&planecsg);
 	scene.add_csg(&planecsg2);
 	scene.add_csg(&tricsg);
@@ -217,8 +224,9 @@ int main(int argc, char **argv){
 
     std::string strs[3] = {"output/output0.png","output/output1.png","output/output2.png"};
 
-    scene.test_sphere = &s2;
+    scene.test_sphere = &s1;
     scene.test_plane = &p;
+    scene.static_sphere = &s0;
 
     for (int f = 0; f < FRAMES; f++){
 

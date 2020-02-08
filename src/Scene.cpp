@@ -36,11 +36,11 @@ int box_sphere(Sphere *sphere, Cube *cube, int mode){
 
 Contact *sphere_sphere(Sphere *s0, Sphere *s1, int mode){
 
-	vec3 to_center = s1 -> origin - s0 -> origin, new_orig, nomral;
+	vec3 to_center = s1 -> origin - s0 -> origin, new_orig, normal;
 	float dist,l,r;
 	Contact *result = nullptr;
 
-	dist = length(to_center)
+	dist = length(to_center);
 
 	//Test for normal collision
 	if (mode == 1){
@@ -67,7 +67,7 @@ Contact *sphere_sphere(Sphere *s0, Sphere *s1, int mode){
 		if (dist >  s1 -> radius - s0 -> radius && dot(to_center,s0 -> vel) < 0){
 
 			normal = normalize(to_center);
-			new_orig = s0 -> origin + (s0 -> radius - (dist - s1 -> radius)) * normal;
+			new_orig = s0 -> origin + (dist - s1 -> radius) * normal;
 
 			result = new Contact(normal, new_orig);
 		}
@@ -86,24 +86,25 @@ void Scene::update_physics(){
 	Contact *ct;
 
 	if (dist_to_plane < test_sphere -> radius){
+		
 		//cout << "Hit: " << dist_to_plane << endl; 
 		//vel_mag = length(test_sphere -> vel);
 		//move_back =  dot(test_sphere -> vel / vel_mag,-1.0 * test_plane -> zvec)
 		//pen_dist =
+
 		test_sphere -> origin += (test_sphere -> radius - dist_to_plane) * test_plane -> zvec; 
 		test_sphere -> vel = .9f * reflect(test_plane -> zvec, test_sphere -> vel);
 	}
 
-	ct = sphere_sphere(test_sphere,static_sphere,1);
+	ct = sphere_sphere(test_sphere,static_sphere,-1);
 
 	if (ct != nullptr){
 
-		test_sphere -> origin = ct -> point;
-		test_sphere -> vel = .9f * reflect(ct -> normal, test_sphere -> vel);
+		test_sphere -> origin = ct -> point; 
+		test_sphere -> vel = .9f * reflect(ct -> normal, test_sphere -> vel );
+
+		delete ct;
 	}
-
-	delete ct;
-
 
 	test_sphere -> vel += incstep * GRAV;
 	test_sphere -> origin += test_sphere -> vel * incstep;

@@ -36,7 +36,7 @@ class Contact {
 			normal = n;
 			point = p;
 		}
-} 
+};
 
 
 
