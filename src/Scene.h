@@ -27,17 +27,16 @@ class View {
 		}
 };
 
-
 class Contact {
 
 	public:
 
-		
-
-
-
-
-}
+		vec3 normal, point;
+		Contact(vec3 n,vec3 p){
+			normal = n;
+			point = p;
+		}
+} 
 
 
 
@@ -51,6 +50,7 @@ class Scene {
 
 		Plane *test_plane;
 		Sphere *test_sphere;
+		Sphere *static_sphere;
 
 		float timestep = 0.0f, incstep = 1.0f/30.0f;
 

@@ -95,6 +95,26 @@ class Tri : public Obj {
 };
 
 
+class Cyl : public Obj {
+
+	public:
+
+		float radius,height;
+		vec3 axis,origin;
+
+		Cyl(float rad, float h, vec3 o, vec3 ax){
+
+			axis = ax;
+			origin = o;
+			radius = rad;
+			height = h;
+		}
+
+		virtual RayHit *intersect_ray(Ray& r);
+		virtual cv::Vec3b shade(RayHit *rh, cv::Mat *image, Scene *scene, int bounce);
+};
+
+
 class Cube : public Obj {
 
 	public:
