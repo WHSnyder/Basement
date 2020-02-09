@@ -28,8 +28,6 @@ class View {
 };
 
 
-
-
 class Scene {
 
 	public:
@@ -42,7 +40,7 @@ class Scene {
 
 		float timestep = 0.0f, incstep = 1.0f/30.0f;
 
-		RayHit *intersect_scene(Ray& r, int *index);
+		RayHit *intersect_scene(Ray& r);
 
 		void add_light(Light *l){
 			lights.push_back(l);
@@ -53,25 +51,10 @@ class Scene {
 		}
 
 		Scene(View *v){
-			view=v;
+			view = v;
 		}
 
 		void update_physics();
-
-		/*
-		~Scene(){
-			delete view;
-			int i = 0;
-			for (auto it = csgs.begin(); it != csgs.end(); it++) {
-				delete csgs[i];
-				i++;
-			}
-			i = 0;
-			for (auto it = lights.begin(); it != lights.end(); it++) {
-				delete lights[i];
-				i++;
-			}
-		}*/
 };
 
 vec3 reflect(vec3 normal, vec3 direction);

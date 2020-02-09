@@ -21,9 +21,6 @@ using namespace std::chrono;
 //#define FRAMES 60
 
 
-void printVec(string name,vec3 v){
-	cout << name << ": (" << v.x << ", " << v.y << ", " << v.z << ")" << endl;
-}
 
 
 string arg_to_string(char* a) { 
@@ -53,25 +50,22 @@ void *trace_pixels(void *thread_args){
 	thread_input *input = (thread_input *) thread_args;
 
 	cv::Mat *write_img = input -> write_img;
-	cv::Mat *tableimg = input -> tableimg;
 
 	unsigned char *output = (unsigned char*)(write_img->data);
 
 	Scene *scene = input -> scene; 
 
-	int start_index = input->start_index, end_index = input->end_index;
-	int cols = write_img->cols, rows = write_img->rows, index,hit_index,i,j;
+	int start_index = input -> start_index, end_index = input -> end_index;
+	int cols = write_img -> cols, rows = write_img -> rows, index, i, j;
 	
-	float plane_dist = 2, plane_width = 3,x,y,z;
+	float plane_dist = 2, plane_width = 3, x, y, z;
 
-	vec3 pixelcoord;
+	vec3 pixelcoord, color;
 	RayHit *hit;
 	Ray *r;
 
 	vec3 pos = scene -> view -> pos, up = scene -> view -> up;
 	vec3 right = scene -> view -> right, forward = scene -> view -> forward;
-
-	cv::Vec3b color;
 
 
 	for (int p = start_index; p < end_index; p++){
@@ -87,15 +81,13 @@ void *trace_pixels(void *thread_args){
 
 		pixelcoord = pos + x * right + y * forward + z * up;
 
-		hit_index = -1;
-
 		r = new Ray(pos, pixelcoord - pos);
-		hit = scene -> intersect_scene(*r, &hit_index);
+		hit = scene -> intersect_scene(*r);
 
 		if (hit != nullptr){
 
 			Obj *obj_hit = hit -> object_hit;
-			color = obj_hit -> shade(hit, tableimg, scene, input -> bounces);
+			color = obj_hit -> shade(hit, scene, input -> bounces);
 			
 			output[index] = color[0];
 			output[index + 1] = color[1];
@@ -130,9 +122,8 @@ int main(int argc, char **argv){
 
 	string::size_type sz;
   	float dim = stoi(arg_to_string(argv[1]),&sz);
-  	int bounces = 2;//
-  	int FRAMES = stoi(arg_to_string(argv[3]),&sz), num_threads = 12;
-	float plane_dist = 2, plane_width = 3,x,y,z;
+  	int bounces = 2, num_threads = 12;
+  	int FRAMES = stoi(arg_to_string(argv[3]),&sz);
 
 	cv::Mat outimg(dim, dim, CV_8UC3, cv::Scalar(10,10,10));
 	cv::Mat outputimg(1024, 1024, CV_8UC3, cv::Scalar(10,10,10));
@@ -141,12 +132,19 @@ int main(int argc, char **argv){
 	rawimg.convertTo(tableimg, CV_8UC3);
 	cv::resize(tableimg, tableimg, cv::Size(2048,2048), 0, 0, cv::INTER_LINEAR);
 
+	Material *mat = new Material();
+	mat -> rows = tableimg.rows;
+	mat -> cols = tableimg.cols;
+	mat -> data = (unsigned char *) tableimg.data; 
+
+	Scene scene = Scene(&view);
+
 	vec3 p1 = vec3(-2,-2,-.1);
 	vec3 p2 = vec3(2,-2,-.1);
 	vec3 p3 = vec3(2,4,-.1);
 	vec3 p4 = vec3(-2,4,-.1);
 
-	Plane p = Plane(p1,p2,p3,p4);
+	Plane p = Plane(p1,p2,p3,p4,mat);
 	Obj *op = &p;
 
 	vec3 p12 = vec3(-1,2,.1);
@@ -154,25 +152,21 @@ int main(int argc, char **argv){
 	vec3 p32 = vec3(-1,-2,1.9);
 	vec3 p42 = vec3(-1,2,1.9);
 
-	Plane _p1 = Plane(p12,p22,p32,p42);
+	Plane _p1 = Plane(p12,p22,p32,p42,mat);
 	Obj *op1 = &_p1;
 	//_p1.shader = &shade_reflective;
-
-
 
 	//static sphere
 	Sphere s0 =  Sphere(vec3(-.2,-1.1,1.0), vec3(240,20,20),.4);
 	Obj *os0 = &s0;
 
-	Sphere s1 =  Sphere(vec3(-.2,-1.1,1.4), vec3(40,40,140),.4);
+	Sphere s1 =  Sphere(vec3(-.2,-1.1,1.2), vec3(40,40,140),.4);
 	Obj *os1 = &s1;
-	s1.shader = &shade_reflective;
 
 	//moving sphere
-	Sphere s2 = Sphere(vec3(-.19,-1.1,1.7), vec3(250,170,170),.1);
+	Sphere s2 = Sphere(vec3(-.18,-1.1,1.9), vec3(250,170,170),.1);
 	Obj *os2 = &s2;
 	
-
 
 	vec3 lb = vec3(-.1,-.6,1.2);
 	Cube c0 = Cube(lb,lb + 4.0f * vec3(.1,-.1,.1));
@@ -184,9 +178,6 @@ int main(int argc, char **argv){
 
 	Tri t = Tri(t0,t1,t2);
 	Obj *ot = &t;
-
-
-	Scene scene = Scene(&view);
 
 	vec3 lightpos = vec3(0,-.5,3);
 	vec3 lightlook = vec3(0,-1.0,1.2);
@@ -211,6 +202,7 @@ int main(int argc, char **argv){
 	CSG tricsg = CSG(ot);
 
 	scene.add_csg(combo);
+	//scene.add_csg(&sphere_0);
 	scene.add_csg(&sphere_2);
 	scene.add_csg(&planecsg);
 	scene.add_csg(&planecsg2);
@@ -223,8 +215,6 @@ int main(int argc, char **argv){
     pthread_t threads[num_threads];
     pthread_attr_t attr;
     void *status;
-
-    std::string strs[3] = {"output/output0.png","output/output1.png","output/output2.png"};
 
     scene.test_sphere = &s2;
 

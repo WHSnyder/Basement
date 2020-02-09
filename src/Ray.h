@@ -15,6 +15,14 @@ class Contact {
 	public:
 
 		vec3 normal, point;
+		float moveback;
+
+		Contact(vec3 n,vec3 p, float m){
+			normal = n;
+			point = p;
+			moveback = m;
+		}
+
 		Contact(vec3 n,vec3 p){
 			normal = n;
 			point = p;
@@ -50,6 +58,7 @@ class Ray {
 class RayHit {
 
 	public:
+
 		vec3 *entrance;
 		vec3 *ent_normal;
 		float ent_distance;
@@ -60,7 +69,6 @@ class RayHit {
 
 		Ray *ray;
 		Obj *object_hit;
-
 
 		RayHit(vec3& w_ent, vec3& n_ent, float d_ent, vec3& w_exit, vec3& n_exit, float d_exit, Ray *r, Obj *obj_hit){
 			
@@ -75,7 +83,6 @@ class RayHit {
 			ray = r;
 			object_hit = obj_hit;
 		}
-
 
 		RayHit(vec3 *w, vec3 *n, float d, Ray *r, Obj *obj_hit){
 			entrance = w;

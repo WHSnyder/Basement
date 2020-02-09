@@ -44,10 +44,5 @@ class CSG {
 		CSG * operator - (CSG& other){
 			return new CSG(this, &other, sub);
 		}
-
-		//~CSG(){
-		//	delete shape;
-		//	delete link;
-		//}
 };
 #endif

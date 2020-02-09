@@ -5,11 +5,6 @@
 using namespace glm;
 #endif 
 
-#ifndef cvinc
-#define cvinc
-#include <opencv2/opencv.hpp> 
-#endif
-
 #include "Ray.h"
 
 #ifndef obji
@@ -23,7 +18,7 @@ class Scene;
 */
 
 
-cv::Vec3b shade_reflective(RayHit *rhit, cv::Mat *tex, Scene *scene, int bounce);
+vec3 shade_reflective(RayHit *rhit, Scene *scene, int bounce);
 
 
 struct Vertex {
@@ -34,27 +29,28 @@ struct Vertex {
 };
 
 
-class Obj {
+struct Material {
 
-	public:
-		vec3 origin, force, vel = vec3(0,0,0);
-		int is_static;
-		virtual RayHit *intersect_ray(Ray& r)=0;
-		virtual cv::Vec3b shade(RayHit *rh, cv::Mat *image, Scene *scene, int bounce)=0;
-		virtual Contact *collide_sphere(Sphere *s, int mode)=0;
-		cv::Vec3b (*shader)(RayHit *rh, cv::Mat *image, Scene *scene, int bounce) = nullptr;
+	int rows,cols;
+	unsigned char *data;
 };
 
 
-class Plane : public Obj {
+class Sphere;
+
+
+class Obj {
 
 	public:
-		vec3 xvec,yvec,zvec;
-		float length,height;
-		Plane(vec3 b1, vec3 b2, vec3 b3, vec3 b4);
-		virtual RayHit *intersect_ray(Ray& r);
-		virtual cv::Vec3b shade(RayHit *rh, cv::Mat *image, Scene *scene, int bounce);
-		virtual Contact *collide_sphere(Sphere *s, int mode);
+
+		vec3 origin, force, vel = vec3(0,0,0);
+		Material *mat;
+		int is_static;
+		virtual RayHit *intersect_ray(Ray& r)=0;
+		virtual vec3 shade(RayHit *rh, Scene *scene, int bounce)=0;
+		virtual Contact *collide_sphere(Sphere *s, int mode)=0;
+
+		vec3 (*shader)(RayHit *rh, int bounce) = nullptr;
 };
 
 
@@ -65,9 +61,24 @@ class Sphere : public Obj {
 		vec3 color;
 		Sphere(vec3 center, vec3 color, float r);
 		virtual RayHit *intersect_ray(Ray& r);
-		virtual cv::Vec3b shade(RayHit *rh, cv::Mat *image, Scene *scene, int bounce);
+		virtual vec3 shade(RayHit *rh, Scene *scene, int bounce);
 		virtual Contact *collide_sphere(Sphere *s, int mode);
 };
+
+
+class Plane : public Obj {
+
+	public:
+		vec3 xvec,yvec,zvec;
+		float length,height;
+
+		Plane(vec3 b1, vec3 b2, vec3 b3, vec3 b4, Material *mat);
+
+		virtual RayHit *intersect_ray(Ray& r);
+		virtual vec3 shade(RayHit *rh, Scene *scene, int bounce);
+		virtual Contact *collide_sphere(Sphere *s, int mode);
+};
+
 
 
 class Tri : public Obj {
@@ -94,7 +105,8 @@ class Tri : public Obj {
 		}
 
 		virtual RayHit *intersect_ray(Ray& r);
-		virtual cv::Vec3b shade(RayHit *rh, cv::Mat *image, Scene *scene, int bounce);
+		virtual vec3 shade(RayHit *rh, Scene *scene, int bounce);
+		virtual Contact *collide_sphere(Sphere *s, int mode);
 };
 
 
@@ -114,7 +126,8 @@ class Cyl : public Obj {
 		}
 
 		virtual RayHit *intersect_ray(Ray& r);
-		virtual cv::Vec3b shade(RayHit *rh, cv::Mat *image, Scene *scene, int bounce);
+		virtual vec3 shade(RayHit *rh, Scene *scene, int bounce);
+		virtual Contact *collide_sphere(Sphere *s, int mode);
 };
 
 
@@ -125,6 +138,7 @@ class Cube : public Obj {
 		float updim,rightdim,forwarddim;
 		Cube(vec3 _lb, vec3 _ub);
 		virtual RayHit *intersect_ray(Ray& r);
-		virtual cv::Vec3b shade(RayHit *rh, cv::Mat *image, Scene *scene, int bounce);
+		virtual vec3 shade(RayHit *rh, Scene *scene, int bounce);
+		virtual Contact *collide_sphere(Sphere *s, int mode);
 };
 #endif

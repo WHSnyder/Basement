@@ -9,49 +9,56 @@ Contact *CSG::collide_sphere(Sphere *sphere, int mode){
 
 	Contact *this_coll,*other_coll;
 
-	case leaf:  return shape -> collide_sphere(sphere,mode);
+	switch (op) {
 
-	case sub:  	
-				this_coll = shape -> collide_sphere(sphere,mode);  
+		case leaf:  
+					return shape -> collide_sphere(sphere,mode);
+					
+					break;
 
-				if (this_coll == nullptr) return nullptr;
+		case sub:  	
+					this_coll = shape -> collide_sphere(sphere,mode);  
 
-				other_coll = link -> collide_sphere(sphere,-1);
+					if (this_coll == nullptr) return nullptr;
 
-				if (other_coll == nullptr) return this_coll;
+					other_coll = link -> collide_sphere(sphere,-1);
 
-				delete this_coll;
+					if (other_coll == nullptr) return this_coll;
 
-				return other_coll;
-			   
-			    break;
+					delete this_coll;
 
-	case un:   	
-				this_coll = shape -> collide_sphere(sphere,mode);
-				
-				if (this_coll == nullptr) return link -> collide_sphere(sphere,mode);
+					return other_coll;
+				   
+				    break;
 
-				return this_coll;
+		case un:   	
+					this_coll = shape -> collide_sphere(sphere,mode);
+					
+					if (this_coll == nullptr) return link -> collide_sphere(sphere,mode);
 
-				break;
+					return this_coll;
 
-    case intx: 
-    			this_hit = shape -> collide_sphere(sphere,mode);
-				
-				if (this_hit == nullptr) return nullptr;
-    			
-    			other_hit = link -> collide_sphere(sphere,mode);
+					break;
 
-				if (other_hit == nullptr){
-					delete this_hit;
-					return nullptr;
-				}
+	    case intx: 
+	    			this_coll = shape -> collide_sphere(sphere,mode);
+					
+					if (this_coll == nullptr) return nullptr;
+	    			
+	    			other_coll = link -> collide_sphere(sphere,mode);
 
-				delete this_hit;
-				return other_hit;
+					if (other_coll == nullptr){
+						delete this_coll;
+						return nullptr;
+					}
 
-    		    break;
+					//if ()
 
+					delete this_coll;
+					return other_coll;
+
+	    		    break;
+	}
 	return nullptr;
 }
 

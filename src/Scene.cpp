@@ -8,9 +8,14 @@ using namespace std;
 
 
 vec3 reflect(vec3 normal, vec3 direction){
+
 	return -2.0f * dot(normal,direction) * normal + direction;
 }
 
+void printVec(string name,vec3 v){
+	
+	cout << name << ": (" << v.x << ", " << v.y << ", " << v.z << ")" << endl;
+}
 
 /*
 int box_sphere(Sphere *sphere, Cube *cube, int mode){
@@ -41,16 +46,20 @@ void Scene::update_physics(){
 
 	for (auto it = csgs.begin(); it != csgs.end(); it++) {
 
-		cur = csgs[i] -> collide_sphere(test_sphere,1);
+		cur = csgs[i] -> collide_sphere(test_sphere, 1);
 
 		if (cur != nullptr){
-			
-			test_sphere -> origin = ct -> point; 
-			test_sphere -> vel = .9f * reflect(ct -> normal, test_sphere -> vel);
+
+			if (!isnan(cur -> point[0])){
+				
+				test_sphere -> origin = cur -> point; 
+		    	test_sphere -> vel = .8f * reflect(cur -> normal, test_sphere -> vel);
+
+		    	delete cur;
+		    	break;
+			}
 
 			delete cur;
-
-			break;
 		}
 
 		i++;
@@ -61,7 +70,7 @@ void Scene::update_physics(){
 }
 
 
-RayHit *Scene::intersect_scene(Ray& r, int *index){
+RayHit *Scene::intersect_scene(Ray& r){
 
 	int i = 0;
 	float min_dist = 1000000000.0f;
@@ -77,16 +86,14 @@ RayHit *Scene::intersect_scene(Ray& r, int *index){
 
 				delete hit;
 				hit = cur;
-				*index = i;
 				min_dist = cur -> ent_distance;
 			}
-			else {
 
-				delete cur;
-			} 
+			else delete cur;
 		}
 
 		i++;
 	}
+
 	return hit;
 }

@@ -8,20 +8,18 @@ using namespace std;
 
 
 
-cv::Vec3b shade_reflective(RayHit *rhit, cv::Mat *tex, Scene *scene, int bounce){
+vec3 shade_reflective(RayHit *rhit, Scene *scene, int bounce){
 
-	cv::Vec3b col = cv::Vec3b(100,100,100);
+	vec3 col = vec3(100,100,100);
 
 	if (bounce == 0) return col;
     
-    int i = -1;
-
     Ray reflection = Ray(*rhit->entrance,reflect(*rhit->ent_normal, rhit->ray->dir));
-    RayHit *reflect_hit = scene -> intersect_scene(reflection, &i);
+    RayHit *reflect_hit = scene -> intersect_scene(reflection);
 
     if (reflect_hit == nullptr) return col;
 
-    col = reflect_hit -> object_hit -> shade(reflect_hit, tex, scene,bounce - 1);
+    col = reflect_hit -> object_hit -> shade(reflect_hit, scene, bounce - 1);
 
     delete reflect_hit;
 
@@ -96,7 +94,7 @@ RayHit *Cyl::intersect_ray(Ray& r) {
 *  Plane methods.
 */
 
-Contact *Plane::collide_sphere(Sphere *sphere,int mode){
+Contact *Plane::collide_sphere(Sphere *sphere, int mode){
 
 	vec3 center_to_plane = origin - sphere -> origin, new_orig;
 	float dist_to_plane = -1.0f * dot(zvec, center_to_plane);
@@ -117,22 +115,25 @@ Contact *Plane::collide_sphere(Sphere *sphere,int mode){
 	return ct;
 }
 
-cv::Vec3b Plane::shade(RayHit *rhit, cv::Mat *img, Scene *scene, int bounce){
 
-	if (bounce == 0) return cv::Vec3b(50,50,50);
+vec3 Plane::shade(RayHit *rhit, Scene *scene, int bounce){
 
-	if (shader != nullptr) return 0.8f * shader(rhit,img,scene,bounce);
+	vec3 result = vec3(50,50,50);
+
+	if (bounce == 0) return result;
+
+	if (shader != nullptr) return 0.8f * shader(rhit, bounce);
 
 	vec3 hit_pos = *rhit -> entrance;
     vec3 fromOrg = hit_pos - origin;
     std::vector<Light *> lights = scene -> lights;
 
-	int i = -1;
-	int row = (int) (img->rows - 1) * ((dot(fromOrg, xvec) / this->height) + 1.0f)/2.0f;
-	int col = (int) (img->cols - 1) * ((dot(fromOrg, yvec) / this->length) + 1.0f)/2.0f;
+	int start = 0;
+	int row = (int) (mat->rows - 1) * ((dot(fromOrg, xvec) / this->height) + 1.0f) / 2.0f;
+	int col = (int) (mat->cols - 1) * ((dot(fromOrg, yvec) / this->length) + 1.0f) / 2.0f;
 
 	Ray shadow = Ray(hit_pos, lights[0]->location - hit_pos);
-	RayHit *shadow_hit = scene -> intersect_scene(shadow, &i);
+	RayHit *shadow_hit = scene -> intersect_scene(shadow);
 
 	float dotprod = -1.0f * dot(*rhit -> ent_normal, lights[0]->direction);
 
@@ -140,11 +141,18 @@ cv::Vec3b Plane::shade(RayHit *rhit, cv::Mat *img, Scene *scene, int bounce){
 
 	delete shadow_hit;
 
-	return dotprod * img->at<cv::Vec3b>(row, col);
+	start = 3 * row * mat -> cols + col;
+	result[0] = mat -> data[start++];
+	result[1] = mat -> data[start++];
+	result[2] = mat -> data[start];
+
+	return dotprod * result;
 }
 
 
-Plane::Plane(vec3 _b1, vec3 _b2, vec3 _b3, vec3 _b4){
+Plane::Plane(vec3 _b1, vec3 _b2, vec3 _b3, vec3 _b4, Material *_mat){
+
+	mat = _mat;
 
 	origin = (_b1 + _b2 + _b3 + _b4)/4.0f;
 
@@ -201,7 +209,7 @@ RayHit *Plane::intersect_ray(Ray& r) {
 Contact *Sphere::collide_sphere(Sphere *s0, int mode){
 
 	vec3 to_center = origin - s0 -> origin, new_orig, normal;
-	float dist,l,r;
+	float dist,l,r, move_back;
 	Contact *result = nullptr;
 
 	dist = length(to_center);
@@ -223,6 +231,8 @@ Contact *Sphere::collide_sphere(Sphere *s0, int mode){
 	else {
 		if (dist >  radius - s0 -> radius && dot(to_center,s0 -> vel) < 0){
 
+
+
 			normal = normalize(to_center);
 			new_orig = s0 -> origin + (dist - radius) * normal;
 
@@ -234,11 +244,11 @@ Contact *Sphere::collide_sphere(Sphere *s0, int mode){
 }
 
 
-cv::Vec3b Sphere::shade(RayHit *rhit, cv::Mat *img, Scene *scene, int bounce){
+vec3 Sphere::shade(RayHit *rhit, Scene *scene, int bounce){
 
-	if (bounce == 0) return cv::Vec3b(50,50,50);
+	if (bounce == 0) return vec3(50,50,50);
 
-	if (shader != nullptr) return 0.8f * shader(rhit,img,scene,bounce);
+	if (shader != nullptr) return 0.8f * shader(rhit, bounce);
 
 	vec3 hit_pos = *rhit -> entrance;
 	std::vector<Light *> lights = scene -> lights;
@@ -248,18 +258,19 @@ cv::Vec3b Sphere::shade(RayHit *rhit, cv::Mat *img, Scene *scene, int bounce){
 	float dotprod = -1.0f*dot(*rhit -> ent_normal,lights[0]->direction);
 
 	if (dotprod < 0.2){
+		
 		dotprod = .2;
 	}
 	else {
 
 		Ray shadow = Ray(hit_pos, lights[0]->location - hit_pos);
-		RayHit *shadow_hit = scene -> intersect_scene(shadow, &i);
+		RayHit *shadow_hit = scene -> intersect_scene(shadow);
 
 		if (shadow_hit != nullptr) dotprod = .2;
 		delete shadow_hit;
 	}
 
-	return dotprod * cv::Vec3b(color.x,color.x,color.z);  	
+	return dotprod * color;  	
 }
 
 
@@ -296,34 +307,37 @@ RayHit *Sphere::intersect_ray(Ray& r) {
 	return new RayHit(ent_hit, ent_normal, ent_length, exit_hit, exit_normal, exit_length, &r, this);
 }
 
+
+
+
 /*
 *  Triangle methods.
 */
 
 
-Contact *Tri::collide_sphere(Sphere *sphere,int mode){
+Contact *Tri::collide_sphere(Sphere *sphere, int mode){
 	return nullptr;
 }
 
-cv::Vec3b Tri::shade(RayHit *rhit, cv::Mat *tex, Scene *scene, int bounce){
 
-	cv::Vec3b col = cv::Vec3b(50,50,50);
+vec3 Tri::shade(RayHit *rhit, Scene *scene, int bounce){
+
+	vec3 col = vec3(50,50,50);
 
 	if (bounce == 0) return col;
-    
-    int i = -1;
 
     Ray reflection = Ray(*rhit->entrance,reflect(*rhit->ent_normal, rhit->ray->dir));
-    RayHit *reflect_hit = scene -> intersect_scene(reflection, &i);
+    RayHit *reflect_hit = scene -> intersect_scene(reflection);
 
     if (reflect_hit == nullptr) return col;
 
-    col = reflect_hit -> object_hit -> shade(reflect_hit, tex, scene,bounce - 1);
+    col = reflect_hit -> object_hit -> shade(reflect_hit, scene, bounce - 1);
 
     delete reflect_hit;
 
     return col;
 }
+
  
 RayHit *Tri::intersect_ray(Ray& r) {
 
@@ -373,14 +387,14 @@ vec3 ybase = vec3(0,1,0);
 vec3 zbase = vec3(0,0,1);
 
 
-Contact *Cube::collide_sphere(Sphere *sphere,int mode){
+Contact *Cube::collide_sphere(Sphere *sphere, int mode){
 	return nullptr;
 }
 
 
-cv::Vec3b Cube::shade(RayHit *rhit, cv::Mat *img, Scene *scene, int bounce){
+vec3 Cube::shade(RayHit *rhit, Scene *scene, int bounce){
 
-	if (bounce == 0) return cv::Vec3b(50,50,50);
+	if (bounce == 0) return vec3(50,50,50);
 
 	vec3 hit_pos = *rhit -> entrance, color = vec3(250,20,230);
 	std::vector<Light *> lights = scene -> lights;
@@ -395,13 +409,13 @@ cv::Vec3b Cube::shade(RayHit *rhit, cv::Mat *img, Scene *scene, int bounce){
 	else {
 
 		Ray shadow = Ray(hit_pos, lights[0]->location - hit_pos);
-		RayHit *shadow_hit = scene -> intersect_scene(shadow, &i);
+		RayHit *shadow_hit = scene -> intersect_scene(shadow);
 
 		if (shadow_hit != nullptr) dotprod = .2;
 		delete shadow_hit;
 	}
 
-	return dotprod * cv::Vec3b(color.x,color.y,color.z);
+	return dotprod * color;
 }
 
 
