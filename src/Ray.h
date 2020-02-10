@@ -32,6 +32,7 @@ class Contact {
 class Light {
 
 	public:
+		
 		vec3 location;
 		vec3 direction;
 		vec3 color;
@@ -46,6 +47,7 @@ class Light {
 class Ray {
 
 	public:
+
 		vec3 dir;
 		vec3 origin;
 
@@ -85,6 +87,7 @@ class RayHit {
 		}
 
 		RayHit(vec3 *w, vec3 *n, float d, Ray *r, Obj *obj_hit){
+
 			entrance = w;
 			ent_normal = n;
 			ent_distance = d;
@@ -98,6 +101,7 @@ class RayHit {
 		}
 
 		RayHit(vec3 *w_ent, vec3 *n_ent, float d_ent, vec3 *w_exit, vec3 *n_exit, float d_exit, Ray *r, Obj *obj_hit){
+
 			entrance = w_ent;
 			ent_normal = n_ent;
 			ent_distance = d_ent;
@@ -111,6 +115,7 @@ class RayHit {
 		}
 
 		~RayHit(){
+
 			delete entrance;
 			delete ent_normal;
 			delete exit;

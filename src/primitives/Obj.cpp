@@ -205,6 +205,11 @@ RayHit *Plane::intersect_ray(Ray& r) {
 *  Sphere methods.
 */
 
+vec3 Sphere::support(vec3 dir){
+
+	return origin + radius * normalize(dir);
+}
+
 
 Contact *Sphere::collide_sphere(Sphere *s0, int mode){
 
@@ -385,6 +390,12 @@ RayHit *Tri::intersect_ray(Ray& r) {
 vec3 xbase = vec3(1,0,0);
 vec3 ybase = vec3(0,1,0);
 vec3 zbase = vec3(0,0,1);
+
+
+vec3 Cube::support(vec3 dir){
+
+	
+}
 
 
 Contact *Cube::collide_sphere(Sphere *sphere, int mode){
