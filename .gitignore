@@ -3,8 +3,6 @@ include
 include/tst
 output
 **/output/*
-meshes
-**/meshes/*
 **/bin/*
 bin/*
 bin
