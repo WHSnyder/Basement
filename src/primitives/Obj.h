@@ -1,3 +1,6 @@
+#ifndef obji
+#define obji
+
 #ifndef glmi
 #define glmi
 #include <glm/glm.hpp>
@@ -7,9 +10,6 @@ using namespace glm;
 
 #include "Ray.h"
 #include <vector>
-
-#ifndef obji
-#define obji
 
 class Scene;
 
@@ -22,31 +22,15 @@ class Scene;
 vec3 shade_reflective(RayHit *rhit, Scene *scene, int bounce);
 
 
-//Tri distance function from http://www.iquilezles.org/www/articles/triangledistance/triangledistance.htm
-
-float udTriangle(vec3 v1, vec3 v2, vec3 v3, vec3 p){
-
-    // prepare data    
-    vec3 v21 = v2 - v1; vec3 p1 = p - v1;
-    vec3 v32 = v3 - v2; vec3 p2 = p - v2;
-    vec3 v13 = v1 - v3; vec3 p3 = p - v3;
-    vec3 nor = cross( v21, v13 );
-
-    return sqrt( // inside/outside test    
-                 (sign(dot(cross(v21,nor),p1)) + 
-                  sign(dot(cross(v32,nor),p2)) + 
-                  sign(dot(cross(v13,nor),p3))<2.0) 
-                  ?
-                  // 3 edges    
-                  min( min( 
-                  dot2(v21*clamp(dot(v21,p1)/dot2(v21),0.0,1.0)-p1), 
-                  dot2(v32*clamp(dot(v32,p2)/dot2(v32),0.0,1.0)-p2) ), 
-                  dot2(v13*clamp(dot(v13,p3)/dot2(v13),0.0,1.0)-p3) )
-                  :
-                  // 1 face    
-                  dot(nor,p1)*dot(nor,p1)/dot2(nor) );
+inline float sq_length(vec3 v) { 
+	
+	return dot(v,v); 
 }
 
+
+//Tri distance function from http://www.iquilezles.org/www/articles/triangledistance/triangledistance.htm
+
+float dist_to_tri(vec3 v1, vec3 v2, vec3 v3, vec3 p);
 
 /*
 
@@ -81,24 +65,7 @@ int sphere_shrunk_gjk(Sphere *a, Sphere *b, vec3 *normal, vec3 *pt){
 
 	simp.verts.push_back(s2 - s1);
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 }
-
-
-
 
 
 struct Simplex {

@@ -4,8 +4,32 @@
 #include <vector>
 
 using namespace glm;
-using namespace std;
 
+
+//Tri distance function from http://www.iquilezles.org/www/articles/triangledistance/triangledistance.htm
+
+float dist_to_tri(vec3 v1, vec3 v2, vec3 v3, vec3 p){
+
+    // prepare data    
+    vec3 v21 = v2 - v1; vec3 p1 = p - v1;
+    vec3 v32 = v3 - v2; vec3 p2 = p - v2;
+    vec3 v13 = v1 - v3; vec3 p3 = p - v3;
+    vec3 nor = cross( v21, v13 );
+
+    return sqrt( // inside/outside test    
+                 (sign(dot(cross(v21,nor),p1)) + 
+                  sign(dot(cross(v32,nor),p2)) + 
+                  sign(dot(cross(v13,nor),p3))<2.0) 
+                  ?
+                  // 3 edges    
+                  min( min( 
+                  sq_length(v21*clamp(dot(v21,p1)/sq_length(v21),0.0f,1.0f)-p1), 
+                  sq_length(v32*clamp(dot(v32,p2)/sq_length(v32),0.0f,1.0f)-p2)), 
+                  sq_length(v13*clamp(dot(v13,p3)/sq_length(v13),0.0f,1.0f)-p3))
+                  :
+                  // 1 face    
+                  dot(nor,p1)*dot(nor,p1)/dot(nor,nor) );
+}
 
 
 vec3 shade_reflective(RayHit *rhit, Scene *scene, int bounce){
