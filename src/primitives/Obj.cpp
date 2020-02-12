@@ -14,7 +14,7 @@ vec3 shade_reflective(RayHit *rhit, Scene *scene, int bounce){
 
 	if (bounce == 0) return col;
     
-    Ray reflection = Ray(*rhit->entrance,reflect(*rhit->ent_normal, rhit->ray->dir));
+    Ray reflection = Ray(*rhit->entrance,reflect(*rhit -> ent_normal, rhit -> ray->dir));
     RayHit *reflect_hit = scene -> intersect_scene(reflection);
 
     if (reflect_hit == nullptr) return col;
@@ -31,7 +31,7 @@ vec3 shade_reflective(RayHit *rhit, Scene *scene, int bounce){
 *	Cylinder methods.
 */
 /*
-cv::Vec3b Cyl::shade(RayHit *rhit, cv::Mat *img, Scene *scene, int bounce){
+cv::Vec3b Cyl::shade(RayHit *rhit, Scene *scene, int bounce){
 
 	if (bounce == 0) return cv::Vec3b(50,50,50);
 
@@ -203,12 +203,12 @@ RayHit *Plane::intersect_ray(Ray& r) {
 
 /*
 *  Sphere methods.
-*/
+
 
 vec3 Sphere::support(vec3 dir){
 
 	return origin + radius * normalize(dir);
-}
+}*/
 
 
 Contact *Sphere::collide_sphere(Sphere *s0, int mode){
@@ -222,9 +222,6 @@ Contact *Sphere::collide_sphere(Sphere *s0, int mode){
 	//Test for normal collision
 	if (mode == 1){
 		if (dist < radius + s0 -> radius){
-			//length(curr_orig + r * t - origin) = s0rad + s1rad;    r*t = r + origin - curr
-			//l = -1.0 * abs( (1 + dot(r,s1 -> origin - s0 -> origin)/r*r) );
-			//new_orig = s0 -> origin += normalize(s0 -> vel) * 
 
 			normal = -1.0f * normalize(to_center);
 			new_orig = s0 -> origin + (s0 -> radius - (dist - radius)) * normal;
@@ -392,10 +389,6 @@ vec3 ybase = vec3(0,1,0);
 vec3 zbase = vec3(0,0,1);
 
 
-vec3 Cube::support(vec3 dir){
-
-	
-}
 
 
 Contact *Cube::collide_sphere(Sphere *sphere, int mode){

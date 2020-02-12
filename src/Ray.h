@@ -16,14 +16,17 @@ class Contact {
 
 		vec3 normal, point;
 		float moveback;
+		int type;
 
 		Contact(vec3 n,vec3 p, float m){
+			
 			normal = n;
 			point = p;
 			moveback = m;
 		}
 
 		Contact(vec3 n,vec3 p){
+			
 			normal = n;
 			point = p;
 		}
@@ -32,7 +35,7 @@ class Contact {
 class Light {
 
 	public:
-		
+
 		vec3 location;
 		vec3 direction;
 		vec3 color;

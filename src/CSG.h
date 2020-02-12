@@ -13,6 +13,7 @@ class CSG {
 		Obj *shape;
 		CSG *link;
 		optype op;
+		Contact *cached = nullptr;
 
 		CSG(Obj *object){
 			

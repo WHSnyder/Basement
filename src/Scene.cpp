@@ -2,7 +2,7 @@
 #include "CSG.h"
 #include <iostream>
 
-#define GRAV vec3(0,0,-9.8);
+#define GRAV vec3(0,0,-3.0);
 
 using namespace std;
 
