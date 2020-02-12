@@ -1,1 +1,0 @@
-clang++ -Iinclude $(pkg-config --cflags --libs opencv4)  -std=c++17 ./src/Tests.cpp ./src/Plane.cpp ./src/Sphere.cpp -o ./bin/tst

@@ -1,1 +1,0 @@
-clang++ -Iinclude -Isrc $(pkg-config --cflags --libs opencv4)  -std=c++17 ./src/Main.cpp ./src/CSG.cpp ./src/Scene.cpp ./src/primitives/Obj.cpp -o ./bin/out

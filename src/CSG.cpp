@@ -23,7 +23,11 @@ Contact *CSG::collide_sphere(Sphere *sphere, int mode){
 
 					other_coll = link -> collide_sphere(sphere,mode);
 
-					if (other_coll != nullptr) {
+					if (other_coll == nullptr) return this_coll;
+
+					
+
+					/*if (other_coll != nullptr) {
 						
 						delete link -> cached;
 						link -> cached = other_coll;
@@ -42,7 +46,7 @@ Contact *CSG::collide_sphere(Sphere *sphere, int mode){
 						return other_coll;
 					}
 
-					return this_coll;
+					return this_coll;*/
 				   
 				    break;
 

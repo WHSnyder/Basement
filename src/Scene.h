@@ -15,6 +15,7 @@ class CSG;
 
 
 class View {
+	
 	public:
 
 		vec3 forward, up, right, pos;

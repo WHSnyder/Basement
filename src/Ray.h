@@ -1,14 +1,16 @@
-#ifndef glmi
-#define glmi
-#include <glm/glm.hpp>
-#include <glm/ext.hpp>
-#endif 
-
 #ifndef rayi
 #define rayi
+
+#include <glm.hpp>
+#include <ext.hpp>
+
 using namespace glm;
 
+
+
 class Obj;
+
+
 
 class Contact {
 
@@ -18,14 +20,14 @@ class Contact {
 		float moveback;
 		int type;
 
-		Contact(vec3 n,vec3 p, float m){
+		Contact(vec3 n, vec3 p, float m){
 			
 			normal = n;
 			point = p;
 			moveback = m;
 		}
 
-		Contact(vec3 n,vec3 p){
+		Contact(vec3 n, vec3 p){
 			
 			normal = n;
 			point = p;

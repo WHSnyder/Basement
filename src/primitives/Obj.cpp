@@ -16,19 +16,27 @@ float dist_to_tri(vec3 v1, vec3 v2, vec3 v3, vec3 p){
     vec3 v13 = v1 - v3; vec3 p3 = p - v3;
     vec3 nor = cross( v21, v13 );
 
-    return sqrt( // inside/outside test    
-                 (sign(dot(cross(v21,nor),p1)) + 
+    return sqrt ( 
+    			 
+    			  // inside/outside test    
+                  (sign(dot(cross(v21,nor),p1)) + 
                   sign(dot(cross(v32,nor),p2)) + 
                   sign(dot(cross(v13,nor),p3))<2.0) 
+                  
                   ?
+
                   // 3 edges    
                   min( min( 
                   sq_length(v21*clamp(dot(v21,p1)/sq_length(v21),0.0f,1.0f)-p1), 
                   sq_length(v32*clamp(dot(v32,p2)/sq_length(v32),0.0f,1.0f)-p2)), 
                   sq_length(v13*clamp(dot(v13,p3)/sq_length(v13),0.0f,1.0f)-p3))
+                  
                   :
+
                   // 1 face    
-                  dot(nor,p1)*dot(nor,p1)/dot(nor,nor) );
+                  dot(nor,p1)*dot(nor,p1)/dot(nor,nor) 
+
+                );
 }
 
 
@@ -250,19 +258,17 @@ Contact *Sphere::collide_sphere(Sphere *s0, int mode){
 			normal = -1.0f * normalize(to_center);
 			new_orig = s0 -> origin + (s0 -> radius - (dist - radius)) * normal;
 
-			result = new Contact(normal, new_orig);
+			result = new Contact(normal, new_orig, length(s0 -> radius - (dist - radius)));
 		}
 	}
 	//Test for inverse collision
 	else {
-		if (dist >  radius - s0 -> radius && dot(to_center,s0 -> vel) < 0){
-
-
+		if (dist > radius - s0 -> radius && dist < radius + s0 -> radius){
 
 			normal = normalize(to_center);
 			new_orig = s0 -> origin + (dist - radius) * normal;
 
-			result = new Contact(normal, new_orig);
+			result = new Contact(normal, new_orig, length((dist - radius)));
 		}
 	}
 

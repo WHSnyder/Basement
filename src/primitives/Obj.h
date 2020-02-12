@@ -1,12 +1,10 @@
 #ifndef obji
 #define obji
 
-#ifndef glmi
-#define glmi
-#include <glm/glm.hpp>
-#include <glm/ext.hpp>
+#include <glm.hpp>
+#include <ext.hpp>
+
 using namespace glm;
-#endif 
 
 #include "Ray.h"
 #include <vector>
@@ -22,18 +20,15 @@ class Scene;
 vec3 shade_reflective(RayHit *rhit, Scene *scene, int bounce);
 
 
-inline float sq_length(vec3 v) { 
-	
-	return dot(v,v); 
-}
+inline float sq_length(vec3 v) { return dot(v,v); }
 
 
 //Tri distance function from http://www.iquilezles.org/www/articles/triangledistance/triangledistance.htm
 
 float dist_to_tri(vec3 v1, vec3 v2, vec3 v3, vec3 p);
 
-/*
 
+/*
 
 int sphere_shrunk_gjk(Sphere *a, Sphere *b, vec3 *normal, vec3 *pt){
 

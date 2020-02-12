@@ -7,13 +7,11 @@
 using namespace std;
 
 
-vec3 reflect(vec3 normal, vec3 direction){
-
+inline vec3 reflect(vec3 normal, vec3 direction){
 	return -2.0f * dot(normal,direction) * normal + direction;
 }
 
-void printVec(string name,vec3 v){
-	
+inline void printVec(string name,vec3 v){
 	cout << name << ": (" << v.x << ", " << v.y << ", " << v.z << ")" << endl;
 }
 
