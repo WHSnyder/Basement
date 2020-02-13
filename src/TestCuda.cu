@@ -4,44 +4,20 @@
 #include <iostream>
 #include <pthread.h>
 #include <chrono>
-#include <regex> 
 #include <string>
 
+#include <opencv2/opencv.hpp> 
+
+#include "Scene.h"
+#include "primitives/Obj.h"
+#include "CSG.h"
+
 using namespace std;
+using namespace glm;
 using namespace std::chrono;
 
-regex object_header("o ");
-regex vertex_decl("v( [-]?[0-9]*\.?[0-9]*){3}");
-regex float_decl("([-]?[0-9]*\.?[0-9]*)");
-
-smatch sm;
 
 
-void read_obj_file(string filename){
-
-	ifstream file (filename); //file just has some sentences
-	int i = 0;
-	
-	if (!file) {
-		cout << "unable to open file";
-		return false;
-	}
-
-	string line;
-
-	while (getline (file, line)) {
-
-		if (regex_search(line, sm, vertex_decl)){
-			cout << "Vertex " << i++ << ": ";
-			if (regex_search(line, sm, float_decl)) {
-			    for (int i=1; i<sm.size(); i++) {
-			        cout << sm[i] << " ";
-			    }
-			}			
-			cout << endl;
-		}
-	}
-} 
 
 
 
@@ -69,12 +45,12 @@ void add(int n, float *x, float *y) {
 
 int main(void) {
 
-  	string filename = "/home/will/projects/cpprtx/meshes/torus.obj"; // = arg_to_string(argv[1]);
 
-  	read_obj_file(filename);
+	string filename = "/home/will/projects/cpprtx/meshes/torus.obj";
+
+  	Mesh *torus = new Mesh(filename);
 
   	return 0;
-
 
     int N = 1<<27;
     float *x, *y;

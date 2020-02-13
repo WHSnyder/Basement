@@ -4,13 +4,9 @@
 #include <iostream>
 #include <pthread.h>
 #include <chrono>
-#include <regex> 
 #include <string>
 
-#ifndef cvinc
-#define cvinc
 #include <opencv2/opencv.hpp> 
-#endif
 
 #include "Scene.h"
 #include "primitives/Obj.h"
@@ -19,98 +15,6 @@
 using namespace std;
 using namespace glm;
 using namespace std::chrono;
-
-//#define FRAMES 60
-
-
-
-regex object_header("o ");
-
-regex vertex_decl("v( [-]?[0-9]*\.?[0-9]*){3}");
-regex normal_decl("vn( [-]?[0-9]*\.?[0-9]*){3}");
-regex face_decl("f( [0-9]*\/\/[0-9]*){3}");
-
-regex float_decl("([-]?[0-9]+\.[0-9]+) ([-]?[0-9]+\.[0-9]+) ([-]?[0-9]+\.[0-9]+)");
-regex face_nums("f ([0-9]+)\/\/([0-9]+) ([0-9]+)\/\/([0-9]+) ([0-9]+)\/\/([0-9]+)");
-
-
-smatch sm;
-
-
-int read_obj_file(string filename, vector<vec3>& verts, vector<vec3>& normals, vector<TriPrim>& tris){
-
-	ifstream file (filename); //file just has some sentences
-	int i = 0;
-
-	std::string::size_type sz;
-
-	float c [3];
-	int t [3];
-	
-	if (!file) {
-		cout << "unable to open file";
-		return 0;
-	}
-
-	string line;
-
-	while (getline (file, line)) {
-
-		if (regex_search(line, sm, vertex_decl)){
-						
-			if (regex_search(line, sm, float_decl)) {
-				cout << line << "  ";
-			
-			    for (int i = 1; i < sm.size(); i++) {
-			        c[i-1] = stof(sm[i], &sz);
-			    }
-
-			    verts.push_back(vec3(c[0],c[1],c[2]));
-
-			    cout << "vec3(" << c[0] << ", " << c[1] << ", " << c[2] << ")";
-			}
-		}
-		else if (regex_search(line, sm, normal_decl)){
-
-			if (regex_search(line, sm, float_decl)) {
-				cout << line << "  ";
-			
-			    for (int i = 1; i < sm.size(); i++) {
-			        c[i-1] = stof(sm[i], &sz);
-			    }
-
-			    normals.push_back(vec3(c[0],c[1],c[2]));
-
-			    cout << "vec3(" << c[0] << ", " << c[1] << ", " << c[2] << ")";
-			}
-
-		}
-		else if (regex_search(line, sm, face_decl)){
-
-			if (regex_search(line, sm, face_nums)) {
-				cout << line << "  ";
-
-			    for (int i = 1; i < sm.size(); i+=2) {
-			        t[i/2] = stoi(sm[i], &sz);
-			    }
-
-			    tris.push_back(TriPrim{t[0], t[1], t[2]});
-
-			    cout << "vec3(" << t[0] << ", " << t[1] << ", " << t[2] << ")";
-			}
-		}
-		else {
-			//nada
-		}
-		
-		cout << endl;
-
-	}
-
-	return 1;
-} 
-
-
 
 
 string arg_to_string(char* a) { 
@@ -200,15 +104,13 @@ void *trace_pixels(void *thread_args){
 
 int main(int argc, char **argv){
 
-	vector<vec3> verts;
-	vector<vec3> normals;
-	vector<TriPrim> tris;
+	string filename = "/home/will/projects/cpprtx/meshes/torus.obj";
 
-	string filename = "/home/will/projects/cpprtx/meshes/torus.obj"; // = arg_to_string(argv[1]);
-
-  	read_obj_file(filename, verts, normals, tris);
+  	Mesh *torus = new Mesh(filename);
 
   	return 0;
+
+
 
 	vec3 pos = vec3(0.0,0.0,1.75);
 

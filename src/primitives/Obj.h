@@ -5,13 +5,14 @@
 #include <ext.hpp>
 
 using namespace glm;
+using namespace std;
 
 #include "Ray.h"
 #include <vector>
+#include <string>
 
 class Scene;
 class Sphere;
-
 
 
 int sphere_shrunk_gjk(Sphere *a, Sphere *b, vec3 *normal, vec3 *pt);
@@ -24,12 +25,9 @@ inline float sq_length(vec3 v) { return dot(v,v); }
 float dist_to_tri(vec3 v1, vec3 v2, vec3 v3, vec3 p);
 
 
-
 struct Simplex { std::vector<vec3> verts; };
 
 struct TriPrim { int a,b,c; };
-
-
 
 struct Vertex {
 
@@ -38,16 +36,33 @@ struct Vertex {
 	vec2 uv;
 };
 
-
-
 struct Material {
 
 	int rows,cols;
 	unsigned char *data;
 };
 
-
 class Sphere;
+
+int read_obj_file(string filename, vector<vec3>& verts, vector<vec3>& normals, vector<TriPrim>& tris);
+
+class Mesh {
+
+	public:
+
+		vector<TriPrim> tris;
+		vector<vec3> verts, normals;
+
+		Mesh(vector<TriPrim> triangles, vector<vec3> vertices, vector<vec3> normz){
+			tris = triangles;
+			verts = vertices;
+			normals = normz;
+		}
+
+		Mesh(string filename){
+			read_obj_file(filename, verts, normals, tris);
+		}
+};
 
 
 class Obj {
