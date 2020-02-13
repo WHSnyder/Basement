@@ -51,7 +51,11 @@ void Scene::update_physics(){
 			if (!isnan(cur -> point[0])){
 				
 				test_sphere -> origin = cur -> point; 
-		    	test_sphere -> vel = .8f * reflect(cur -> normal, test_sphere -> vel);
+
+				if (dot(test_sphere -> vel, cur -> normal) < 0){
+		    		
+		    		test_sphere -> vel = .8f * reflect(cur -> normal, test_sphere -> vel);
+		    	}
 
 		    	delete cur;
 		    	break;

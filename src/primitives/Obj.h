@@ -12,66 +12,23 @@ using namespace glm;
 class Scene;
 
 
-/*
-* General shading functions.
-*/
 
+int sphere_shrunk_gjk(Sphere *a, Sphere *b, vec3 *normal, vec3 *pt);
 
 vec3 shade_reflective(RayHit *rhit, Scene *scene, int bounce);
 
-
 inline float sq_length(vec3 v) { return dot(v,v); }
 
-
 //Tri distance function from http://www.iquilezles.org/www/articles/triangledistance/triangledistance.htm
-
 float dist_to_tri(vec3 v1, vec3 v2, vec3 v3, vec3 p);
 
 
-/*
 
-int sphere_shrunk_gjk(Sphere *a, Sphere *b, vec3 *normal, vec3 *pt){
+struct Simplex { std::vector<vec3> verts; };
 
-	Simplex simp = Simplex();
-
-	vec3 init = vec3(0,-1,0);
-	vec3 s1 = a -> support(init), s2 = b -> support(-init); 
-
-	vec3 support_pt = s1 - s2, next_pt;
-	
-	vec3 next_dir = vec3(0,0,0) - support_pt;
-
-	s1 = a -> support(next_dir);
-	s2 = b -> support(-next_dir);
-
-	next_pt = s1 - s2;
-
-	simp.verts.push_back(support_pt);
-	simp.verts.push_back(next_pt);
-
-	vec3 diff = normalize( next_pt - support_pt );
-
-	float proj = dot(diff, -next_pt);
-
-	diff *= proj;
-
-	s1 = a -> support(diff);
-	s2 = b -> support(-diff);
-
-	simp.verts.push_back(s2 - s1);
-
-}
+struct TriPrim { int a,b,c; };
 
 
-struct Simplex {
-	std::vector<vec3> verts;
-};
-
-
-struct TriPrim {
-	int a,b,c;
-};
-*/
 
 struct Vertex {
 
@@ -79,6 +36,7 @@ struct Vertex {
 	vec3 normal;
 	vec2 uv;
 };
+
 
 
 struct Material {
@@ -102,7 +60,8 @@ class Obj {
 		virtual RayHit *intersect_ray(Ray& r)=0;
 		virtual vec3 shade(RayHit *rh, Scene *scene, int bounce)=0;
 		virtual Contact *collide_sphere(Sphere *s, int mode)=0;
-		//virtual vec3 support(vec3 dir)=0;
+		virtual vec3 support(vec3 dir)=0;
+		virtual int contains(vec3 pt)=0;
 
 		vec3 (*shader)(RayHit *rh, int bounce) = nullptr;
 };
@@ -117,7 +76,8 @@ class Sphere : public Obj {
 		Sphere(vec3 center, vec3 color, float r);
 
 		virtual RayHit *intersect_ray(Ray& r);
-		//virtual vec3 support(vec3 dir);
+		virtual vec3 support(vec3 dir);
+		virtual int contains(vec3 pt);
 		virtual vec3 shade(RayHit *rh, Scene *scene, int bounce);
 		virtual Contact *collide_sphere(Sphere *s, int mode);
 };
@@ -132,9 +92,10 @@ class Plane : public Obj {
 		Plane(vec3 b1, vec3 b2, vec3 b3, vec3 b4, Material *mat);
 
 		virtual RayHit *intersect_ray(Ray& r);
-		//virtual vec3 support(vec3 dir);
 		virtual vec3 shade(RayHit *rh, Scene *scene, int bounce);
 		virtual Contact *collide_sphere(Sphere *s, int mode);
+		virtual vec3 support(vec3 dir);
+		virtual int contains(vec3 pt);
 };
 
 
@@ -163,9 +124,10 @@ class Tri : public Obj {
 		}
 
 		virtual RayHit *intersect_ray(Ray& r);
-		//virtual vec3 support(vec3 dir)=0;
 		virtual vec3 shade(RayHit *rh, Scene *scene, int bounce);
 		virtual Contact *collide_sphere(Sphere *s, int mode);
+		virtual vec3 support(vec3 dir);
+		virtual int contains(vec3 pt);
 };
 
 
@@ -185,9 +147,10 @@ class Cyl : public Obj {
 		}
 
 		virtual RayHit *intersect_ray(Ray& r);
-		//virtual vec3 support(vec3 dir);
 		virtual vec3 shade(RayHit *rh, Scene *scene, int bounce);
 		virtual Contact *collide_sphere(Sphere *s, int mode);
+		virtual vec3 support(vec3 dir);
+		virtual int contains(vec3 pt);
 };
 
 
@@ -200,8 +163,9 @@ class Cube : public Obj {
 		Cube(vec3 _lb, vec3 _ub);
 
 		virtual RayHit *intersect_ray(Ray& r);
-		//virtual vec3 support(vec3 dir);
 		virtual vec3 shade(RayHit *rh, Scene *scene, int bounce);
 		virtual Contact *collide_sphere(Sphere *s, int mode);
+		virtual vec3 support(vec3 dir);
+		virtual int contains(vec3 pt);
 };
 #endif

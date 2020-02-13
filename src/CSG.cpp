@@ -21,11 +21,12 @@ Contact *CSG::collide_sphere(Sphere *sphere, int mode){
 
 					if (this_coll == nullptr) return nullptr;
 
-					other_coll = link -> collide_sphere(sphere,mode);
+					other_coll = link -> collide_sphere(sphere,-1);
 
 					if (other_coll == nullptr) return this_coll;
 
 					
+
 
 					/*if (other_coll != nullptr) {
 						

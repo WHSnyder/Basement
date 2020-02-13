@@ -6,6 +6,79 @@
 using namespace glm;
 
 
+
+
+int gjk(Sphere *a, Sphere *b, vec3 *normal, vec3 *pt){
+
+	Simplex simp = Simplex();
+
+	//Variables for support function results from input objects and minkowski difference
+	vec3 dir = vec3(0,-1,0),support_a,support_b,support_mink,next_mink,closest,diff;
+
+	int cont = 1,num_verts = 0;
+	float proj;
+
+	while (cont){
+
+		num_verts = simp.verts.size(); 
+		
+		if (num_verts == 0){
+
+			support_a = a -> support(dir), support_b = b -> support(-dir); 
+			support_mink = support_a - support_b;
+
+			dir = vec3(0,0,0) - support_mink;
+			simp.verts.push_back(support_mink);
+
+			closest = support_mink;
+		}
+
+		else if (num_verts == 1){
+
+			support_a = a -> support(dir), support_b = b -> support(-dir); 
+			support_mink = support_a - support_b;
+
+			diff = support_mink - simp.verts[0];
+
+			if (sq_length(diff) < .01f) {
+				*normal = simp.verts[0];
+				return 0;
+			}
+
+			diff = normalize(diff);
+
+			proj = dot(diff, -simp.verts[0]);
+
+			diff *= proj;
+		}
+
+
+		
+		
+
+		support_a = a -> support(next_dir);
+		support_b = b -> support(-next_dir);
+
+		next_pt = support_a - support_b;
+
+		simp.verts.push_back(support_mink);
+		simp.verts.push_back(next_pt);
+
+		
+
+		support_a = a -> support(diff);
+		support_b = b -> support(-diff);
+
+		simp.verts.push_back(support_b - support_a);
+	}
+}
+
+
+
+
+
+
+
 //Tri distance function from http://www.iquilezles.org/www/articles/triangledistance/triangledistance.htm
 
 float dist_to_tri(vec3 v1, vec3 v2, vec3 v3, vec3 p){
@@ -126,6 +199,15 @@ RayHit *Cyl::intersect_ray(Ray& r) {
 *  Plane methods.
 */
 
+
+vec3 Plane::support(vec3 dir){
+	return vec3(0,0,0);
+}
+
+int Plane::contains(vec3 pt){
+	return 1;
+}
+
 Contact *Plane::collide_sphere(Sphere *sphere, int mode){
 
 	vec3 center_to_plane = origin - sphere -> origin, new_orig;
@@ -235,12 +317,18 @@ RayHit *Plane::intersect_ray(Ray& r) {
 
 /*
 *  Sphere methods.
+*/
 
 
-vec3 Sphere::support(vec3 dir){
+vec3 Sphere::support(vec3 dir){ return origin + radius * normalize(dir);}
 
-	return origin + radius * normalize(dir);
-}*/
+
+int Sphere::contains(vec3 pt){
+
+	vec3 to_center = pt - origin;
+	if (sq_length(to_center) < radius * radius) return 1;
+	return 0;
+}
 
 
 Contact *Sphere::collide_sphere(Sphere *s0, int mode){
@@ -253,22 +341,25 @@ Contact *Sphere::collide_sphere(Sphere *s0, int mode){
 
 	//Test for normal collision
 	if (mode == 1){
+
 		if (dist < radius + s0 -> radius){
 
 			normal = -1.0f * normalize(to_center);
 			new_orig = s0 -> origin + (s0 -> radius - (dist - radius)) * normal;
 
-			result = new Contact(normal, new_orig, length(s0 -> radius - (dist - radius)));
+			result = new Contact(normal, new_orig, s0 -> radius - (dist - radius));
 		}
 	}
+	
 	//Test for inverse collision
 	else {
-		if (dist > radius - s0 -> radius && dist < radius + s0 -> radius){
 
-			normal = normalize(to_center);
-			new_orig = s0 -> origin + (dist - radius) * normal;
+		if (dist + s0 -> radius < s0 -> radius + radius && dist < radius + s0 -> radius){
 
-			result = new Contact(normal, new_orig, length((dist - radius)));
+			normal = -1.0f * normalize(to_center);
+			new_orig = s0 -> origin + (s0 -> radius + radius - dist) * normal;
+
+			result = new Contact(normal, new_orig, s0 -> radius + radius - dist);
 		}
 	}
 
@@ -346,6 +437,14 @@ RayHit *Sphere::intersect_ray(Ray& r) {
 *  Triangle methods.
 */
 
+vec3 Tri::support(vec3 dir){
+	return vec3(0,0,0);
+}
+
+int Tri::contains(vec3 pt){
+	return 1;
+}
+
 
 Contact *Tri::collide_sphere(Sphere *sphere, int mode){
 	return nullptr;
@@ -419,7 +518,13 @@ vec3 ybase = vec3(0,1,0);
 vec3 zbase = vec3(0,0,1);
 
 
+vec3 Cube::support(vec3 dir){
+	return vec3(0,0,0);
+}
 
+int Cube::contains(vec3 pt){
+	return 1;
+}
 
 Contact *Cube::collide_sphere(Sphere *sphere, int mode){
 	return nullptr;

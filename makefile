@@ -26,5 +26,5 @@ bin/main.o: src/Main.cpp src/Scene.h
 	$(CC) $(OPENCV_LIBS) $(CFLAGS) $(GLM) -c src/Main.cpp -o bin/main.o
 
 
-bin/out: bin/main.o bin/scene.o
-	$(CC) $(GLM) $(OPENCV_LIBS) $(CFLAGS) $(GLM) bin/main.o bin/scene.o bin/csg.o bin/obj.o -o bin/out
+bin/out: bin/main.o bin/scene.o bin/csg.o bin/obj.o
+	$(CC) $(OPENCV_LIBS) $(CFLAGS) bin/main.o bin/scene.o bin/csg.o bin/obj.o -o bin/out
