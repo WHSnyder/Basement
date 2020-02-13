@@ -5,7 +5,7 @@
 
 using namespace glm;
 
-
+/*
 
 
 int gjk(Sphere *a, Sphere *b, vec3 *normal, vec3 *pt){
@@ -98,7 +98,7 @@ int gjk(Sphere *a, Sphere *b, vec3 *normal, vec3 *pt){
 		simp.verts.push_back(support_b - support_a);
 	}
 }
-
+*/
 
 
 
@@ -106,7 +106,7 @@ int gjk(Sphere *a, Sphere *b, vec3 *normal, vec3 *pt){
 
 
 //Tri distance function from http://www.iquilezles.org/www/articles/triangledistance/triangledistance.htm
-
+/*
 float dist_to_tri(vec3 v1, vec3 v2, vec3 v3, vec3 p){
 
     // prepare data    
@@ -148,7 +148,7 @@ float dist_to_tri(vec3 v1, vec3 v2, vec3 v3, vec3 p){
                   dot(nor,p1)*dot(nor,p1)/dot(nor,nor) 
 
                 );
-}
+}*/
 
 
 vec3 shade_reflective(RayHit *rhit, Scene *scene, int bounce){

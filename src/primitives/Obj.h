@@ -10,6 +10,7 @@ using namespace glm;
 #include <vector>
 
 class Scene;
+class Sphere;
 
 
 

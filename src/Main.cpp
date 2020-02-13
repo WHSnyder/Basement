@@ -3,6 +3,7 @@
 #include <vector>
 #include <iostream>
 #include <pthread.h>
+#include <chrono>
 
 #ifndef cvinc
 #define cvinc
@@ -126,7 +127,8 @@ int main(int argc, char **argv){
 
 	cv::Mat outimg(dim, dim, CV_8UC3, cv::Scalar(10,10,10));
 	cv::Mat outputimg(1024, 1024, CV_8UC3, cv::Scalar(10,10,10));
-	cv::Mat rawimg = imread("/Users/will/projects/blender/dungeon/textures/sewer2.png", cv::IMREAD_COLOR);
+	//cv::Mat rawimg = imread("/Users/will/projects/blender/dungeon/textures/sewer2.png", cv::IMREAD_COLOR);
+	cv::Mat rawimg = imread("/home/will/Desktop/29gt.png", cv::IMREAD_COLOR);
 	cv::Mat tableimg(rawimg);
 	rawimg.convertTo(tableimg, CV_8UC3);
 	cv::resize(tableimg, tableimg, cv::Size(2048,2048), 0, 0, cv::INTER_LINEAR);
@@ -135,6 +137,7 @@ int main(int argc, char **argv){
 	mat -> rows = tableimg.rows;
 	mat -> cols = tableimg.cols;
 	mat -> data = (unsigned char *) tableimg.data; 
+
 
 	Scene scene = Scene(&view);
 
