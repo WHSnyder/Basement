@@ -27,6 +27,11 @@ int gjk(Sphere *a, Sphere *b, vec3 *normal, vec3 *pt){
 			support_a = a -> support(dir), support_b = b -> support(-dir); 
 			support_mink = support_a - support_b;
 
+			if (sq_length(support_mink) < .01f) {
+				*normal = simp.verts[0];
+				return 0;
+			}
+
 			dir = vec3(0,0,0) - support_mink;
 			simp.verts.push_back(support_mink);
 
@@ -38,18 +43,39 @@ int gjk(Sphere *a, Sphere *b, vec3 *normal, vec3 *pt){
 			support_a = a -> support(dir), support_b = b -> support(-dir); 
 			support_mink = support_a - support_b;
 
-			diff = support_mink - simp.verts[0];
+			diff = support_mink - closest;
 
 			if (sq_length(diff) < .01f) {
-				*normal = simp.verts[0];
+				*normal = closest;
 				return 0;
 			}
+
+			simp.verts.push_back(support_mink);
 
 			diff = normalize(diff);
 
 			proj = dot(diff, -simp.verts[0]);
 
 			diff *= proj;
+
+			closest = diff;
+			dir = -diff;
+		}
+
+		else if (num_verts == 2){
+
+			support_a = a -> support(dir), support_b = b -> support(-dir);
+			support_mink = support_a - support_b;
+
+			diff = support_mink - closest;
+
+			if (sq_length(diff) < .01f) {
+				*normal = closest;
+				return 0;
+			}
+
+
+
 		}
 
 
@@ -84,17 +110,29 @@ int gjk(Sphere *a, Sphere *b, vec3 *normal, vec3 *pt){
 float dist_to_tri(vec3 v1, vec3 v2, vec3 v3, vec3 p){
 
     // prepare data    
-    vec3 v21 = v2 - v1; vec3 p1 = p - v1;
-    vec3 v32 = v3 - v2; vec3 p2 = p - v2;
-    vec3 v13 = v1 - v3; vec3 p3 = p - v3;
+    vec3 v21 = v2 - v1, p1 = p - v1;
+    vec3 v32 = v3 - v2, p2 = p - v2;
+    vec3 v13 = v1 - v3, p3 = p - v3;
+
     vec3 nor = cross( v21, v13 );
 
+	float inside = sign(dot(cross(v21,nor),p1)) + sign(dot(cross(v32,nor),p2)) + sign(dot(cross(v13,nor),p3)); 
+
+	if (inside < 2.0){
+
+		sq_length(v21*clamp(dot(v21,p1)/sq_length(v21),0.0f,1.0f)-p1), 
+        sq_length(v32*clamp(dot(v32,p2)/sq_length(v32),0.0f,1.0f)-p2)),
+	}
+
+	else {
+
+
+	}
+
+
+
+
     return sqrt ( 
-    			 
-    			  // inside/outside test    
-                  (sign(dot(cross(v21,nor),p1)) + 
-                  sign(dot(cross(v32,nor),p2)) + 
-                  sign(dot(cross(v13,nor),p3))<2.0) 
                   
                   ?
 
@@ -350,7 +388,7 @@ Contact *Sphere::collide_sphere(Sphere *s0, int mode){
 			result = new Contact(normal, new_orig, s0 -> radius - (dist - radius));
 		}
 	}
-	
+
 	//Test for inverse collision
 	else {
 
