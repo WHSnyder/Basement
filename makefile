@@ -1,5 +1,5 @@
 CC = clang++
-CFLAGS = -lpthread -Iinclude/glm/glm -Isrc -std=c++11 -Wno-everything
+CFLAGS =  -fPIC -lpthread -Iinclude/glm/glm -Isrc -std=c++11 -Wno-everything
 OPENCV = `pkg-config --cflags --libs opencv`
 OPENCV_LIBS = $(OPENCV)
 
@@ -34,9 +34,9 @@ bin/out: bin/main.o bin/scene.o bin/csg.o bin/obj.o
 else 
 
 bin/main.o: src/TestCuda.cu src/Scene.h
-	nvcc $(OPENCV_LIBS) -lpthread -Iinclude/glm/glm -Isrc -std=c++11 -c src/TestCuda.cu -o bin/main.o
+	nvcc $(OPENCV_LIBS) -Xcompiler "-Wno-everything" -lpthread -Iinclude/glm/glm -Isrc -std=c++11 -c src/TestCuda.cu -o bin/main.o
 
 bin/out: bin/main.o bin/scene.o bin/csg.o bin/obj.o
-	nvcc $(OPENCV_LIBS) -lpthread -Iinclude/glm/glm -Isrc -std=c++11 bin/main.o bin/scene.o bin/csg.o bin/obj.o -o bin/out
+	nvcc $(OPENCV_LIBS) -Xcompiler "-Wno-everything" -lpthread -Iinclude/glm/glm -Isrc -std=c++11 bin/main.o bin/scene.o bin/csg.o bin/obj.o -o bin/out
 
 endif

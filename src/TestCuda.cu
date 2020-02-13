@@ -18,10 +18,6 @@ using namespace std::chrono;
 
 
 
-
-
-
-
 string arg_to_string(char* a) { 
     int i; 
     string s = ""; 
@@ -35,22 +31,26 @@ string arg_to_string(char* a) {
 
 // Kernel function to add the elements of two arrays
 __global__
-void add(int n, float *x, float *y) {
-    for (int i = 0; i < n; i++){   
-        y[i] = x[i] + y[i];
-    }
+void add(int n, float *x, float *y)
+{
+  int index = blockIdx.x * blockDim.x + threadIdx.x;
+  int stride = blockDim.x * gridDim.x;
+  for (int i = index; i < n; i += stride)
+    y[i] = x[i] + y[i];
 }
 
 
 
 int main(void) {
 
+	auto start = high_resolution_clock::now(); 
+
 
 	string filename = "/home/will/projects/cpprtx/meshes/torus.obj";
 
   	Mesh *torus = new Mesh(filename);
 
-  	return 0;
+  	//return 0;
 
     int N = 1<<27;
     float *x, *y;
@@ -65,9 +65,10 @@ int main(void) {
 	    y[i] = 2.0f;
 	}
 
-	// Run kernel on 1M elements on the GPU
-	add<<<1, 1>>>(N, x, y);
-
+	int blockSize = 256;
+	int numBlocks = (N + blockSize - 1) / blockSize;
+	add<<<numBlocks, blockSize>>>(N, x, y);
+	
 	// Wait for GPU to finish before accessing on host
 	cudaDeviceSynchronize();
 
@@ -76,12 +77,16 @@ int main(void) {
 	
 	for (int i = 0; i < N; i++){ 
 		maxError = fmax(maxError, fabs(y[i]-4.0f));
-	    std::cout << "Max error: " << maxError << std::endl;
+	    //std::cout << "Max error: " << maxError << std::endl;
 	}
 
 	// Free memory
 	cudaFree(x);
 	cudaFree(y);
+
+	auto stop = high_resolution_clock::now(); 
+	auto duration = duration_cast<milliseconds>(stop - start); 
+	cout << "Elapsed: " << duration.count() << endl; 
 	  
 	return 0;
 }
