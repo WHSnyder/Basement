@@ -140,7 +140,6 @@ int main(int argc, char **argv){
 	mat -> cols = tableimg.cols;
 	mat -> data = (unsigned char *) tableimg.data; 
 
-
 	Scene scene = Scene(&view);
 
 	vec3 p1 = vec3(-2,-2,-.1);
@@ -171,7 +170,6 @@ int main(int argc, char **argv){
 	Sphere s2 = Sphere(vec3(-.18,-1.1,1.9), vec3(250,170,170),.1);
 	Obj *os2 = &s2;
 	
-
 	vec3 lb = vec3(-.1,-.6,1.2);
 	Cube c0 = Cube(lb,lb + 4.0f * vec3(.1,-.1,.1));
 	Obj *oc0 = &c0;

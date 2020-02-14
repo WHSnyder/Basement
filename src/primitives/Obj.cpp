@@ -4,8 +4,6 @@
 #include <cstdio>
 #include <vector>
 #include <iostream>
-#include <pthread.h>
-#include <chrono>
 #include <regex> 
 #include <string>
 #include <fstream>

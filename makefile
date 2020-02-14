@@ -1,5 +1,5 @@
 CC = clang++
-CFLAGS =  -fPIC -lpthread -Iinclude/glm/glm -Isrc -std=c++11 -Wno-everything
+CFLAGS =  -fPIC -lpthread -Iinclude/glm/glm -Isrc -std=c++17 -Wno-everything
 OPENCV = `pkg-config --cflags --libs opencv`
 OPENCV_LIBS = $(OPENCV)
 

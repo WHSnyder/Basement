@@ -6,11 +6,14 @@
 #include <chrono>
 #include <string>
 
-#include <opencv2/opencv.hpp> 
+#include <opencv2/opencv.hpp>
+
+//#define GLM_FORCE_CUDA 
 
 #include "Scene.h"
 #include "primitives/Obj.h"
 #include "CSG.h"
+
 
 using namespace std;
 using namespace glm;
@@ -31,12 +34,13 @@ string arg_to_string(char* a) {
 
 // Kernel function to add the elements of two arrays
 __global__
-void add(int n, float *x, float *y)
-{
-  int index = blockIdx.x * blockDim.x + threadIdx.x;
-  int stride = blockDim.x * gridDim.x;
-  for (int i = index; i < n; i += stride)
-    y[i] = x[i] + y[i];
+void add(int n, float *x, float *y) {
+
+    int index = blockIdx.x * blockDim.x + threadIdx.x;
+    int stride = blockDim.x * gridDim.x;
+
+    for (int i = index; i < n; i += stride)
+        y[i] = x[i] + y[i];
 }
 
 
@@ -44,7 +48,6 @@ void add(int n, float *x, float *y)
 int main(void) {
 
 	auto start = high_resolution_clock::now(); 
-
 
 	string filename = "/home/will/projects/cpprtx/meshes/torus.obj";
 
