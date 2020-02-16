@@ -2,9 +2,10 @@ CC = clang++
 CFLAGS =  -fPIC -lpthread -Iinclude/glm/glm -Isrc -std=c++17 -Wno-everything
 OPENCV = `pkg-config --cflags --libs opencv`
 OPENCV_LIBS = $(OPENCV)
+GLFLAGS = -Iinclude/glfw/include -Isrc -L/Users/will/projects/cpprtx/include/glfw/build/src -lglfw.3 -framework OpenGL -std=c++17 -Wno-everything
+LDFLAGS="-Wl,-rpath,/Users/will/projects/cpprtx/include/glfw/build/src"
 
-
-
+ifndef GLTEST
  
 all: bin/obj.o bin/csg.o bin/scene.o bin/main.o bin/out
 
@@ -38,5 +39,17 @@ bin/main.o: src/TestCuda.cu src/Scene.h
 
 bin/out: bin/main.o bin/scene.o bin/csg.o bin/obj.o
 	nvcc $(OPENCV_LIBS) -Xcompiler "-Wno-everything" -lpthread -Iinclude/glm/glm -Isrc -std=c++11 bin/main.o bin/scene.o bin/csg.o bin/obj.o -o bin/out
+
+endif
+
+else 
+
+all: bin/gltst
+
+bin/gltst: src/glTest.cpp
+	$(CC) $(GLFLAGS) $(LDFLAGS) -o bin/gltst src/glTest.cpp 
+
+clean: 
+	rm bin/gltst
 
 endif
