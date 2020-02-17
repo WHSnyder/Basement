@@ -1,8 +1,9 @@
-#version 120 
-precision highp float; 
+#version 410 core
 
-varying vec3 ex_Color; 
+in vec4 color;
+out vec4 out_color;
 
-void main(void) { 
-    gl_FragColor = vec4(ex_Color,1.0); 
-} 
+void main(void){
+
+    out_color = color;
+}

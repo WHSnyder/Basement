@@ -12,26 +12,10 @@
 
 #include <glm.hpp>
 #include <ext.hpp>
-/*
-#ifdef __APPLE__
-    #include <OpenGL/gl3.h>         /// remove the "3" for OpenGL versions < 3
-    #include <OpenGL/gl3ext.h>      /// ditto
-#else 
-    #include <GL/glew.h>
-#endif
-*/
+
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
-/*
-#ifdef __APPLE__
-#include <OpenGL/gl3.h>
-#include <OpenGL/gl3ext.h>
-#endif
-//#include <OpenGL/gl.h>
-#include <OpenGL/glu.h>
-//#include <OpenGL/glext.h>
-*/
 
 using namespace glm;
 using namespace std;

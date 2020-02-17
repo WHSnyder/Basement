@@ -1,11 +1,3 @@
-/*
-#ifdef __APPLE__
-    #include <OpenGL/gl3.h>         /// remove the "3" for OpenGL versions < 3
-    #include <OpenGL/gl3ext.h>      /// ditto
-#else 
-    #include <GL/glew.h>
-#endif
-*/
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
@@ -66,13 +58,6 @@ int compile_shader(GLenum shaderType, char *shaderCode){
 
 int main(int argc, char **argv){
 
-	
-
-	//GLint nrAttributes;
-	//glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &nrAttributes);
-	//cout << "Maximum nr of vertex attributes supported: " << nrAttributes << endl;
-
-
     GLFWwindow* window;
     glfwSetErrorCallback(error_callback);
     if (!glfwInit())
@@ -92,68 +77,34 @@ int main(int argc, char **argv){
     glfwMakeContextCurrent(window);
     glfwSetKeyCallback(window, key_callback);
 
+
     float ratio;
     int width, height;
     glfwGetFramebufferSize(window, &width, &height);
     ratio = width / (float) height;
     glViewport(0, 0, width, height);
 
-    glewExperimental = GL_TRUE;
 
-	//#ifndef __APPLE__
-    GLenum status = glewInit();
-    if (status != GLEW_OK) {
-        std::cerr << "GLEW failed to initialize!" << std::endl;
-    }
-	//#endif
+    glewExperimental = GL_TRUE;
+    glewInit();
 
 	Mesh *cube = new Mesh("./meshes/cube.obj");	
-
-	cout << "Read mesh" << endl;
-
 	cube -> bindBuffers();
-
-	cout << "Bound buffers" << endl;
-
 
     char *vshader = (char *) read_shader("src/rendering/shaders/BasicVert.hlsl").c_str();
     char *fshader = (char *) read_shader("src/rendering/shaders/BasicFrag.hlsl").c_str();
 
-    cout << "Read shaders" << endl;
-
-    cout << glGetString(GL_VERSION) << endl;
-
     compile_shader(GL_VERTEX_SHADER, vshader);
     compile_shader(GL_FRAGMENT_SHADER, fshader);
-
-    cout << "Compiled shaders" << endl;
-
 
     
     while (!glfwWindowShouldClose(window)){
 
-    	glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-    	glClear(GL_COLOR_BUFFER_BIT);       
-    	glMatrixMode(GL_PROJECTION);
-        
-        glLoadIdentity();
-        glOrtho(-ratio, ratio, -1.f, 1.f, 1.f, -1.f);
-        
-        glMatrixMode(GL_MODELVIEW);
-        glLoadIdentity();
-        glRotatef((float) glfwGetTime() * 50.f, 0.f, 0.f, 1.f);
-        
-        glBegin(GL_TRIANGLES);
-        glColor3f(1.f, 0.f, 0.f);
-        glVertex3f(-0.6f, -0.4f, 0.f);
-        glColor3f(0.f, 1.f, 0.f);
-        glVertex3f(0.6f, -0.4f, 0.f);
-        glColor3f(0.f, 0.f, 1.f);
-        glVertex3f(0.f, 0.6f, 0.f);
-
+    	glClearColor(1.0,0.0,0.0,1.0);
+        glClear(GL_COLOR_BUFFER_BIT);
 
         
-        glEnd();
+
         glfwSwapBuffers(window);
         glfwPollEvents();
     }

@@ -1,8 +1,10 @@
-#version 120 
-attribute  vec3 in_Position; 
+#version 410 core
 
-varying vec3 ex_Color; 
-void main(void) { 
-    gl_Position = vec4(in_Position.x, in_Position.y, 0.0, 1.0); 
-    ex_Color = in_Color; 
+in vec3 position;
+out vec4 color;
+
+void main(void){
+
+    gl_Position = vec4(position.x, position.y, position.z, 1.0);
+    color = vec4(1.0);
 }
