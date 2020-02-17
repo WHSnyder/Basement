@@ -1,8 +1,8 @@
 CC = clang++
-CFLAGS =  -fPIC -lpthread -Iinclude/glm/glm -Isrc -std=c++17 -Wno-everything
+CFLAGS = -fPIC -lpthread -Iinclude/glm -Isrc -std=c++17 -Wno-everything -Linclude/glm/build -lglm_static
 OPENCV = `pkg-config --cflags --libs opencv`
 OPENCV_LIBS = $(OPENCV)
-GLFLAGS = -Iinclude/glfw/include -Isrc -L/Users/will/projects/cpprtx/include/glfw/build/src -lglfw.3 -framework OpenGL -std=c++17 -Wno-everything
+GLFLAGS = -Iinclude/glfw/include -Iinclude/glm/glm -Isrc -L/Users/will/projects/cpprtx/include/glfw/build/src -lglfw.3 -framework OpenGL -std=c++17 -Wno-everything
 LDFLAGS="-Wl,-rpath,/Users/will/projects/cpprtx/include/glfw/build/src"
 
 ifndef GLTEST
@@ -42,12 +42,21 @@ bin/out: bin/main.o bin/scene.o bin/csg.o bin/obj.o
 
 endif
 
+
+#Compile basic OpenGL engine
 else 
+
 
 all: bin/gltst
 
-bin/gltst: src/glTest.cpp
-	$(CC) $(GLFLAGS) $(LDFLAGS) -o bin/gltst src/glTest.cpp 
+bin/gltst: bin/glTest.o bin/Mesh.o
+	$(CC) -Wno-everything $(GLFLAGS) $(LDFLAGS) bin/glTest.o bin/Mesh.o -o bin/gltst
+
+bin/glTest.o: src/glTest.cpp
+	$(CC) -Wno-everything $(CFLAGS) $(GLFLAGS) src/glTest.cpp -o bin/glTest.o
+
+bin/Mesh.o: src/mesh/Mesh.h src/mesh/Mesh.cpp
+	$(CC) $(CFLAGS) src/mesh/Mesh.cpp -o bin/Mesh.o
 
 clean: 
 	rm bin/gltst
