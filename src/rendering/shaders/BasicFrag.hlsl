@@ -1,9 +1,7 @@
 #version 410 core
-
-in vec4 color;
-out vec4 out_color;
-
-void main(void){
-
-    out_color = color;
+in vec4 vertOutColor;
+layout (location = 0) out vec4 outColor;
+void main()
+{
+    outColor = vertOutColor;
 }

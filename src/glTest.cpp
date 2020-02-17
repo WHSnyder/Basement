@@ -26,16 +26,17 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
 }
 
 
-int compile_shader(GLenum shaderType, char *shaderCode){
+int compile_shader(GLenum shaderType, string shaderCode){
 	
 	unsigned int shader;
 	int success;
 	char infoLog[512];
+	const char *contents = shaderCode.c_str();
 	   
 	// shader Shader
 	shader = glCreateShader(shaderType);
 
-	glShaderSource(shader, 1, &shaderCode, NULL);
+	glShaderSource(shader, 1, &contents, NULL);
 	glCompileShader(shader);
 
 	// print compile errors if any
@@ -91,19 +92,38 @@ int main(int argc, char **argv){
 	Mesh *cube = new Mesh("./meshes/cube.obj");	
 	cube -> bindBuffers();
 
-    char *vshader = (char *) read_shader("src/rendering/shaders/BasicVert.hlsl").c_str();
-    char *fshader = (char *) read_shader("src/rendering/shaders/BasicFrag.hlsl").c_str();
+    string vshader = read_shader("src/rendering/shaders/BasicVert.hlsl");
+    cout << "VERTEX SHADER: \n" << vshader << endl;
 
-    compile_shader(GL_VERTEX_SHADER, vshader);
-    compile_shader(GL_FRAGMENT_SHADER, fshader);
+    string fshader = (const char *) read_shader("src/rendering/shaders/BasicFrag.hlsl").c_str();
+    cout << "FRAG SHADER: \n" << fshader << endl;
+
+    unsigned int vertex = compile_shader(GL_VERTEX_SHADER, vshader);
+    unsigned int fragment = compile_shader(GL_FRAGMENT_SHADER, fshader);
+
+    unsigned int ID = glCreateProgram();
+    int success;
+
+    char infoLog[512];
+
+    ID = glCreateProgram();
+	glAttachShader(ID, vertex);
+	glAttachShader(ID, fragment);
+	glLinkProgram(ID);
+
+	// print linking errors if any
+	glGetProgramiv(ID, GL_LINK_STATUS, &success);
+
+	if(!success){
+	    glGetProgramInfoLog(ID, 512, NULL, infoLog);
+	    std::cout << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n" << infoLog << std::endl;
+	}
 
     
     while (!glfwWindowShouldClose(window)){
 
     	glClearColor(1.0,0.0,0.0,1.0);
         glClear(GL_COLOR_BUFFER_BIT);
-
-        
 
         glfwSwapBuffers(window);
         glfwPollEvents();
