@@ -1,10 +1,12 @@
+/*
 #ifdef __APPLE__
     #include <OpenGL/gl3.h>         /// remove the "3" for OpenGL versions < 3
     #include <OpenGL/gl3ext.h>      /// ditto
 #else 
     #include <GL/glew.h>
 #endif
-
+*/
+#include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
 #include <stdlib.h>
@@ -64,7 +66,7 @@ int compile_shader(GLenum shaderType, char *shaderCode){
 
 int main(int argc, char **argv){
 
-	//glewExperimental = GL_TRUE;
+	
 
 	//GLint nrAttributes;
 	//glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &nrAttributes);
@@ -75,6 +77,12 @@ int main(int argc, char **argv){
     glfwSetErrorCallback(error_callback);
     if (!glfwInit())
         exit(EXIT_FAILURE);
+
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2); 
+    glfwWindowHint(GLFW_OPENGL_PROFILE,GLFW_OPENGL_CORE_PROFILE);
+    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE); 
+    glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
 
     window = glfwCreateWindow(480, 480, "Simple example", NULL, NULL);
     if (!window){
@@ -90,16 +98,14 @@ int main(int argc, char **argv){
     ratio = width / (float) height;
     glViewport(0, 0, width, height);
 
+    glewExperimental = GL_TRUE;
 
-	cout << "glewing" << endl;
-
-
-	#ifndef __APPLE__
-	    GLenum status = glewInit();
-	    if (status != GLEW_OK) {
-	        std::cerr << "GLEW failed to initialize!" << std::endl;
-	    }
-	#endif
+	//#ifndef __APPLE__
+    GLenum status = glewInit();
+    if (status != GLEW_OK) {
+        std::cerr << "GLEW failed to initialize!" << std::endl;
+    }
+	//#endif
 
 	Mesh *cube = new Mesh("./meshes/cube.obj");	
 
@@ -114,6 +120,8 @@ int main(int argc, char **argv){
     char *fshader = (char *) read_shader("src/rendering/shaders/BasicFrag.hlsl").c_str();
 
     cout << "Read shaders" << endl;
+
+    cout << glGetString(GL_VERSION) << endl;
 
     compile_shader(GL_VERTEX_SHADER, vshader);
     compile_shader(GL_FRAGMENT_SHADER, fshader);
@@ -135,13 +143,13 @@ int main(int argc, char **argv){
         glLoadIdentity();
         glRotatef((float) glfwGetTime() * 50.f, 0.f, 0.f, 1.f);
         
-        // glBegin(GL_TRIANGLES);
-        // glColor3f(1.f, 0.f, 0.f);
-        // glVertex3f(-0.6f, -0.4f, 0.f);
-        // glColor3f(0.f, 1.f, 0.f);
-        // glVertex3f(0.6f, -0.4f, 0.f);
-        // glColor3f(0.f, 0.f, 1.f);
-        // glVertex3f(0.f, 0.6f, 0.f);
+        glBegin(GL_TRIANGLES);
+        glColor3f(1.f, 0.f, 0.f);
+        glVertex3f(-0.6f, -0.4f, 0.f);
+        glColor3f(0.f, 1.f, 0.f);
+        glVertex3f(0.6f, -0.4f, 0.f);
+        glColor3f(0.f, 0.f, 1.f);
+        glVertex3f(0.f, 0.6f, 0.f);
 
 
         
