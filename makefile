@@ -1,8 +1,8 @@
 CC = clang++
-CFLAGS = -fPIC -lpthread -Iinclude/glm -Isrc -std=c++17 -Wno-everything -Linclude/glm/build -lglm_static
+CFLAGS = -fPIC -lpthread -Iinclude/glm -Isrc -std=c++17 -stdlib=libc++ -Wno-everything -Linclude/glm/build -lglm_static
 OPENCV = `pkg-config --cflags --libs opencv`
 OPENCV_LIBS = $(OPENCV)
-GLFLAGS = -Iinclude/glfw/include -Iinclude/glm/glm -Isrc -L/Users/will/projects/cpprtx/include/glfw/build/src -lglfw.3 -framework OpenGL -std=c++17 -Wno-everything
+GLFLAGS = -Iinclude/glfw/include -Iinclude/glm -Isrc -L/Users/will/projects/cpprtx/include/glfw/build/src -lglfw.3 -framework OpenGL -std=c++17 -Wno-everything
 LDFLAGS="-Wl,-rpath,/Users/will/projects/cpprtx/include/glfw/build/src"
 
 ifndef GLTEST
@@ -47,18 +47,21 @@ endif
 else 
 
 
-all: bin/gltst
+all: bin/ShaderUtils.o bin/Mesh.o bin/glTest.o bin/gltst
 
-bin/gltst: bin/glTest.o bin/Mesh.o
-	$(CC) -Wno-everything $(GLFLAGS) $(LDFLAGS) bin/glTest.o bin/Mesh.o -o bin/gltst
-
-bin/glTest.o: src/glTest.cpp
-	$(CC) -Wno-everything $(CFLAGS) $(GLFLAGS) src/glTest.cpp -o bin/glTest.o
+bin/ShaderUtils.o: src/utils/ShaderUtils.cpp src/utils/ShaderUtils.h
+	$(CC) $(CFLAGS) $(GLFLAGS) -lGLEW  -c src/utils/ShaderUtils.cpp -o bin/ShaderUtils.o
 
 bin/Mesh.o: src/mesh/Mesh.h src/mesh/Mesh.cpp
-	$(CC) $(CFLAGS) src/mesh/Mesh.cpp -o bin/Mesh.o
+	$(CC) $(CFLAGS) $(GLFLAGS) -lGLEW -c src/mesh/Mesh.cpp -o bin/Mesh.o
+
+bin/glTest.o: src/glTest.cpp
+	$(CC) $(CFLAGS) $(GLFLAGS) -lGLEW  -c src/glTest.cpp -o bin/glTest.o
+
+bin/gltst: bin/glTest.o bin/Mesh.o
+	$(CC) $(CFLAGS) $(GLFLAGS) $(LDFLAGS) -lGLEW  bin/ShaderUtils.o bin/glTest.o bin/Mesh.o -o bin/gltst
 
 clean: 
-	rm bin/gltst
+	rm bin/*
 
 endif
