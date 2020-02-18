@@ -7,31 +7,53 @@ using namespace std;
 
 int Mesh::draw(){
 
-	glBindVertexArray(VAO);
-    glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, &indices[0]);
-    glBindVertexArray(0);
+	//glBindVertexArray(VAO);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+	glCheckError();
+    glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, (void*)0);
+    glCheckError();
+
+    //glDrawArrays(GL_TRIANGLES, 0, verts.size() );
+    //glBindVertexArray(0);
 }
 
 
 
 int Mesh::bindBuffers(){
 
+	//cout << "Binding" << endl;
+
+	cout << verts.size() << " " << indices.size() << endl;
+
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);
     glGenBuffers(1, &EBO);
+    glCheckError();
+
+
+    //cout << "Genned buffs" << endl;
   
     glBindVertexArray(VAO);
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glCheckError();
+
 
     glBufferData(GL_ARRAY_BUFFER, verts.size() * sizeof(vec3), &verts[0], GL_STATIC_DRAW);  
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), 
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(GLuint), 
                  &indices[0], GL_STATIC_DRAW);
+    glCheckError();
+
+    //cout << "Bound buffs" << endl;
 
     // vertex positions
     glEnableVertexAttribArray(0);	
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(vec3), (void*)0);
+
+	glCheckError();
+    //cout << "Genned attribs" << endl;
+
 
     // vertex normals
     /*
@@ -60,25 +82,25 @@ void Mesh::read_obj_file(string filename){
 
 	smatch sm;
 
-	ifstream file (filename);
-	int i = 0,k=1;
+	ifstream file;
+	file.open(filename);
 
 	string::size_type sz;
 
-	float c [3];
-	int t [3];
+	float c[3];
+	GLuint t[3];
+	int i = 0, k = 1;
 	
-	if (!file)
-		file.close();
+	if (file.fail())
+		//file.close();
 		cout << "unable to open file: " << filename << endl;
-		cerr << "Error: " << strerror(errno);
-		k= 0;
+		//cerr << "Error: " << strerror(errno);
+		k = 0;
 
-	if (!k){
-		return;
-	}
-
-	cout << "About to read" << endl;
+	//if (!k) return;
+	
+	
+	cout << "\nAbout to read " << endl;
 
 	string line;
 
@@ -113,13 +135,13 @@ void Mesh::read_obj_file(string filename){
 			if (regex_search(line, sm, face_nums)) {
 
 			    for (int i = 1; i < sm.size(); i+=2)
-			        t[i/2] = stoi(sm[i], &sz);
+			        t[i/2] = (GLuint) stoi(sm[i], &sz);
 
-			    cout << t[0] << t[1] << t[2] << endl;
+			    cout << t[0] - 1 << t[1] - 1 << t[2] - 1 << endl;
 
-			    indices.push_back(t[0]);
-			    indices.push_back(t[1]);
-			    indices.push_back(t[2]);
+			    indices.push_back(t[0] - 1);
+			    indices.push_back(t[1] - 1);
+			    indices.push_back(t[2] - 1);
 
 			    //tris.push_back(TriPrim{t[0], t[1], t[2]});
 			}
@@ -128,9 +150,8 @@ void Mesh::read_obj_file(string filename){
 			//nada
 		}
 	}
-
 	file.close();
-	//maybe add more stuff herefor mesh verts
+	cout << "Done reading" << endl;
 
 	return 1;
 } 

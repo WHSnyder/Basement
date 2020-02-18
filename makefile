@@ -1,5 +1,5 @@
 CC = clang++
-CFLAGS = -fPIC -lpthread -Iinclude/glm -Isrc -std=c++11 -stdlib=libc++ -Wno-everything -Linclude/glm/build -lglm_static
+CFLAGS = -fPIC -lpthread -Iinclude/glm -Isrc -std=c++17 -stdlib=libc++ -Wno-everything -Linclude/glm/build -lglm_static
 OPENCV = `pkg-config --cflags --libs opencv`
 OPENCV_LIBS = $(OPENCV)
 GLFLAGS = -Iinclude/glfw/include -Iinclude/glm -Isrc -L/Users/will/projects/cpprtx/include/glfw/build/src -lglfw.3 -framework OpenGL -std=c++17 -Wno-everything

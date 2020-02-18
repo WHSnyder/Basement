@@ -53,16 +53,19 @@ int compile_shader(GLenum shaderType, string shaderCode){
 
 int main(int argc, char **argv){
 
+	string path = "/Users/will/projects/cpprtx/meshes/cube.obj";
+	Mesh *cube = new Mesh(path);	
+
     GLFWwindow* window;
     glfwSetErrorCallback(error_callback);
     if (!glfwInit())
         exit(EXIT_FAILURE);
 
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2); 
-    glfwWindowHint(GLFW_OPENGL_PROFILE,GLFW_OPENGL_CORE_PROFILE);
-    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE); 
-    glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
+	glfwWindowHint(GLFW_SAMPLES, 4);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE); // To make MacOS happy; should not be needed
+	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
     window = glfwCreateWindow(480, 480, "Simple example", NULL, NULL);
     if (!window){
@@ -72,6 +75,9 @@ int main(int argc, char **argv){
     glfwMakeContextCurrent(window);
     glfwSetKeyCallback(window, key_callback);
 
+    glewExperimental = GL_TRUE;
+    glewInit();
+
 
     float ratio;
     int width, height;
@@ -79,11 +85,11 @@ int main(int argc, char **argv){
     ratio = width / (float) height;
     glViewport(0, 0, width, height);
 
-    glewExperimental = GL_TRUE;
-    glewInit();
+    glEnable(GL_DEPTH_TEST);
+	// Accept fragment if it closer to the camera than the former one
+	glDepthFunc(GL_LESS); 
 
-	Mesh *cube = new Mesh("/Users/will/projects/cpprtx/meshes/cube.obj");	
-	cube -> bindBuffers();
+   	cube -> bindBuffers();
 
     string vshader = read_shader("src/rendering/shaders/BasicVert.hlsl");
     string fshader = (const char *) read_shader("src/rendering/shaders/BasicFrag.hlsl").c_str();
@@ -99,10 +105,13 @@ int main(int argc, char **argv){
     ID = glCreateProgram();
 	glAttachShader(ID, vertex);
 	glAttachShader(ID, fragment);
+	glLinkProgram(ID);
+	glUseProgram(ID);
+
+
 
 	glBindAttribLocation(ID, 0, "inPosition");
 
-	glLinkProgram(ID);
 
 	// print linking errors if any
 	glGetProgramiv(ID, GL_LINK_STATUS, &success);
@@ -112,14 +121,15 @@ int main(int argc, char **argv){
 	    std::cout << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n" << infoLog << std::endl;
 	}
 
-	glUseProgram(ID);
 
 
     while (!glfwWindowShouldClose(window)){
 
-        //glClear(GL_COLOR_BUFFER_BIT);
+    	glViewport(0, 0, width, height);
+    	glMatrixMode(GL_PROJECTION);
+        glLoadIdentity();
+        glOrtho(-ratio, ratio, -1.f, 1.f, 1.f, -1.f);
 
-        cube -> bindBuffers();
         cube -> draw();
 
         glfwSwapBuffers(window);
@@ -129,6 +139,9 @@ int main(int argc, char **argv){
     glfwDestroyWindow(window);
     glfwTerminate();
     exit(EXIT_SUCCESS);
+    
+
+    return 0;
 }
 
 
