@@ -1,8 +1,8 @@
 #include <mesh/Mesh.h>
 
-
 using namespace glm;
 using namespace std;
+
 
 GLenum glCheckError_(const char *file, int line)
 {

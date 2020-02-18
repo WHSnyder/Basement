@@ -130,69 +130,20 @@ int main(int argc, char **argv){
 
     glClearColor(0.0f, 0.0f, 0.4f, 0.0f);
 
-	/*static const GLfloat g_vertex_buffer_data[] = { 
-		-1.0f, -1.0f, 1.0f,
-		 1.0f, -1.0f, 1.0f,
-		 0.0f,  1.0f, 1.0f,
-	};
-
-	static const GLuint elems[] = {0,1,2};
-
-	GLuint VertexArrayID,EBO;
-	glGenVertexArrays(1, &VertexArrayID);
-	glBindVertexArray(VertexArrayID);
-
-	GLuint vertexbuffer;
-	glGenBuffers(1, &vertexbuffer);
-	glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(g_vertex_buffer_data), g_vertex_buffer_data, GL_STATIC_DRAW);
-
-	glEnableVertexAttribArray(0);
-	glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
-	
-	glVertexAttribPointer(
-		0,                  // attribute 0. No particular reason for 0, but must match the layout in the shader.
-		3,                  // size
-		GL_FLOAT,           // type
-		GL_FALSE,           // normalized?
-		0,                  // stride
-		(void*)0            // array buffer offset
-	);
-
-	glGenBuffers(1, &EBO);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(elems), &elems[0], GL_STATIC_DRAW);
-
-
-	glBindVertexArray(0);*/
-
 
 	do{
 
 		glClear( GL_COLOR_BUFFER_BIT );
 
-		/*
-		glBindVertexArray(VertexArrayID);
-		glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, (void*)0);
-		glBindVertexArray(0);
-		*/
-
 		cube -> draw();
-
-
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 	} 
-	while( glfwGetKey(window, GLFW_KEY_ESCAPE ) != GLFW_PRESS &&
-		   glfwWindowShouldClose(window) == 0 );
-
-
+	while( glfwGetKey(window, GLFW_KEY_ESCAPE ) != GLFW_PRESS && glfwWindowShouldClose(window) == 0 );
 
 	cube -> deleteBuffers();
 	glDeleteProgram(ID);
-
-
 
 	// Close OpenGL window and terminate GLFW
 	glfwTerminate();

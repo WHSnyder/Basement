@@ -27,11 +27,13 @@ GLenum glCheckError_(const char *file, int line);
 
 
 struct MeshVertex {
-	vec3 position, normal;
+	glm::vec3 position, normal;
 };
 
 
 class Mesh {
+
+
 
 	public:
 
