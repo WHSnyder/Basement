@@ -6,6 +6,6 @@ out vec4 vertOutColor;
 
 void main(){
 
-    gl_Position = vec4(.5 * inPosition + vec3(0.0,0.0,2.0), 1.0);
-    vertOutColor = vec4(1.0);
+    gl_Position = vec4(inPosition, 1.0);
+    vertOutColor = vec4(inPosition,1.0);
 }

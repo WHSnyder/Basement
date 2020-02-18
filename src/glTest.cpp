@@ -1,6 +1,7 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -52,14 +53,18 @@ int compile_shader(GLenum shaderType, string shaderCode){
 
 
 int main(int argc, char **argv){
+	
+	GLFWwindow* window;
 
 	string path = "/Users/will/projects/cpprtx/meshes/cube.obj";
 	Mesh *cube = new Mesh(path);	
 
-    GLFWwindow* window;
-    glfwSetErrorCallback(error_callback);
-    if (!glfwInit())
-        exit(EXIT_FAILURE);
+	if( !glfwInit() )
+	{
+		fprintf( stderr, "Failed to initialize GLFW\n" );
+		getchar();
+		return -1;
+	}
 
 	glfwWindowHint(GLFW_SAMPLES, 4);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -67,17 +72,33 @@ int main(int argc, char **argv){
 	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE); // To make MacOS happy; should not be needed
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    window = glfwCreateWindow(480, 480, "Simple example", NULL, NULL);
-    if (!window){
+	// Open a window and create its OpenGL context
+	window = glfwCreateWindow( 480, 480, "Tutorial 02 - Red triangle", NULL, NULL);
+	    if (!window){
         glfwTerminate();
         exit(EXIT_FAILURE);
     }
-    glfwMakeContextCurrent(window);
+
+	glfwMakeContextCurrent(window);
+
+	// Initialize GLEW
+	glewExperimental = true; // Needed for core profile
+	if (glewInit() != GLEW_OK) {
+		fprintf(stderr, "Failed to initialize GLEW\n");
+		getchar();
+		glfwTerminate();
+		return -1;
+	}
+
+	// Ensure we can capture the escape key being pressed below
+	glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
+
+    
+    glfwSetErrorCallback(error_callback);
+    if (!glfwInit())
+        exit(EXIT_FAILURE);
+
     glfwSetKeyCallback(window, key_callback);
-
-    glewExperimental = GL_TRUE;
-    glewInit();
-
 
     float ratio;
     int width, height;
@@ -86,13 +107,12 @@ int main(int argc, char **argv){
     glViewport(0, 0, width, height);
 
     glEnable(GL_DEPTH_TEST);
-	// Accept fragment if it closer to the camera than the former one
-	glDepthFunc(GL_LESS); 
+	glDepthFunc(GL_GEQUAL); 
 
-   	cube -> bindBuffers();
+   	//cube -> bindBuffers();
 
     string vshader = read_shader("src/rendering/shaders/BasicVert.hlsl");
-    string fshader = (const char *) read_shader("src/rendering/shaders/BasicFrag.hlsl").c_str();
+    string fshader = read_shader("src/rendering/shaders/BasicFrag.hlsl");
 
     unsigned int vertex = compile_shader(GL_VERTEX_SHADER, vshader);
     unsigned int fragment = compile_shader(GL_FRAGMENT_SHADER, fshader);
@@ -108,41 +128,68 @@ int main(int argc, char **argv){
 	glLinkProgram(ID);
 	glUseProgram(ID);
 
+    glClearColor(0.0f, 0.0f, 0.4f, 0.0f);
 
+	static const GLfloat g_vertex_buffer_data[] = { 
+		-1.0f, -1.0f, 1.0f,
+		 1.0f, -1.0f, 1.0f,
+		 0.0f,  1.0f, 1.0f,
+	};
 
-	glBindAttribLocation(ID, 0, "inPosition");
+	static const GLfloat elems[] = {0,1,2};
 
+	GLuint VertexArrayID;
+	glGenVertexArrays(1, &VertexArrayID);
+	glBindVertexArray(VertexArrayID);
 
-	// print linking errors if any
-	glGetProgramiv(ID, GL_LINK_STATUS, &success);
+	GLuint vertexbuffer;
+	glGenBuffers(1, &vertexbuffer);
+	glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(g_vertex_buffer_data), g_vertex_buffer_data, GL_STATIC_DRAW);
 
-	if(!success){
-	    glGetProgramInfoLog(ID, 512, NULL, infoLog);
-	    std::cout << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n" << infoLog << std::endl;
-	}
+	do{
 
+		// Clear the screen
+		glClear( GL_COLOR_BUFFER_BIT );
 
+		// Use our shader
 
-    while (!glfwWindowShouldClose(window)){
+		// 1rst attribute buffer : vertices
+		glEnableVertexAttribArray(0);
+		glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
+		//glBindAttribLocation(ID, 0, "inPosition");
+		
+		glVertexAttribPointer(
+			0,                  // attribute 0. No particular reason for 0, but must match the layout in the shader.
+			3,                  // size
+			GL_FLOAT,           // type
+			GL_FALSE,           // normalized?
+			0,                  // stride
+			(void*)0            // array buffer offset
+		);
 
-    	glViewport(0, 0, width, height);
-    	glMatrixMode(GL_PROJECTION);
-        glLoadIdentity();
-        glOrtho(-ratio, ratio, -1.f, 1.f, 1.f, -1.f);
+		// Draw the triangle !
+		glDrawArrays(GL_TRIANGLES, 0, 3); // 3 indices starting at 0 -> 1 triangle
 
-        cube -> draw();
+		//glDisableVertexAttribArray(0);
 
-        glfwSwapBuffers(window);
-        glfwPollEvents();
-    }
+		// Swap buffers
+		glfwSwapBuffers(window);
+		glfwPollEvents();
 
-    glfwDestroyWindow(window);
-    glfwTerminate();
-    exit(EXIT_SUCCESS);
-    
+	} // Check if the ESC key was pressed or the window was closed
+	while( glfwGetKey(window, GLFW_KEY_ESCAPE ) != GLFW_PRESS &&
+		   glfwWindowShouldClose(window) == 0 );
 
-    return 0;
+	// Cleanup VBO
+	glDeleteBuffers(1, &vertexbuffer);
+	glDeleteVertexArrays(1, &VertexArrayID);
+	glDeleteProgram(ID);
+
+	// Close OpenGL window and terminate GLFW
+	glfwTerminate();
+
+	return 0;
 }
-
-
+    
 
