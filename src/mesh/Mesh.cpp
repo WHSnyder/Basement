@@ -29,7 +29,6 @@ GLenum glCheckError_(const char *file, int line)
 int Mesh::draw(){
 
 	glBindVertexArray(VAO);
-	//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
 	glCheckError();
     glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, (void*)0);
     glCheckError();
