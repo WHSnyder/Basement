@@ -51,12 +51,6 @@ int compile_shader(GLenum shaderType, string shaderCode){
 }
 
 
-
-
-
-
-
-
 int main(int argc, char **argv){
 
     GLFWwindow* window;
@@ -85,18 +79,14 @@ int main(int argc, char **argv){
     ratio = width / (float) height;
     glViewport(0, 0, width, height);
 
-
     glewExperimental = GL_TRUE;
     glewInit();
 
-	Mesh *cube = new Mesh("./meshes/cube.obj");	
+	Mesh *cube = new Mesh("/Users/will/projects/cpprtx/meshes/cube.obj");	
 	cube -> bindBuffers();
 
     string vshader = read_shader("src/rendering/shaders/BasicVert.hlsl");
-    cout << "VERTEX SHADER: \n" << vshader << endl;
-
     string fshader = (const char *) read_shader("src/rendering/shaders/BasicFrag.hlsl").c_str();
-    cout << "FRAG SHADER: \n" << fshader << endl;
 
     unsigned int vertex = compile_shader(GL_VERTEX_SHADER, vshader);
     unsigned int fragment = compile_shader(GL_FRAGMENT_SHADER, fshader);
@@ -109,6 +99,9 @@ int main(int argc, char **argv){
     ID = glCreateProgram();
 	glAttachShader(ID, vertex);
 	glAttachShader(ID, fragment);
+
+	glBindAttribLocation(ID, 0, "inPosition");
+
 	glLinkProgram(ID);
 
 	// print linking errors if any
@@ -119,11 +112,15 @@ int main(int argc, char **argv){
 	    std::cout << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n" << infoLog << std::endl;
 	}
 
-    
+	glUseProgram(ID);
+
+
     while (!glfwWindowShouldClose(window)){
 
-    	glClearColor(1.0,0.0,0.0,1.0);
-        glClear(GL_COLOR_BUFFER_BIT);
+        //glClear(GL_COLOR_BUFFER_BIT);
+
+        cube -> bindBuffers();
+        cube -> draw();
 
         glfwSwapBuffers(window);
         glfwPollEvents();
@@ -133,3 +130,6 @@ int main(int argc, char **argv){
     glfwTerminate();
     exit(EXIT_SUCCESS);
 }
+
+
+

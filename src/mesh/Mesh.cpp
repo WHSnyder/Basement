@@ -7,10 +7,8 @@ using namespace std;
 
 int Mesh::draw(){
 
-
-
 	glBindVertexArray(VAO);
-    glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
+    glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, &indices[0]);
     glBindVertexArray(0);
 }
 
@@ -28,7 +26,7 @@ int Mesh::bindBuffers(){
     glBufferData(GL_ARRAY_BUFFER, verts.size() * sizeof(vec3), &verts[0], GL_STATIC_DRAW);  
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(int), 
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), 
                  &indices[0], GL_STATIC_DRAW);
 
     // vertex positions
@@ -51,36 +49,42 @@ int Mesh::bindBuffers(){
 
 
 
-int read_obj_file(string filename, vector<vec3>& verts, vector<vec3>& normals, vector<int>& inds){
+void Mesh::read_obj_file(string filename){
 
 	regex object_header("o ");
-
 	regex vertex_decl("v( [-]?[0-9]*\.?[0-9]*){3}");
 	regex normal_decl("vn( [-]?[0-9]*\.?[0-9]*){3}");
 	regex face_decl("f( [0-9]*\/\/[0-9]*){3}");
-
 	regex float_decl("([-]?[0-9]+\.[0-9]+) ([-]?[0-9]+\.[0-9]+) ([-]?[0-9]+\.[0-9]+)");
 	regex face_nums("f ([0-9]+)\/\/([0-9]+) ([0-9]+)\/\/([0-9]+) ([0-9]+)\/\/([0-9]+)");
 
 	smatch sm;
 
+	ifstream file (filename);
+	int i = 0,k=1;
 
-	std::ifstream file (filename);
-	int i = 0;
-
-	std::string::size_type sz;
+	string::size_type sz;
 
 	float c [3];
 	int t [3];
 	
 	if (!file)
-		cout << "unable to open file";
-		return 0;
-	
+		file.close();
+		cout << "unable to open file: " << filename << endl;
+		cerr << "Error: " << strerror(errno);
+		k= 0;
+
+	if (!k){
+		return;
+	}
+
+	cout << "About to read" << endl;
 
 	string line;
 
 	while (getline (file, line)) {
+
+		//cout << "online" << endl;
 
 		if (regex_search(line, sm, vertex_decl)){
 						
@@ -88,6 +92,8 @@ int read_obj_file(string filename, vector<vec3>& verts, vector<vec3>& normals, v
 			
 			    for (int i = 1; i < sm.size(); i++)
 			        c[i-1] = stof(sm[i], &sz);
+
+			    cout << c[0] << c[1] << c[2] << endl;
 
 			    verts.push_back(vec3(c[0],c[1],c[2]));
 			}
@@ -109,9 +115,11 @@ int read_obj_file(string filename, vector<vec3>& verts, vector<vec3>& normals, v
 			    for (int i = 1; i < sm.size(); i+=2)
 			        t[i/2] = stoi(sm[i], &sz);
 
-			    inds.push_back(t[0]);
-			    inds.push_back(t[1]);
-			    inds.push_back(t[2]);
+			    cout << t[0] << t[1] << t[2] << endl;
+
+			    indices.push_back(t[0]);
+			    indices.push_back(t[1]);
+			    indices.push_back(t[2]);
 
 			    //tris.push_back(TriPrim{t[0], t[1], t[2]});
 			}
@@ -121,6 +129,7 @@ int read_obj_file(string filename, vector<vec3>& verts, vector<vec3>& normals, v
 		}
 	}
 
+	file.close();
 	//maybe add more stuff herefor mesh verts
 
 	return 1;

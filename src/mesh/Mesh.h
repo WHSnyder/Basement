@@ -21,41 +21,36 @@ using namespace glm;
 using namespace std;
 
 
-struct TriPrim { int a,b,c; };
 
 struct MeshVertex {
 	vec3 position, normal;
 };
 
 
-int read_obj_file(string filename, vector<vec3>& verts, vector<vec3>& normals, vector<int>& tris);
-
-
 class Mesh {
 
 	public:
 
-		vector<int> indices;
-		vector<vec3> verts, normals;
-		vector<MeshVertex> mesh_verts;
+		int bindBuffers();
+		int draw();
+		void read_obj_file(string filename);
 
+		vector<unsigned int> indices;
+		vector<vec3> verts, normals;
 
 		//VAO = vertex attribute object  
 		//VBO = vertex buffer object
 		//EBO = element (index) buffer object
 		unsigned int VAO, VBO, EBO;
 
-		Mesh(vector<int> inds, vector<vec3> vertices, vector<vec3> normz){
+		Mesh(vector<unsigned int> inds, vector<vec3> vertices, vector<vec3> normz){
 			indices = inds;
 			verts = vertices;
 			normals = normz;
 		}
 
 		Mesh(string filename){
-			read_obj_file(filename, verts, normals, indices);
+			cout << "reading" << endl;
+			read_obj_file(filename);
 		}
-
-		int bindBuffers();
-		int draw();
-
 };
