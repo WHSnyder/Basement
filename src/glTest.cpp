@@ -109,7 +109,7 @@ int main(int argc, char **argv){
     glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_GEQUAL); 
 
-   	//cube -> bindBuffers();
+   	cube -> bindBuffers();
 
     string vshader = read_shader("src/rendering/shaders/BasicVert.hlsl");
     string fshader = read_shader("src/rendering/shaders/BasicFrag.hlsl");
@@ -130,7 +130,7 @@ int main(int argc, char **argv){
 
     glClearColor(0.0f, 0.0f, 0.4f, 0.0f);
 
-	static const GLfloat g_vertex_buffer_data[] = { 
+	/*static const GLfloat g_vertex_buffer_data[] = { 
 		-1.0f, -1.0f, 1.0f,
 		 1.0f, -1.0f, 1.0f,
 		 0.0f,  1.0f, 1.0f,
@@ -164,31 +164,35 @@ int main(int argc, char **argv){
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(elems), &elems[0], GL_STATIC_DRAW);
 
 
-	glBindVertexArray(0);
+	glBindVertexArray(0);*/
 
 
 	do{
-		
+
 		glClear( GL_COLOR_BUFFER_BIT );
 
+		/*
 		glBindVertexArray(VertexArrayID);
 		glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, (void*)0);
+		glBindVertexArray(0);
+		*/
 
-		// Swap buffers
+		cube -> draw();
+
+
+
 		glfwSwapBuffers(window);
 		glfwPollEvents();
-
-		glBindVertexArray(0);
-
-
-	} // Check if the ESC key was pressed or the window was closed
+	} 
 	while( glfwGetKey(window, GLFW_KEY_ESCAPE ) != GLFW_PRESS &&
 		   glfwWindowShouldClose(window) == 0 );
 
-	// Cleanup VBO
-	glDeleteBuffers(1, &vertexbuffer);
-	glDeleteVertexArrays(1, &VertexArrayID);
+
+
+	cube -> deleteBuffers();
 	glDeleteProgram(ID);
+
+
 
 	// Close OpenGL window and terminate GLFW
 	glfwTerminate();

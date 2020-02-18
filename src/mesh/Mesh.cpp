@@ -29,61 +29,36 @@ GLenum glCheckError_(const char *file, int line)
 int Mesh::draw(){
 
 	glBindVertexArray(VAO);
-	glCheckError();
     glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, (void*)0);
-    glCheckError();
-
-    //glDrawArrays(GL_TRIANGLES, 0, verts.size() );
     glBindVertexArray(0);
 }
 
 
+int Mesh::deleteBuffers(){
+
+	glDeleteBuffers(1, &VBO);
+	glDeleteBuffers(1, &EBO);
+	glDeleteVertexArrays(1, &VAO);
+}
+
 
 int Mesh::bindBuffers(){
-
-	//cout << "Binding" << endl;
 
 	cout << verts.size() << " " << indices.size() << endl;
 
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);
     glGenBuffers(1, &EBO);
-    glCheckError();
-
-
-    //cout << "Genned buffs" << endl;
   
     glBindVertexArray(VAO);
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glCheckError();
-
-
     glBufferData(GL_ARRAY_BUFFER, verts.size() * sizeof(vec3), &verts[0], GL_STATIC_DRAW);  
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(GLuint), 
-                 &indices[0], GL_STATIC_DRAW);
-    glCheckError();
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(GLuint), &indices[0], GL_STATIC_DRAW);
 
-    //cout << "Bound buffs" << endl;
-
-    // vertex positions
     glEnableVertexAttribArray(0);	
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(vec3), (void*)0);
-
-	glCheckError();
-    //cout << "Genned attribs" << endl;
-
-
-    // vertex normals
-    /*
-    glEnableVertexAttribArray(1);	
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, Normal));
-
-    // vertex texture coords
-    glEnableVertexAttribArray(2);	
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, TexCoords));
-    */
 
     glBindVertexArray(0);
 } 
@@ -135,7 +110,7 @@ void Mesh::read_obj_file(string filename){
 			    for (int i = 1; i < sm.size(); i++)
 			        c[i-1] = stof(sm[i], &sz);
 
-			    cout << c[0] << c[1] << c[2] << endl;
+			    //cout << c[0] << c[1] << c[2] << endl;
 
 			    verts.push_back(vec3(c[0],c[1],c[2]));
 			}
@@ -157,7 +132,7 @@ void Mesh::read_obj_file(string filename){
 			    for (int i = 1; i < sm.size(); i+=2)
 			        t[i/2] = (GLuint) stoi(sm[i], &sz);
 
-			    cout << t[0] - 1 << t[1] - 1 << t[2] - 1 << endl;
+			    //cout << t[0] - 1 << t[1] - 1 << t[2] - 1 << endl;
 
 			    indices.push_back(t[0] - 1);
 			    indices.push_back(t[1] - 1);

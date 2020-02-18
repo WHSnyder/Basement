@@ -36,6 +36,7 @@ class Mesh {
 	public:
 
 		int bindBuffers();
+		int deleteBuffers();
 		int draw();
 		void read_obj_file(string filename);
 
