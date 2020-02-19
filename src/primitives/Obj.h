@@ -1,6 +1,10 @@
 #ifndef obji
 #define obji
 
+#ifdef CUDA
+#define GLM_FORCE_CUDA
+#endif
+
 #include <glm.hpp>
 #include <ext.hpp>
 
