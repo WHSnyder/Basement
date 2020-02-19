@@ -1,9 +1,20 @@
 CC = clang++
-CFLAGS = -fPIC -lpthread -Iinclude/glm -Isrc -std=c++17 -stdlib=libc++ -Wno-everything -Linclude/glm/build -lglm_static
+
+
+ifdef LINUX
+	BASEPATH = /home/will/projects/cpprtx/
+	GLFLAGS = -Ilibs/glfw/include -Isrc -L$(BASEPATH)libs/glfw/build/src -lglfw3
+else
+	BASEPATH = /Users/will/projects/cpprtx/
+	GLFLAGS = -Ilibs/glfw/include -Isrc -L$(BASEPATH)libs/glfw/build/src -lglfw.3 -framework OpenGL 
+endif
+
+
+CFLAGS = -fPIC -lpthread -Ilibs/glm -Ilibs/glm/glm -Isrc -std=c++17 -Wno-everything -Llibs/glm/build/glm -lglm_static
 OPENCV = `pkg-config --cflags --libs opencv`
 OPENCV_LIBS = $(OPENCV)
-GLFLAGS = -Iinclude/glfw/include -Iinclude/glm -Isrc -L/Users/will/projects/cpprtx/include/glfw/build/src -lglfw.3 -framework OpenGL -std=c++17 -Wno-everything
-LDFLAGS="-Wl,-rpath,/Users/will/projects/cpprtx/include/glfw/build/src"
+LDFLAGS="-Wl,-rpath,$(BASEPATH)libs/glfw/build/src"
+
 
 ifndef GLTEST
  
@@ -35,10 +46,10 @@ bin/out: bin/main.o bin/scene.o bin/csg.o bin/obj.o
 else 
 
 bin/main.o: src/TestCuda.cu src/Scene.h
-	nvcc $(OPENCV_LIBS) --expt-relaxed-constexpr -lpthread -Iinclude/glm/glm -Isrc -std=c++11 -c src/TestCuda.cu -o bin/main.o
+	nvcc $(OPENCV_LIBS) --expt-relaxed-constexpr -lpthread -Ilibs/glm/glm -Isrc -std=c++11 -c src/TestCuda.cu -o bin/main.o
 
 bin/out: bin/main.o bin/scene.o bin/csg.o bin/obj.o
-	nvcc $(OPENCV_LIBS) --expt-relaxed-constexpr -lpthread -Iinclude/glm/glm -Isrc -std=c++11 bin/main.o bin/scene.o bin/csg.o bin/obj.o -o bin/out
+	nvcc $(OPENCV_LIBS) --expt-relaxed-constexpr -lpthread -Ilibs/glm/glm -Isrc -std=c++11 bin/main.o bin/scene.o bin/csg.o bin/obj.o -o bin/out
 
 endif
 

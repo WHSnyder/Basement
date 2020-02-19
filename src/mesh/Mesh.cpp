@@ -147,6 +147,4 @@ void Mesh::read_obj_file(string filename){
 	}
 	file.close();
 	cout << "Done reading" << endl;
-
-	return 1;
 } 
