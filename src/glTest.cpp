@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <chrono>
 
 #include <fstream>
 #include <iostream>
@@ -33,13 +34,12 @@ int compile_shader(GLenum shaderType, string shaderCode){
 	char infoLog[512];
 	const char *contents = shaderCode.c_str();
 	   
-	// shader Shader
 	shader = glCreateShader(shaderType);
 
 	glShaderSource(shader, 1, &contents, NULL);
 	glCompileShader(shader);
+	glCheckError();
 
-	// print compile errors if any
 	glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
 	
 	if(!success){
@@ -58,8 +58,7 @@ int main(int argc, char **argv){
 	string path = "/Users/will/projects/cpprtx/meshes/cube.obj";
 	Mesh *cube = new Mesh(path);	
 
-	if( !glfwInit() )
-	{
+	if(!glfwInit()){
 		fprintf( stderr, "Failed to initialize GLFW\n" );
 		getchar();
 		return -1;
@@ -72,8 +71,8 @@ int main(int argc, char **argv){
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
 	// Open a window and create its OpenGL context
-	window = glfwCreateWindow( 480, 480, "Tutorial 02 - Red triangle", NULL, NULL);
-	    if (!window){
+	window = glfwCreateWindow(480, 480, "Tutorial 02 - Red triangle", NULL, NULL);
+	if (!window){
         glfwTerminate();
         exit(EXIT_FAILURE);
     }
@@ -92,7 +91,6 @@ int main(int argc, char **argv){
 	// Ensure we can capture the escape key being pressed below
 	glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
 
-    
     glfwSetErrorCallback(error_callback);
     if (!glfwInit())
         exit(EXIT_FAILURE);
@@ -106,7 +104,8 @@ int main(int argc, char **argv){
     glViewport(0, 0, width, height);
 
     glEnable(GL_DEPTH_TEST);
-	glDepthFunc(GL_GEQUAL); 
+	glDepthFunc(GL_LESS); 
+	//glCheckError();
 
    	cube -> bindBuffers();
 
@@ -115,6 +114,7 @@ int main(int argc, char **argv){
 
     unsigned int vertex = compile_shader(GL_VERTEX_SHADER, vshader);
     unsigned int fragment = compile_shader(GL_FRAGMENT_SHADER, fshader);
+    glCheckError();
 
     unsigned int ID = glCreateProgram();
     int success;
@@ -122,32 +122,63 @@ int main(int argc, char **argv){
     char infoLog[512];
 
     ID = glCreateProgram();
+    glCheckError();
 	glAttachShader(ID, vertex);
 	glAttachShader(ID, fragment);
+	glCheckError();
+
 	glLinkProgram(ID);
+	glCheckError();
+
 	glUseProgram(ID);
+	glCheckError();
 
-    glClearColor(0.0f, 0.0f, 0.4f, 0.0f);
+    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+    glCheckError();
 
 
-	do{
+    auto t_start = std::chrono::high_resolution_clock::now();
+	auto t_now = std::chrono::high_resolution_clock::now();
+	float time = std::chrono::duration_cast<std::chrono::duration<float>>(t_now - t_start).count();
 
-		glClear( GL_COLOR_BUFFER_BIT );
+	mat4 proj = perspective(glm::radians(45.0f), 1.0f, 1.0f, 90.0f);
+	mat4 trans = mat4(1.0);
+    //trans = rotate(trans, time * radians(90.0f), vec3(0.0f, 0.0f, 1.0f));
+    
+    GLint projloc = glGetUniformLocation(ID, "p");
+    GLint rotloc = glGetUniformLocation(ID, "m");
+
+	glUniformMatrix4fv(projloc, 1, GL_FALSE, glm::value_ptr(proj));
+	glUniformMatrix4fv(rotloc, 1, GL_FALSE, glm::value_ptr(trans));
+
+	glCheckError();
+
+
+	do {
+
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		//glClearDepth(0.0);
+		glCheckError();
+
+		t_now = std::chrono::high_resolution_clock::now();
+		time = std::chrono::duration_cast<std::chrono::duration<float>>(t_now - t_start).count();
+		t_start = t_now;
+
+		trans = rotate(trans, time * glm::radians(20.0f), vec3(0.0f,0.0f,1.0f));
+		glUniformMatrix4fv(rotloc, 1, GL_FALSE, glm::value_ptr(trans));
+		glCheckError();
 
 		cube -> draw();
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 	} 
+
 	while( glfwGetKey(window, GLFW_KEY_ESCAPE ) != GLFW_PRESS && glfwWindowShouldClose(window) == 0 );
 
 	cube -> deleteBuffers();
 	glDeleteProgram(ID);
-
-	// Close OpenGL window and terminate GLFW
 	glfwTerminate();
 
 	return 0;
 }
-    
-

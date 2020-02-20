@@ -1,13 +1,16 @@
 #version 410 core
 
-uniform vec4 lightpos;
-
 layout (location = 0) in vec3 inPosition;
+
+uniform mat4 p;
+uniform mat4 m;
 
 out vec4 vertOutColor;
 
 void main(){
-
-    gl_Position = vec4(inPosition * .2, 1.0);
-    vertOutColor = vec4(inPosition,1.0);
+	
+	vec4 final = m * vec4(inPosition * .4, 1.0);
+	final.z += -5.0;
+    gl_Position = p * final;
+    vertOutColor = vec4(1.0);
 }

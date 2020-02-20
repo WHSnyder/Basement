@@ -27,7 +27,6 @@ GLenum glCheckError_(const char *file, int line)
 
 
 int Mesh::draw(){
-
 	glBindVertexArray(VAO);
     glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, (void*)0);
     glBindVertexArray(0);
@@ -35,7 +34,6 @@ int Mesh::draw(){
 
 
 int Mesh::deleteBuffers(){
-
 	glDeleteBuffers(1, &VBO);
 	glDeleteBuffers(1, &EBO);
 	glDeleteVertexArrays(1, &VAO);
@@ -137,8 +135,6 @@ void Mesh::read_obj_file(string filename){
 			    indices.push_back(t[0] - 1);
 			    indices.push_back(t[1] - 1);
 			    indices.push_back(t[2] - 1);
-
-			    //tris.push_back(TriPrim{t[0], t[1], t[2]});
 			}
 		}
 		else {
