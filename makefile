@@ -3,17 +3,18 @@ CC = clang++
 
 ifdef LINUX
 	BASEPATH = /home/will/projects/cpprtx/
-	GLFLAGS = -Ilibs/glfw/include -Isrc -L$(BASEPATH)libs/glfw/build/src -lglfw3
+	GLFLAGS = -Ilibs/glfw/include -L/usr/lib/x86_64-linux-gnu/ -lGL -lGLEW -static -L$(BASEPATH)libs/glfw/build/src -lglfw3
+	LDFLAGS =  
 else
 	BASEPATH = /Users/will/projects/cpprtx/
-	GLFLAGS = -Ilibs/glfw/include -Isrc -L$(BASEPATH)libs/glfw/build/src -lglfw.3 -framework OpenGL 
+	GLFLAGS = -Ilibs/glfw/include -L$(BASEPATH)libs/glfw/build/src -lglfw.3 -framework OpenGL 
+	LDFLAGS="-Wl,-rpath,$(BASEPATH)libs/glfw/build/src"
 endif
 
 
 CFLAGS = -fPIC -lpthread -Ilibs/glm -Ilibs/glm/glm -Isrc -std=c++17 -Wno-everything -Llibs/glm/build/glm -lglm_static
 OPENCV = `pkg-config --cflags --libs opencv`
 OPENCV_LIBS = $(OPENCV)
-LDFLAGS="-Wl,-rpath,$(BASEPATH)libs/glfw/build/src"
 
 
 ifndef GLTEST
@@ -61,16 +62,16 @@ else
 all: bin/ShaderUtils.o bin/Mesh.o bin/glTest.o bin/gltst
 
 bin/ShaderUtils.o: src/utils/ShaderUtils.cpp src/utils/ShaderUtils.h
-	$(CC) $(CFLAGS) $(GLFLAGS) -lGLEW  -c src/utils/ShaderUtils.cpp -o bin/ShaderUtils.o
+	$(CC) $(CFLAGS) $(GLFLAGS) -c src/utils/ShaderUtils.cpp -o bin/ShaderUtils.o
 
 bin/Mesh.o: src/mesh/Mesh.h src/mesh/Mesh.cpp
-	$(CC) $(CFLAGS) $(GLFLAGS) -lGLEW -c src/mesh/Mesh.cpp -o bin/Mesh.o
+	$(CC) $(CFLAGS) $(GLFLAGS) -c src/mesh/Mesh.cpp -o bin/Mesh.o
 
 bin/glTest.o: src/glTest.cpp
-	$(CC) $(CFLAGS) $(GLFLAGS) -lGLEW  -c src/glTest.cpp -o bin/glTest.o
+	$(CC) $(CFLAGS) $(GLFLAGS) -c src/glTest.cpp -o bin/glTest.o
 
 bin/gltst: bin/glTest.o bin/Mesh.o
-	$(CC) $(CFLAGS) $(GLFLAGS) $(LDFLAGS) -lGLEW  bin/ShaderUtils.o bin/glTest.o bin/Mesh.o -o bin/gltst
+	$(CC) $(CFLAGS) $(GLFLAGS) $(LDFLAGS) bin/ShaderUtils.o bin/glTest.o bin/Mesh.o -o bin/gltst
 
 clean: 
 	rm bin/*
