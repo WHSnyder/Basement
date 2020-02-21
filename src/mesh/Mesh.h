@@ -16,6 +16,7 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
+
 using namespace glm;
 using namespace std;
 
@@ -33,8 +34,6 @@ struct MeshVertex {
 
 class Mesh {
 
-
-
 	public:
 
 		int bindBuffers();
@@ -43,21 +42,17 @@ class Mesh {
 		void read_obj_file(string filename);
 
 		vector<GLuint> indices;
-		vector<vec3> verts, normals;
+		vector<MeshVertex> verts;
 
-		//VAO = vertex attribute object  
-		//VBO = vertex buffer object
-		//EBO = element (index) buffer object
 		GLuint VAO, VBO, EBO;
 
-		Mesh(vector<GLuint> inds, vector<vec3> vertices, vector<vec3> normz){
+		/*Mesh(vector<GLuint> inds, vector<vec3> vertices, vector<vec3> normz){
 			indices = inds;
 			verts = vertices;
 			normals = normz;
-		}
+		}*/
 
 		Mesh(string filename){
-			cout << "reading" << endl;
 			read_obj_file(filename);
 		}
 };
