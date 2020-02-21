@@ -1,9 +1,7 @@
 #include <stdlib.h> 
-#include <stdio.h>
 
 #include <vector>
 
-#include <regex> 
 #include <string>
 
 #include <fstream>
@@ -14,7 +12,6 @@
 #include <ext.hpp>
 
 #include <GL/glew.h>
-#include <GLFW/glfw3.h>
 
 
 using namespace glm;

@@ -76,7 +76,7 @@ void Mesh::read_obj_file(string filename){
 	cout << "Starting assimp load" << endl;
 
 	Assimp::Importer importer;
-    const aiScene* scene = importer.ReadFile(filename, aiProcess_GenNormals);
+    const aiScene* scene = importer.ReadFile(filename, aiProcess_GenNormals | aiProcess_JoinIdenticalVertices);
 
     //Check for errors
     if ((!scene) || (scene->mFlags == AI_SCENE_FLAGS_INCOMPLETE) || (!scene->mRootNode)){

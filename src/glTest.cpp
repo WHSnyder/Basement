@@ -2,11 +2,9 @@
 #include <GLFW/glfw3.h>
 
 #include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
+#include <string>
 #include <chrono>
 
-#include <fstream>
 #include <iostream>
 
 #include <mesh/Mesh.h>
@@ -55,7 +53,7 @@ int main(int argc, char **argv){
 	
 	GLFWwindow* window;
 
-	string path = "/Users/will/projects/cpprtx/meshes/crab.obj";
+	string path(argv[1]);// "/Users/will/projects/cpprtx/meshes/crab.obj";
 	Mesh *cube = new Mesh(path);	
 
 	if(!glfwInit()){

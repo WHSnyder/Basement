@@ -16,7 +16,7 @@ void main(){
 	final.z += -5.0;
     gl_Position = p * final;
 
-    float mult = clamp(-1.0 * dot(normalize(lightpos - pos), normal),0.0,1.0);
+    float mult = clamp(-1.0 * dot(normalize(lightpos - pos), (m * vec4(normal,1.0)).xyz ),0.0,1.0);
 
     vertOutColor = vec4(mult * vec3(1.0,0.0,0.6), 1.0);
 }
