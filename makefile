@@ -1,18 +1,19 @@
 CC = clang++
 
-
 ifdef LINUX
 	BASEPATH = /home/will/projects/cpprtx/
 	GLFLAGS = -Ilibs/glfw/include -L/usr/lib/x86_64-linux-gnu/ -lGL -lGLEW -static -L$(BASEPATH)libs/glfw/build/src -lglfw3
-	LDFLAGS =  
+	CFLAGS = -fPIC -lpthread -Ilibs/glm -Ilibs/glm/glm -Isrc -std=c++17 -Wno-everything -Llibs/glm/build/glm -lglm_static
+	LDFLAGS = 
+
 else
 	BASEPATH = /Users/will/projects/cpprtx/
-	GLFLAGS = -Ilibs/glfw/include -L$(BASEPATH)libs/glfw/build/src -lglfw.3 -framework OpenGL 
+	GLFLAGS = -Ilibs/glfw/include -L$(BASEPATH)libs/glfw/build/src -lglfw.3 -L/System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries/ -lGL -lGLEW
+	CFLAGS = -fPIC -lpthread -Ilibs/glm -Ilibs/glm/glm -Isrc -std=c++17 -Wno-everything -Llibs/glm/build/ -lglm_static
 	LDFLAGS="-Wl,-rpath,$(BASEPATH)libs/glfw/build/src"
 endif
 
 
-CFLAGS = -fPIC -lpthread -Ilibs/glm -Ilibs/glm/glm -Isrc -std=c++17 -Wno-everything -Llibs/glm/build/glm -lglm_static
 OPENCV = `pkg-config --cflags --libs opencv`
 OPENCV_LIBS = $(OPENCV)
 
