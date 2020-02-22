@@ -75,7 +75,7 @@ void Simu::initSimu(){
 	PxShape* sphere = gPhysics->createShape(PxSphereGeometry(halfExtent), *gMaterial);
 	PxShape* box = gPhysics->createShape(PxBoxGeometry(halfExtent, halfExtent, halfExtent), *gMaterial);
 
-	PxTransform localTm(PxVec3(-1.0,6.0,-5.0));
+	PxTransform localTm(PxVec3(-.5,2.0,-5.0));
 	body = gPhysics -> createRigidDynamic(localTm);
 	body -> attachShape(*sphere);
 	body -> userData = (void *) 1;
@@ -84,7 +84,7 @@ void Simu::initSimu(){
 	//PxRigidBodyExt::updateMassAndInertia(*body, 4.0f);
 	gScene -> addActor(*body);
 
-	PxTransform localTm2(PxVec3(1.0,6.0,-5.0));
+	PxTransform localTm2(PxVec3(.5,6.0,-5.0));
 	body2 = gPhysics->createRigidDynamic(localTm2);
 	body2 -> attachShape(*box);
 	body2 -> userData = (void *) 2;

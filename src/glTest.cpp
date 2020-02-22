@@ -185,29 +185,29 @@ int main(int argc, char **argv){
 		time = std::chrono::duration_cast<std::chrono::duration<float>>(t_now - t_start).count();
 		t_start = t_now;
 
-		mainSimu.stepSimu(1.0f/60.0f);
+		mainSimu.stepSimu(time);
 		mainSimu.getModelMats(sphereMat, boxMat);
 
-		cout << "=========================" << endl;
-		coutMat((boxMat));
+		//cout << "=========================" << endl;
+		//coutMat((boxMat));
 		//cout << "-------------------------" << endl;
 		//coutMat(value_ptr(trans));
 		//cout << "-------------------------" << endl;
 		//testmat = trans * rot;
 		//coutMat(value_ptr(testmat));
-		cout << "=========================" << endl;
+		//cout << "=========================" << endl;
 
 
 		rot = rotate(rot, time * glm::radians(20.0f), vec3(0.0f,1.0f,0.0f));
 
-		glUniformMatrix4fv(rotloc, (GLuint) 1, GL_FALSE, sphereMat);// value_ptr(transpose(dest)));
+		glUniformMatrix4fv(rotloc, (GLuint) 1, GL_FALSE, boxMat);// value_ptr(transpose(dest)));
 
 		glCheckError();
 		cube -> draw();
 
 		//memcpy(value_ptr(dest),sphereMat,16 * sizeof(float));
 
-		glUniformMatrix4fv(rotloc, (GLuint) 1, GL_FALSE, boxMat);//value_ptr(transpose(dest)));
+		glUniformMatrix4fv(rotloc, (GLuint) 1, GL_FALSE, sphereMat);//value_ptr(transpose(dest)));
 		glCheckError();
 		
 		sphere -> draw();
