@@ -3,8 +3,8 @@ CC = clang++
 
 ifdef LINUX
 	BASEPATH = /home/will/projects/cpprtx/
-	GLFLAGS = -Ilibs/glfw/include -L/usr/lib/x86_64-linux-gnu/ -lGL -lGLEW -static -L$(BASEPATH)libs/glfw/build/src -lglfw3
-	LDFLAGS =  
+	GLFLAGS = -Ilibs/glfw/include -static -L$(BASEPATH)libs/glfw/build/src -lglfw3
+	LDFLAGS =  -L/usr/lib/x86_64-linux-gnu/ -lGL -lGLEW
 else
 	BASEPATH = /Users/will/projects/cpprtx/
 	GLFLAGS = -Ilibs/glfw/include -L$(BASEPATH)libs/glfw/build/src -lglfw.3 -framework OpenGL 
