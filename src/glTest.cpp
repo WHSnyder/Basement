@@ -8,6 +8,7 @@
 #include <iostream>
 
 #include <mesh/Mesh.h>
+#include <phys/Physics.h>
 
 #include <utils/ShaderUtils.h>
 
@@ -23,7 +24,6 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
         glfwSetWindowShouldClose(window, GL_TRUE);
 }
-
 
 int compile_shader(GLenum shaderType, string shaderCode){
 	
@@ -53,8 +53,12 @@ int main(int argc, char **argv){
 	
 	GLFWwindow* window;
 
-	string path(argv[1]);// "/Users/will/projects/cpprtx/meshes/crab.obj";
-	Mesh *cube = new Mesh(path);	
+	string path("/Users/will/projects/cpprtx/meshes/cube.obj");
+	Mesh *cube = new Mesh(path);
+
+	string path1("/Users/will/projects/cpprtx/meshes/ball.obj");
+	Mesh *sphere = new Mesh(path1);
+	
 
 	if(!glfwInit()){
 		fprintf( stderr, "Failed to initialize GLFW\n" );
@@ -105,6 +109,7 @@ int main(int argc, char **argv){
 	glDepthFunc(GL_LESS); 
 
    	cube -> bindBuffers();
+   	sphere -> bindBuffers();
 
     string vshader = read_shader("src/rendering/shaders/BasicVert.hlsl");
     string fshader = read_shader("src/rendering/shaders/BasicFrag.hlsl");
@@ -164,6 +169,7 @@ int main(int argc, char **argv){
 		glCheckError();
 
 		cube -> draw();
+		shere -> draw();
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
@@ -172,6 +178,10 @@ int main(int argc, char **argv){
 	while( glfwGetKey(window, GLFW_KEY_ESCAPE ) != GLFW_PRESS && glfwWindowShouldClose(window) == 0 );
 
 	cube -> deleteBuffers();
+	delete cube;
+	sphere -> deleteBuffers();
+	delete sphere;
+
 	glDeleteProgram(ID);
 	glfwTerminate();
 
