@@ -50,7 +50,11 @@ int compile_shader(GLenum shaderType, string shaderCode){
 
 
 void coutMat(float *mat){
-	cout << "{" << mat[3] << ", " << mat[7] << ", " << mat[11] << ", " << mat[15] << "}" << endl;
+	cout << "{" << mat[0] << ", " << mat[1] << ", " << mat[2] << ", " << mat[3] << "}" << endl;
+	cout << " " << mat[4] << ", " << mat[5] << ", " << mat[6] << ", " << mat[7] << "," << endl;
+	cout << " " << mat[8] << ", " << mat[9] << ", " << mat[10] << ", " << mat[11] << "," << endl;
+	cout << " " << mat[12] << ", " << mat[13] << ", " << mat[14] << ", " << mat[15] << "}" << endl;
+
 }
 
 
@@ -161,7 +165,7 @@ int main(int argc, char **argv){
 
 	glCheckError();
 
-	float *sphereMat = new float[16](), *boxMat = new float[16]();
+	float sphereMat[16] = {}, boxMat[16] = {};
 
 
 	do {
@@ -174,14 +178,14 @@ int main(int argc, char **argv){
 		t_start = t_now;
 
 		mainSimu.stepSimu(1.0f/60.0f);
-		mainSimu.getModelMats(sphereMat,boxMat);
+		mainSimu.getModelMats(sphereMat, boxMat);
 
 		//coutMat(value_ptr(trans));
-		//coutMat(sphereMat);
+		coutMat(sphereMat);
 
 		trans = rotate(trans, time * glm::radians(20.0f), vec3(0.0f,1.0f,0.0f));
 
-		vec4 center = vec4(0.0,0.0,1.0,0.0);
+		vec4 center = vec4(0.0,0.0,0.0,0.0);
 		
 		glUniformMatrix4fv(rotloc, (GLuint) 1, GL_TRUE, boxMat);//value_ptr(trans));
 		glUniform4fv(centerloc,1,value_ptr(center));

@@ -22,6 +22,8 @@ private:
 
 	PxMaterial *gMaterial = NULL;
 
+	PxRigidDynamic *body,*body2;
+
 public:
 
 	//float *getSphereModelMat();
