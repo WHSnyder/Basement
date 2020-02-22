@@ -68,29 +68,29 @@ void Simu::initSimu(){
 
 	gMaterial = gPhysics->createMaterial(0.5f, 0.5f, 0.6f);
 
-	//PxRigidStatic* groundPlane = PxCreatePlane(*gPhysics, PxPlane(0,-1,0,0), *gMaterial);
-	//gScene->addActor(*groundPlane);
+	PxRigidStatic* groundPlane = PxCreatePlane(*gPhysics, PxPlane(0,1,0,0), *gMaterial);
+	gScene->addActor(*groundPlane);
 
 	float halfExtent = 1.0;
 	PxShape* sphere = gPhysics->createShape(PxSphereGeometry(halfExtent), *gMaterial);
 	PxShape* box = gPhysics->createShape(PxBoxGeometry(halfExtent, halfExtent, halfExtent), *gMaterial);
 
-	PxTransform localTm(PxVec3(0.0,1.0,-5.0));
+	PxTransform localTm(PxVec3(-1.0,6.0,-5.0));
 	body = gPhysics -> createRigidDynamic(localTm);
 	body -> attachShape(*sphere);
 	body -> userData = (void *) 1;
-	//body->setMass(4.f);
-	//body->setMassSpaceInertiaTensor(PxVec3(0.f, 0.f, 10.f));
-	PxRigidBodyExt::updateMassAndInertia(*body, 4.0f);
+	body->setMass(4.f);
+	body->setMassSpaceInertiaTensor(PxVec3(0.f, 0.f, 10.f));
+	//PxRigidBodyExt::updateMassAndInertia(*body, 4.0f);
 	gScene -> addActor(*body);
 
-	PxTransform localTm2(PxVec3(-0.01,3.0,-5.0));
+	PxTransform localTm2(PxVec3(1.0,6.0,-5.0));
 	body2 = gPhysics->createRigidDynamic(localTm2);
 	body2 -> attachShape(*box);
 	body2 -> userData = (void *) 2;
-	//body2->setMass(4.f);
-	//body2->setMassSpaceInertiaTensor(PxVec3(0.f, 0.f, 10.f));
-	PxRigidBodyExt::updateMassAndInertia(*body2, 4.0f);
+	body2->setMass(4.f);
+	body2->setMassSpaceInertiaTensor(PxVec3(0.f, 0.f, 10.f));
+	//PxRigidBodyExt::updateMassAndInertia(*body2, 4.0f);
 	gScene -> addActor(*body2);
 
 	gScene -> setFlag(PxSceneFlag::eENABLE_ACTIVETRANSFORMS, true);

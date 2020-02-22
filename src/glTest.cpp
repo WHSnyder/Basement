@@ -8,9 +8,11 @@
 #include <iostream>
 
 #include <mesh/Mesh.h>
-#include <phys/Physics.h>
+//#include <phys/Physics.h>
 
 #include <utils/ShaderUtils.h>
+
+#include <gtx/transform.hpp>
 
 
 using namespace std;
@@ -62,7 +64,7 @@ int main(int argc, char **argv){
 	
 	GLFWwindow* window;
 
-	Simu mainSimu;
+	//Simu mainSimu;
 
 	string path("/Users/will/projects/cpprtx/meshes/cube.obj");
 	Mesh *cube = new Mesh(path);
@@ -153,15 +155,21 @@ int main(int argc, char **argv){
 	auto t_now = std::chrono::high_resolution_clock::now();
 	float time = std::chrono::duration_cast<std::chrono::duration<float>>(t_now - t_start).count();
 
-	mat4 proj = perspective(glm::radians(45.0f), 1.0f, 1.0f, 90.0f);
-	mat4 trans = mat4(1.0);
+	mat4 proj = perspective(glm::radians(45.0f), 1.0f, 0.01f, 100.0f);
+	mat4 rot = mat4(1.0),testmat;
+	mat4 dest = mat4(1.0);
+	mat4 trans = transpose(translate(vec3(-1,1.0,-20.0)));
+	mat4 trans2 = transpose(translate(vec3(1,1.0,-20.0)));
+
+	mat4 view = lookAt(vec3(0,0,20),vec3(0,0,-100),vec3(0,1.0,0));
     
     GLint projloc = glGetUniformLocation(ID, "p");
     GLint rotloc = glGetUniformLocation(ID, "m");
-    GLint centerloc = glGetUniformLocation(ID, "center");
+    GLint lookloc = glGetUniformLocation(ID, "v");
 
-	glUniformMatrix4fv(projloc, 1, GL_FALSE, glm::value_ptr(proj));
-	glUniformMatrix4fv(rotloc, 1, GL_FALSE, glm::value_ptr(trans));
+	glUniformMatrix4fv(projloc, 1, GL_FALSE, value_ptr(proj));
+	glUniformMatrix4fv(lookloc, 1, GL_FALSE, value_ptr((view)));
+
 
 	glCheckError();
 
@@ -177,25 +185,29 @@ int main(int argc, char **argv){
 		time = std::chrono::duration_cast<std::chrono::duration<float>>(t_now - t_start).count();
 		t_start = t_now;
 
-		mainSimu.stepSimu(1.0f/60.0f);
-		mainSimu.getModelMats(sphereMat, boxMat);
+		//mainSimu.stepSimu(1.0f/60.0f);
+		//mainSimu.getModelMats(sphereMat, boxMat);
 
-		//coutMat(value_ptr(trans));
-		coutMat(sphereMat);
+		cout << "=========================" << endl;
+		coutMat(value_ptr(rot));
+		cout << "-------------------------" << endl;
+		coutMat(value_ptr(trans));
+		cout << "-------------------------" << endl;
+		testmat = trans * rot;
+		coutMat(value_ptr(testmat));
+		cout << "=========================" << endl;
 
-		trans = rotate(trans, time * glm::radians(20.0f), vec3(0.0f,1.0f,0.0f));
 
-		vec4 center = vec4(0.0,0.0,0.0,0.0);
-		
-		glUniformMatrix4fv(rotloc, (GLuint) 1, GL_TRUE, boxMat);//value_ptr(trans));
-		glUniform4fv(centerloc,1,value_ptr(center));
+		rot = rotate(rot, time * glm::radians(20.0f), vec3(0.0f,1.0f,0.0f));
+
+		glUniformMatrix4fv(rotloc, (GLuint) 1, GL_TRUE, value_ptr(trans * rot));// value_ptr(transpose(dest)));
 
 		glCheckError();
 		cube -> draw();
 
-		//center.y = 1.5f;
-		glUniformMatrix4fv(rotloc, (GLuint) 1, GL_TRUE, sphereMat);//value_ptr(trans));
-		glUniform4fv(centerloc,1,value_ptr(center));
+		//memcpy(value_ptr(dest),sphereMat,16 * sizeof(float));
+
+		glUniformMatrix4fv(rotloc, (GLuint) 1, GL_TRUE, value_ptr(trans2 * rot));//value_ptr(transpose(dest)));
 		glCheckError();
 		
 		sphere -> draw();
