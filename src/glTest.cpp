@@ -2,15 +2,17 @@
 #include <GLFW/glfw3.h>
 
 #include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
+#include <string>
+#include <chrono>
 
-#include <fstream>
 #include <iostream>
 
 #include <mesh/Mesh.h>
+//#include <phys/Physics.h>
 
 #include <utils/ShaderUtils.h>
+
+#include <gtx/transform.hpp>
 
 
 using namespace std;
@@ -25,7 +27,6 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
         glfwSetWindowShouldClose(window, GL_TRUE);
 }
 
-
 int compile_shader(GLenum shaderType, string shaderCode){
 	
 	unsigned int shader;
@@ -33,13 +34,12 @@ int compile_shader(GLenum shaderType, string shaderCode){
 	char infoLog[512];
 	const char *contents = shaderCode.c_str();
 	   
-	// shader Shader
 	shader = glCreateShader(shaderType);
 
 	glShaderSource(shader, 1, &contents, NULL);
 	glCompileShader(shader);
+	glCheckError();
 
-	// print compile errors if any
 	glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
 	
 	if(!success){
@@ -51,15 +51,28 @@ int compile_shader(GLenum shaderType, string shaderCode){
 }
 
 
+void coutMat(float *mat){
+	cout << "{" << mat[0] << ", " << mat[1] << ", " << mat[2] << ", " << mat[3] << "}" << endl;
+	cout << " " << mat[4] << ", " << mat[5] << ", " << mat[6] << ", " << mat[7] << "," << endl;
+	cout << " " << mat[8] << ", " << mat[9] << ", " << mat[10] << ", " << mat[11] << "," << endl;
+	cout << " " << mat[12] << ", " << mat[13] << ", " << mat[14] << ", " << mat[15] << "}" << endl;
+
+}
+
+
 int main(int argc, char **argv){
 	
 	GLFWwindow* window;
 
-	string path = "/Users/will/projects/cpprtx/meshes/cube.obj";
-	Mesh *cube = new Mesh(path);	
+	//Simu mainSimu;
 
-	if( !glfwInit() )
-	{
+	string path("/Users/will/projects/cpprtx/meshes/cube.obj");
+	Mesh *cube = new Mesh(path);
+
+	string path1("/Users/will/projects/cpprtx/meshes/ball.obj");
+	Mesh *sphere = new Mesh(path1);
+	
+	if(!glfwInit()){
 		fprintf( stderr, "Failed to initialize GLFW\n" );
 		getchar();
 		return -1;
@@ -72,8 +85,8 @@ int main(int argc, char **argv){
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
 	// Open a window and create its OpenGL context
-	window = glfwCreateWindow( 480, 480, "Tutorial 02 - Red triangle", NULL, NULL);
-	    if (!window){
+	window = glfwCreateWindow(480, 480, "Test", NULL, NULL);
+	if (!window){
         glfwTerminate();
         exit(EXIT_FAILURE);
     }
@@ -92,7 +105,6 @@ int main(int argc, char **argv){
 	// Ensure we can capture the escape key being pressed below
 	glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
 
-    
     glfwSetErrorCallback(error_callback);
     if (!glfwInit())
         exit(EXIT_FAILURE);
@@ -106,15 +118,17 @@ int main(int argc, char **argv){
     glViewport(0, 0, width, height);
 
     glEnable(GL_DEPTH_TEST);
-	glDepthFunc(GL_GEQUAL); 
+	glDepthFunc(GL_LESS); 
 
    	cube -> bindBuffers();
+   	sphere -> bindBuffers();
 
     string vshader = read_shader("src/rendering/shaders/BasicVert.hlsl");
     string fshader = read_shader("src/rendering/shaders/BasicFrag.hlsl");
 
     unsigned int vertex = compile_shader(GL_VERTEX_SHADER, vshader);
     unsigned int fragment = compile_shader(GL_FRAGMENT_SHADER, fshader);
+    glCheckError();
 
     unsigned int ID = glCreateProgram();
     int success;
@@ -122,32 +136,95 @@ int main(int argc, char **argv){
     char infoLog[512];
 
     ID = glCreateProgram();
+    glCheckError();
 	glAttachShader(ID, vertex);
 	glAttachShader(ID, fragment);
+	glCheckError();
+
 	glLinkProgram(ID);
+	glCheckError();
+
 	glUseProgram(ID);
+	glCheckError();
 
-    glClearColor(0.0f, 0.0f, 0.4f, 0.0f);
+    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+    glCheckError();
 
 
-	do{
+    auto t_start = std::chrono::high_resolution_clock::now();
+	auto t_now = std::chrono::high_resolution_clock::now();
+	float time = std::chrono::duration_cast<std::chrono::duration<float>>(t_now - t_start).count();
 
-		glClear( GL_COLOR_BUFFER_BIT );
+	mat4 proj = perspective(glm::radians(45.0f), 1.0f, 0.01f, 100.0f);
+	mat4 rot = mat4(1.0),testmat;
+	mat4 dest = mat4(1.0);
+	mat4 trans = transpose(translate(vec3(-1,1.0,-20.0)));
+	mat4 trans2 = transpose(translate(vec3(1,1.0,-20.0)));
 
+	mat4 view = lookAt(vec3(0,0,20),vec3(0,0,-100),vec3(0,1.0,0));
+    
+    GLint projloc = glGetUniformLocation(ID, "p");
+    GLint rotloc = glGetUniformLocation(ID, "m");
+    GLint lookloc = glGetUniformLocation(ID, "v");
+
+	glUniformMatrix4fv(projloc, 1, GL_FALSE, value_ptr(proj));
+	glUniformMatrix4fv(lookloc, 1, GL_FALSE, value_ptr((view)));
+
+
+	glCheckError();
+
+	float sphereMat[16] = {}, boxMat[16] = {};
+
+
+	do {
+
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glCheckError();
+
+		t_now = std::chrono::high_resolution_clock::now();
+		time = std::chrono::duration_cast<std::chrono::duration<float>>(t_now - t_start).count();
+		t_start = t_now;
+
+		//mainSimu.stepSimu(1.0f/60.0f);
+		//mainSimu.getModelMats(sphereMat, boxMat);
+
+		cout << "=========================" << endl;
+		coutMat(value_ptr(rot));
+		cout << "-------------------------" << endl;
+		coutMat(value_ptr(trans));
+		cout << "-------------------------" << endl;
+		testmat = trans * rot;
+		coutMat(value_ptr(testmat));
+		cout << "=========================" << endl;
+
+
+		rot = rotate(rot, time * glm::radians(20.0f), vec3(0.0f,1.0f,0.0f));
+
+		glUniformMatrix4fv(rotloc, (GLuint) 1, GL_TRUE, value_ptr(trans * rot));// value_ptr(transpose(dest)));
+
+		glCheckError();
 		cube -> draw();
+
+		//memcpy(value_ptr(dest),sphereMat,16 * sizeof(float));
+
+		glUniformMatrix4fv(rotloc, (GLuint) 1, GL_TRUE, value_ptr(trans2 * rot));//value_ptr(transpose(dest)));
+		glCheckError();
+		
+		sphere -> draw();
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 	} 
+
 	while( glfwGetKey(window, GLFW_KEY_ESCAPE ) != GLFW_PRESS && glfwWindowShouldClose(window) == 0 );
 
 	cube -> deleteBuffers();
-	glDeleteProgram(ID);
+	delete cube;
+	sphere -> deleteBuffers();
+	delete sphere;
 
-	// Close OpenGL window and terminate GLFW
+	glDeleteProgram(ID);
 	glfwTerminate();
 
 	return 0;
 }
-    
-
