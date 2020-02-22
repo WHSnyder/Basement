@@ -12,6 +12,7 @@ else
 	CFLAGS = -Os -O2 -fPIC -lpthread -Ilibs/glm -Ilibs/glm/glm -Isrc -std=c++17 -Wno-everything -Llibs/glm/build/ -lglm_static
 	LDFLAGS= "-Wl,-rpath,$(BASEPATH)libs/glfw/build/src"
 	ASSIMP = -I/Users/will/projects/cpprtx/libs/assimp/include/ -I/Users/will/projects/cpprtx/libs/assimp/build/include/ -lz -L/Users/will/projects/cpprtx/libs/assimp/build/lib/ -lIrrXML -lassimp
+	PHYSX = -I/Users/will/projects/cpprtx/libs/physx/PxShared/include -I/Users/will/projects/cpprtx/libs/physx/PhysX_3.4/Include  /Users/will/projects/cpprtx/libs/physx/PxShared/lib/osx64/lib*CHECKED.a /Users/will/projects/cpprtx/libs/physx/PhysX_3.4/Lib/osx64/lib*CHECKED.a
 endif
 
 
@@ -61,7 +62,7 @@ endif
 else 
 
 
-all: bin/ShaderUtils.o bin/Mesh.o bin/glTest.o bin/gltst
+all: bin/ShaderUtils.o bin/Mesh.o bin/glTest.o bin/Physics.o bin/gltst
 
 bin/ShaderUtils.o: src/utils/ShaderUtils.cpp src/utils/ShaderUtils.h
 	$(CC) $(CFLAGS) $(GLFLAGS) -c src/utils/ShaderUtils.cpp -o bin/ShaderUtils.o
@@ -69,11 +70,14 @@ bin/ShaderUtils.o: src/utils/ShaderUtils.cpp src/utils/ShaderUtils.h
 bin/Mesh.o: src/mesh/Mesh.h src/mesh/Mesh.cpp
 	$(CC) $(CFLAGS) $(GLFLAGS) $(ASSIMP) -c src/mesh/Mesh.cpp -o bin/Mesh.o
 
-bin/glTest.o: src/glTest.cpp
-	$(CC) $(CFLAGS) $(GLFLAGS) -c src/glTest.cpp -o bin/glTest.o
+bin/Physics.o: src/phys/Physics.h src/phys/Physics.cpp
+	$(CC) $(CFLAGS) $(PHYSX) -c -o bin/Physics.o src/phys/Physics.cpp
 
-bin/gltst: bin/glTest.o bin/Mesh.o
-	$(CC) $(CFLAGS) $(GLFLAGS) $(ASSIMP) $(LDFLAGS) bin/ShaderUtils.o bin/glTest.o bin/Mesh.o -o bin/gltst
+bin/glTest.o: src/glTest.cpp
+	$(CC) $(CFLAGS) $(GLFLAGS) -I/Users/will/projects/cpprtx/libs/physx/PxShared/include -I/Users/will/projects/cpprtx/libs/physx/PhysX_3.4/Include -c src/glTest.cpp -o bin/glTest.o
+
+bin/gltst: bin/glTest.o bin/Mesh.o bin/Physics.o
+	$(CC) $(CFLAGS) $(GLFLAGS) $(ASSIMP) $(LDFLAGS) $(PHYSX) bin/Physics.o bin/ShaderUtils.o bin/glTest.o bin/Mesh.o -o bin/gltst
 
 clean: 
 	rm bin/*

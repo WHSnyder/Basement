@@ -1,8 +1,7 @@
 #include <stdlib.h>
-
-#define NDEBUG
-
+#include <iostream>
 #include <ctype.h>
+#define NDEBUG
 #include "PxPhysicsAPI.h"
 
 using namespace physx;
@@ -25,8 +24,8 @@ private:
 
 public:
 
-	float *getSphereModelMat();
-	float *getBoxModelMat();
+	//float *getSphereModelMat();
+	void getModelMats(float *o1, float *o2);
 
 	void initSimu();
 	void stepSimu(float timestep);
@@ -39,4 +38,4 @@ public:
 	~Simu(){
 		cleanupSimu();
 	}
-}
+};

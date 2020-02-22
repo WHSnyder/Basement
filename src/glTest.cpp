@@ -49,9 +49,16 @@ int compile_shader(GLenum shaderType, string shaderCode){
 }
 
 
+void coutMat(float *mat){
+	cout << "{" << mat[3] << ", " << mat[7] << ", " << mat[11] << ", " << mat[15] << "}" << endl;
+}
+
+
 int main(int argc, char **argv){
 	
 	GLFWwindow* window;
+
+	Simu mainSimu;
 
 	string path("/Users/will/projects/cpprtx/meshes/cube.obj");
 	Mesh *cube = new Mesh(path);
@@ -59,7 +66,6 @@ int main(int argc, char **argv){
 	string path1("/Users/will/projects/cpprtx/meshes/ball.obj");
 	Mesh *sphere = new Mesh(path1);
 	
-
 	if(!glfwInit()){
 		fprintf( stderr, "Failed to initialize GLFW\n" );
 		getchar();
@@ -148,11 +154,14 @@ int main(int argc, char **argv){
     
     GLint projloc = glGetUniformLocation(ID, "p");
     GLint rotloc = glGetUniformLocation(ID, "m");
+    GLint centerloc = glGetUniformLocation(ID, "center");
 
 	glUniformMatrix4fv(projloc, 1, GL_FALSE, glm::value_ptr(proj));
 	glUniformMatrix4fv(rotloc, 1, GL_FALSE, glm::value_ptr(trans));
 
 	glCheckError();
+
+	float *sphereMat = new float[16](), *boxMat = new float[16]();
 
 
 	do {
@@ -164,12 +173,28 @@ int main(int argc, char **argv){
 		time = std::chrono::duration_cast<std::chrono::duration<float>>(t_now - t_start).count();
 		t_start = t_now;
 
-		trans = rotate(trans, time * glm::radians(20.0f), vec3(0.0f,1.0f,0.0f));
-		glUniformMatrix4fv(rotloc, 1, GL_FALSE, glm::value_ptr(trans));
-		glCheckError();
+		mainSimu.stepSimu(1.0f/60.0f);
+		mainSimu.getModelMats(sphereMat,boxMat);
 
+		//coutMat(value_ptr(trans));
+		//coutMat(sphereMat);
+
+		trans = rotate(trans, time * glm::radians(20.0f), vec3(0.0f,1.0f,0.0f));
+
+		vec4 center = vec4(0.0,0.0,1.0,0.0);
+		
+		glUniformMatrix4fv(rotloc, (GLuint) 1, GL_TRUE, boxMat);//value_ptr(trans));
+		glUniform4fv(centerloc,1,value_ptr(center));
+
+		glCheckError();
 		cube -> draw();
-		shere -> draw();
+
+		//center.y = 1.5f;
+		glUniformMatrix4fv(rotloc, (GLuint) 1, GL_TRUE, sphereMat);//value_ptr(trans));
+		glUniform4fv(centerloc,1,value_ptr(center));
+		glCheckError();
+		
+		sphere -> draw();
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();

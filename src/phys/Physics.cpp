@@ -1,17 +1,32 @@
 #include "phys/Physics.h"
 
 
-float *Simu::getModelMats(float **sphereMat, float& **boxMat){
+void Simu::getModelMats(float *sphereMat, float *boxMat){
 
 	PxU32 nbActiveTransforms;
-	PxActiveTransform* activeTransforms = scene.getActiveTransforms(nbActiveTransforms);
+	const PxActiveTransform* activeTransforms = gScene -> getActiveTransforms(nbActiveTransforms);
+	PxMat44 *matTemp;
 
 	for (PxU32 i=0; i < nbActiveTransforms; ++i){
 
-    	MyRenderObject* renderObject = static_cast<MyRenderObject*>(activeTransforms[i].userData);
-    	renderObject->setTransform(activeTransforms[i].actor2World);
-	}
+		int id = (int)(size_t) activeTransforms[i].userData;
+		
+		std::cout << activeTransforms[i].userData << std::endl;		
 
+		if (id == 1){
+
+			//sphere
+			matTemp = new PxMat44(activeTransforms[i].actor2World);
+			memcpy(sphereMat,matTemp->front(),16 * sizeof(float));
+			delete(matTemp);
+		}
+		else if (id == 2){
+			//box
+			matTemp = new PxMat44(activeTransforms[i].actor2World);
+			memcpy(boxMat,matTemp->front(),16 * sizeof(float));
+			delete(matTemp);
+		}
+	}
 }
 
 
@@ -27,12 +42,12 @@ void Simu::stepSimu(float timestep){
 
 void Simu::initSimu(){
 
-	gFoundation = PxCreateFoundation(PX_FOUNDATION_VERSION, gDefaultAllocatorCallback, gDefaultErrorCallback);
+	gFoundation = PxCreateFoundation(PX_FOUNDATION_VERSION, gAllocator, gErrorCallback);
 	gPhysics = PxCreatePhysics(PX_PHYSICS_VERSION, *gFoundation, PxTolerancesScale(), true, nullptr);
 
 	PxSceneDesc sceneDesc(gPhysics->getTolerancesScale());
 	
-	sceneDesc.gravity = PxVec3(0.0f, -9.81f, 0.0f);
+	sceneDesc.gravity = PxVec3(0.0f, -10.0f, 0.0f);
 	gDispatcher = PxDefaultCpuDispatcherCreate(0);
 	sceneDesc.cpuDispatcher	= gDispatcher;
 	sceneDesc.filterShader = PxDefaultSimulationFilterShader;
@@ -44,27 +59,27 @@ void Simu::initSimu(){
 	gScene->addActor(*groundPlane);
 
 	float halfExtent = 1.0;
-	PxShape* sphere = gPhysics->createShape(PxSphereGeometry(halfExtent, halfExtent, halfExtent), *gMaterial);
+	PxShape* sphere = gPhysics->createShape(PxSphereGeometry(halfExtent), *gMaterial);
 	PxShape* box = gPhysics->createShape(PxBoxGeometry(halfExtent, halfExtent, halfExtent), *gMaterial);
 
-	PxTransform localTm(PxVec3(0.0,5.0,-5.0,0.0));
-	localTm -> userData = (void *) 1;
-	PxRigidDynamic* body = gPhysics->createRigidDynamic(t.transform(localTm));
-	body->attachShape(*sphere);
+	PxTransform localTm(PxVec3(0.0,3.0,-5.0));
+	PxRigidDynamic* body = gPhysics->createRigidDynamic(localTm);
+	body -> attachShape(*sphere);
 	body -> userData = (void *) 1;
 	PxRigidBodyExt::updateMassAndInertia(*body, 4.0f);
-	gScene->addActor(*body);
+	gScene -> addActor(*body);
 
-	PxTransform localTm2(PxVec3(0.0,10.0,-5.0,0.0));
-	localTm2 -> userData = (void *) 2;
-	body = gPhysics->createRigidDynamic(t.transform(localTm2));
-	body->attachShape(*box);
+	PxTransform localTm2(PxVec3(0.0,6.0,-5.0));
+	body = gPhysics->createRigidDynamic(localTm2);
+	body -> attachShape(*box);
 	body -> userData = (void *) 2;
 	PxRigidBodyExt::updateMassAndInertia(*body, 4.0f);
-	gScene->addActor(*body);
+	gScene -> addActor(*body);
 
-	box -> release();
-	sphere -> release();
+	//box -> release();
+	//sphere -> release();
+
+	std::cout << "Initialized simu" << std::endl;
 }
 /*
 void createStack(const PxTransform& t, PxU32 size, PxReal halfExtent)
@@ -97,5 +112,5 @@ void Simu::cleanupSimu()
 	
 	gFoundation->release();
 	
-	printf("Simu cleaned up.");
+	std::cout << "Simu done" << std::endl;
 }
