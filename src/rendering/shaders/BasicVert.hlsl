@@ -12,7 +12,7 @@ out vec4 vertOutColor;
 void main(){
 	
 	vec3 lightdir = normalize(vec3(-1.0,-4.0,-4.0));
-	vec3 norm = (m * vec4(normal,1.0)).xyz;
+	vec3 norm = normalize((m * vec4(normal,1.0)).xyz);
 
 	float mult = clamp(1.0 - dot(norm,lightdir),0.0,1.0);
 	
