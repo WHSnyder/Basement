@@ -62,6 +62,4 @@ class Mesh {
 				verts.push_back(mv);
 			}
 		}
-
-
 };

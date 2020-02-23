@@ -12,63 +12,40 @@
 #include <phys/Physics.h>
 
 #include <utils/ShaderUtils.h>
-
 #include <gtx/transform.hpp>
-
 #include <perlin/PerlinNoise.hpp>
 
 
 using namespace std;
 
+
 void coutMat(float *mat){
+
 	cout << "{" << mat[0] << ", " << mat[1] << ", " << mat[2] << ", " << mat[3] << "}" << endl;
 	cout << " " << mat[4] << ", " << mat[5] << ", " << mat[6] << ", " << mat[7] << "," << endl;
 	cout << " " << mat[8] << ", " << mat[9] << ", " << mat[10] << ", " << mat[11] << "," << endl;
 	cout << " " << mat[12] << ", " << mat[13] << ", " << mat[14] << ", " << mat[15] << "}" << endl;
 }
 
+
 float *generate_terrain(int cols, int rows){
 
 	cout << "Generating terrain" << endl;
 
-	//vertices.push_back(vec3(0,0,0));
-	//MeshVertex mv;
-
-	std::uint32_t seed = 12345;
+	std::uint32_t seed = 6782;
 
 	const siv::PerlinNoise perlin(seed);
+	const siv::PerlinNoise perlin2(5892);
 	float *result = (float *) calloc(cols * rows, sizeof(float));
-	double fx = cols/8.0, fy = rows/8.0;
+	double freq = 16.0;
+	double fx = cols/freq, fy = rows/freq;
 
 	for (int i = 0; i < rows; i++){
 		for (int j = 0; j < cols; j++){
 
-			float per = (float) perlin.accumulatedOctaveNoise2D_0_1(j/fx, i/fy, 8);
-
-			if (j % 10 == 0){
-				cout << per << endl;
-			}
-
-			/*mv.uv.x = j;
-			mv.uv.y = i;
-
-			mv.position.x = 
-			verts.push_back(mv);
-
-			if (i < rows - 1 || j < cols - 1){
-
-				//1st tri
-				indices.push_back(cols * i + j);
-				indices.push_back(cols * i + j + 1);
-				indices.push_back(cols * (i+1) + j);
-
-				//2nd tri
-				indices.push_back(cols * i + j + 1);
-				indices.push_back(cols * (i+1) + j + 1);
-				indices.push_back(cols * i + j);
-			}*/
-
-			result[i * cols + j] = per;
+			float per = (float) perlin.accumulatedOctaveNoise2D_0_1(j/fx, i/fy, 16);
+			float per2 = (float) perlin.accumulatedOctaveNoise2D_0_1(j/fx, i/fy, 5);
+			result[i * cols + j] = .5 * (per + per2);
 		}
 	}
 
@@ -80,33 +57,13 @@ static void error_callback(int error, const char* description){
     fputs(description, stderr);
 }
 
+
 static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods){
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
         glfwSetWindowShouldClose(window, GL_TRUE);
 }
 
-int compile_shader(GLenum shaderType, string shaderCode){
-	
-	unsigned int shader;
-	int success;
-	char infoLog[512];
-	const char *contents = shaderCode.c_str();
-	   
-	shader = glCreateShader(shaderType);
 
-	glShaderSource(shader, 1, &contents, NULL);
-	glCompileShader(shader);
-	//glCheckError();
-
-	glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
-	
-	if(!success){
-	    glGetShaderInfoLog(shader, 512, NULL, infoLog);
-	    std::cout << "ERROR::SHADER::COMPILATION_FAILED\n" << infoLog << std::endl;
-	};
-	  
-	return shader;
-}
 
 
 
@@ -129,7 +86,7 @@ GLuint bindTexture(int cols, int rows, float *data){
     glBindTexture(GL_TEXTURE_2D, tex);
     glCheckError();
 
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glCheckError();
 
@@ -156,6 +113,8 @@ GLuint bindTexture(int cols, int rows, float *data){
 }
 
 
+
+
 int main(int argc, char **argv){
 	
 	GLFWwindow* window;
@@ -167,6 +126,9 @@ int main(int argc, char **argv){
 
 	string path1("/Users/will/projects/cpprtx/meshes/ball.obj");
 	Mesh *sphere = new Mesh(path1);
+
+	string path2("/Users/will/projects/cpprtx/meshes/terrain_plane.obj");
+	Mesh *terrain_plane = new Mesh(path2);
 
 	Mesh *plane = gen_plane();
 	
@@ -247,13 +209,13 @@ int main(int argc, char **argv){
 
 
     //Binding noise test objs
-    int rows = 30, cols = 30;
+    int rows = 120, cols = rows;
     float *img_data = generate_terrain(cols,rows);
 
     GLuint tex_num = bindTexture(cols,rows,img_data);
     glCheckError();
 
-   	plane -> bindBuffers();
+   	terrain_plane -> bindBuffers();
 
     string noise_vshader = read_shader("src/rendering/shaders/NoiseTestVert.glsl");
     string noise_fshader = read_shader("src/rendering/shaders/NoiseTestFrag.glsl");
@@ -276,7 +238,14 @@ int main(int argc, char **argv){
 	GLint n_projloc = glGetUniformLocation(n_ID, "p");
     GLint n_lookloc = glGetUniformLocation(n_ID, "v");
     GLint n_texloc = glGetUniformLocation(n_ID, "tex");
+    GLint n_lightDir = glGetUniformLocation(n_ID, "lightDir");
+    GLint n_dim = glGetUniformLocation(n_ID, "dim");
 
+    glUniform1f(n_dim,cols);
+
+    vec3 lDir = vec3(0.0,-1.0,0.0);
+
+    glUniform3fv(n_lightDir,1,(float *)&lDir);
     glUniform1i(n_texloc,0);
 
     glActiveTexture(GL_TEXTURE0 + 0);
@@ -336,7 +305,7 @@ int main(int argc, char **argv){
 		glUniformMatrix4fv(n_projloc, 1, GL_FALSE, value_ptr(proj));
 		glUniformMatrix4fv(n_lookloc, 1, GL_FALSE, value_ptr(view));
 
-		plane -> draw();
+		terrain_plane -> draw();
 
 
 		//rot = rotate(rot, time * glm::radians(20.0f), vec3(0.0f,1.0f,0.0f));
@@ -365,10 +334,15 @@ int main(int argc, char **argv){
 	delete cube;
 	sphere -> deleteBuffers();
 	delete sphere;
+	terrain_plane -> deleteBuffers();
+	delete terrain_plane;
+
 	plane -> deleteBuffers();
 	delete plane;
 
 	delete img_data;
+
+	glDeleteTextures(1,&tex_num);
 
 	glDeleteProgram(ID);
 	glfwTerminate();

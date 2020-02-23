@@ -10,5 +10,5 @@ out vec2 texCoord;
 void main(){
 
 	gl_Position = p * v * vec4(pos,1.0);
-    texCoord = (pos.xy + vec2(1.0)) / 2.0;
+	texCoord = .5 * (pos.xz + vec2(1.0));
 }
