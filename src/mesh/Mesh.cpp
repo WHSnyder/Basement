@@ -3,6 +3,7 @@
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>           // Output data structure
 #include <assimp/postprocess.h>
+//#include "perlin/PerlinNoise.hpp"
 
 using namespace glm;
 using namespace std;
@@ -56,18 +57,19 @@ int Mesh::bindBuffers(){
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBufferData(GL_ARRAY_BUFFER, verts.size() * sizeof(MeshVertex), &verts[0], GL_STATIC_DRAW);  
 
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(GLuint), &indices[0], GL_STATIC_DRAW);
-
     glEnableVertexAttribArray(0);	
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(MeshVertex), (void*) 0);
 
     glEnableVertexAttribArray(1);	
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(MeshVertex), ((void*) offsetof(MeshVertex,normal)));
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(MeshVertex), (void*) offsetof(MeshVertex,normal));
+
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(GLuint), &indices[0], GL_STATIC_DRAW);
+
 
     glBindVertexArray(0);
 } 
-
 
 
 
@@ -89,6 +91,7 @@ void Mesh::read_obj_file(string filename){
 
         aiMesh* mesh = scene->mMeshes[i];
         MeshVertex mv = MeshVertex();
+        vec3 norm,pos;
   
         //Iterate over the vertices of the mesh
         for (unsigned int j = 0; j < mesh->mNumVertices; ++j){
@@ -115,95 +118,4 @@ void Mesh::read_obj_file(string filename){
             for (unsigned int k = 0; k < face.mNumIndices; ++k) {indices.push_back(face.mIndices[k]);}
         }
     }
-
-
-
-
-	/*regex object_header("o ");
-	regex vertex_decl("v( [-]?[0-9]*\.?[0-9]*){3}");
-	regex normal_decl("vn( [-]?[0-9]*\.?[0-9]*){3}");
-	regex face_decl("f( [0-9]*\/\/[0-9]*){3}");
-	regex float_decl("([-]?[0-9]+\.[0-9]+) ([-]?[0-9]+\.[0-9]+) ([-]?[0-9]+\.[0-9]+)");
-	regex face_nums("f ([0-9]+)\/\/([0-9]+) ([0-9]+)\/\/([0-9]+) ([0-9]+)\/\/([0-9]+)");
-
-	smatch sm;
-
-	ifstream file;
-	file.open(filename);
-
-	string::size_type sz;
-
-	float c[3];
-	GLuint t[6];
-	int i = 0, k = 1, dataflag = 0;
-	
-	if (file.fail())
-		//file.close();
-		cout << "unable to open file: " << filename << endl;
-		//cerr << "Error: " << strerror(errno);
-		k = 0;	
-
-	string line;
-	getline (file, line)
-
-	while (getline (file, line)) {
-
-		if (regex_search(line, sm, vertex_decl)){
-						
-			if (regex_search(line, sm, float_decl)) {
-			
-			    for (int i = 1; i < sm.size(); i++)
-			        c[i-1] = stof(sm[i], &sz);
-
-			    //cout << c[0] << c[1] << c[2] << endl;
-
-			    verts.push_back(vec3(c[0],c[1],c[2]));
-			}
-		}
-		else if (regex_search(line, sm, normal_decl)){
-
-			if (regex_search(line, sm, float_decl)) {
-			
-			    for (int i = 1; i < sm.size(); i++)
-			        c[i-1] = stof(sm[i], &sz);
-
-			    normals.push_back(vec3(c[0],c[1],c[2]));
-			}
-		}
-		else if (regex_search(line, sm, face_decl)){
-
-			int numverts = verts.size();
-			uint *bitmap = new uint[numverts]();
-
-			do {
-				if (regex_search(line, sm, face_nums)) {
-
-				    for (int i = 1; i < sm.size(); i++)
-				        t[i-1] = (GLuint) stoi(sm[i], &sz);
-
-				    for (i = 0; i < 6; i+=2){
-				    	
-				    	if ((bitmap[i] | (1 << t[i+1])) - bitmap[i] != 0) {
-				    		
-				    		bitmap[i] |= 1 << t[i+1];
-
-				    		vertex_structs.push_back(MeshVertex(verts[i], normals[i+1]));
-
-				    	}
-				    	else struct_indices.push_back(bitmap[i + numverts]);
-				    }
-				}
-			}  while (getline (file, line));
-
-			return 
-		}
-		else {
-			//nada
-		}
-	}
-
-
-
-	file.close();
-	cout << "Done reading" << endl;*/
-} 
+}

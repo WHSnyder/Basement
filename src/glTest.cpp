@@ -6,6 +6,7 @@
 #include <chrono>
 
 #include <iostream>
+#include <vector>
 
 #include <mesh/Mesh.h>
 #include <phys/Physics.h>
@@ -14,8 +15,65 @@
 
 #include <gtx/transform.hpp>
 
+#include <perlin/PerlinNoise.hpp>
+
 
 using namespace std;
+
+void coutMat(float *mat){
+	cout << "{" << mat[0] << ", " << mat[1] << ", " << mat[2] << ", " << mat[3] << "}" << endl;
+	cout << " " << mat[4] << ", " << mat[5] << ", " << mat[6] << ", " << mat[7] << "," << endl;
+	cout << " " << mat[8] << ", " << mat[9] << ", " << mat[10] << ", " << mat[11] << "," << endl;
+	cout << " " << mat[12] << ", " << mat[13] << ", " << mat[14] << ", " << mat[15] << "}" << endl;
+}
+
+float *generate_terrain(int cols, int rows){
+
+	cout << "Generating terrain" << endl;
+
+	//vertices.push_back(vec3(0,0,0));
+	//MeshVertex mv;
+
+	std::uint32_t seed = 12345;
+
+	const siv::PerlinNoise perlin(seed);
+	float *result = (float *) calloc(cols * rows, sizeof(float));
+	double fx = cols/8.0, fy = rows/8.0;
+
+	for (int i = 0; i < rows; i++){
+		for (int j = 0; j < cols; j++){
+
+			float per = (float) perlin.accumulatedOctaveNoise2D_0_1(j/fx, i/fy, 8);
+
+			if (j % 10 == 0){
+				cout << per << endl;
+			}
+
+			/*mv.uv.x = j;
+			mv.uv.y = i;
+
+			mv.position.x = 
+			verts.push_back(mv);
+
+			if (i < rows - 1 || j < cols - 1){
+
+				//1st tri
+				indices.push_back(cols * i + j);
+				indices.push_back(cols * i + j + 1);
+				indices.push_back(cols * (i+1) + j);
+
+				//2nd tri
+				indices.push_back(cols * i + j + 1);
+				indices.push_back(cols * (i+1) + j + 1);
+				indices.push_back(cols * i + j);
+			}*/
+
+			result[i * cols + j] = per;
+		}
+	}
+
+	return result;
+}
 
 
 static void error_callback(int error, const char* description){
@@ -38,25 +96,63 @@ int compile_shader(GLenum shaderType, string shaderCode){
 
 	glShaderSource(shader, 1, &contents, NULL);
 	glCompileShader(shader);
-	glCheckError();
+	//glCheckError();
 
 	glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
 	
 	if(!success){
 	    glGetShaderInfoLog(shader, 512, NULL, infoLog);
-	    std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << std::endl;
+	    std::cout << "ERROR::SHADER::COMPILATION_FAILED\n" << infoLog << std::endl;
 	};
 	  
 	return shader;
 }
 
 
-void coutMat(float *mat){
-	cout << "{" << mat[0] << ", " << mat[1] << ", " << mat[2] << ", " << mat[3] << "}" << endl;
-	cout << " " << mat[4] << ", " << mat[5] << ", " << mat[6] << ", " << mat[7] << "," << endl;
-	cout << " " << mat[8] << ", " << mat[9] << ", " << mat[10] << ", " << mat[11] << "," << endl;
-	cout << " " << mat[12] << ", " << mat[13] << ", " << mat[14] << ", " << mat[15] << "}" << endl;
 
+Mesh *gen_plane(){
+
+	vec3 verts[] = {vec3(-1,1,1), vec3(1,1,1), vec3(-1,-1,1), vec3(1,-1,1)};
+	vec3 norms[] = {vec3(0,0,1), vec3(0,0,1), vec3(0,0,1), vec3(0,0,1)};
+	GLuint inds[] = {0,1,2,1,3,2};
+
+	return new Mesh(vector<vec3>(verts,verts+4), vector<vec3>(norms,norms+4), vector<GLuint>(inds,inds+6));
+}
+
+
+GLuint bindTexture(int cols, int rows, float *data){
+
+	GLuint tex;
+	//glActiveTexture(GL_TEXTURE0);
+
+	glGenTextures(1, &tex);
+    glBindTexture(GL_TEXTURE_2D, tex);
+    glCheckError();
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glCheckError();
+
+    // Set texture clamping method
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glCheckError();
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glCheckError();
+
+    glTexImage2D(GL_TEXTURE_2D,     // Type of texture
+                0,                 // Pyramid level (for mip-mapping) - 0 is the top level
+                GL_RED,            // Internal colour format to convert to
+                cols,          // Image width  i.e. 640 for Kinect in standard mode
+                rows,          // Image height i.e. 480 for Kinect in standard mode
+                0,                 // Border width in pixels (can either be 1 or 0)
+                GL_RED, // Input image format (i.e. GL_RGB, GL_RGBA, GL_BGR etc.)
+                GL_FLOAT,  // Image data type
+                (void *) data);        // The actual image data itself
+
+    glGenerateMipmap(GL_TEXTURE_2D);
+    glCheckError();
+
+    return tex;
 }
 
 
@@ -71,6 +167,8 @@ int main(int argc, char **argv){
 
 	string path1("/Users/will/projects/cpprtx/meshes/ball.obj");
 	Mesh *sphere = new Mesh(path1);
+
+	Mesh *plane = gen_plane();
 	
 	if(!glfwInit()){
 		fprintf( stderr, "Failed to initialize GLFW\n" );
@@ -120,6 +218,7 @@ int main(int argc, char **argv){
     glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LESS); 
 
+	//Binding phys test objs
    	cube -> bindBuffers();
    	sphere -> bindBuffers();
 
@@ -135,7 +234,6 @@ int main(int argc, char **argv){
 
     char infoLog[512];
 
-    ID = glCreateProgram();
     glCheckError();
 	glAttachShader(ID, vertex);
 	glAttachShader(ID, fragment);
@@ -144,11 +242,49 @@ int main(int argc, char **argv){
 	glLinkProgram(ID);
 	glCheckError();
 
-	glUseProgram(ID);
-	glCheckError();
-
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
     glCheckError();
+
+
+    //Binding noise test objs
+    int rows = 30, cols = 30;
+    float *img_data = generate_terrain(cols,rows);
+
+    GLuint tex_num = bindTexture(cols,rows,img_data);
+    glCheckError();
+
+   	plane -> bindBuffers();
+
+    string noise_vshader = read_shader("src/rendering/shaders/NoiseTestVert.glsl");
+    string noise_fshader = read_shader("src/rendering/shaders/NoiseTestFrag.glsl");
+
+    unsigned int n_vertex = compile_shader(GL_VERTEX_SHADER, noise_vshader);
+    unsigned int n_fragment = compile_shader(GL_FRAGMENT_SHADER, noise_fshader);
+
+    unsigned int n_ID = glCreateProgram();
+
+    glCheckError();
+	glAttachShader(n_ID, n_vertex);
+	glAttachShader(n_ID, n_fragment);
+	glCheckError();
+
+	glLinkProgram(n_ID);
+	glCheckError();
+
+	glUseProgram(n_ID);
+
+	GLint n_projloc = glGetUniformLocation(n_ID, "p");
+    GLint n_lookloc = glGetUniformLocation(n_ID, "v");
+    GLint n_texloc = glGetUniformLocation(n_ID, "tex");
+
+    glUniform1i(n_texloc,0);
+
+    glActiveTexture(GL_TEXTURE0 + 0);
+	glBindTexture(GL_TEXTURE_2D, tex_num);
+
+
+
+
 
 
     auto t_start = std::chrono::high_resolution_clock::now();
@@ -161,20 +297,19 @@ int main(int argc, char **argv){
 	mat4 trans = transpose(translate(vec3(-1,1.0,-20.0)));
 	mat4 trans2 = transpose(translate(vec3(1,1.0,-20.0)));
 
-	mat4 view = lookAt(vec3(0,0,20),vec3(0,0,-100),vec3(0,1.0,0));
+	mat4 view = lookAt(vec3(0,0,5),vec3(0,0,-100),vec3(0,1.0,0));
     
-    GLint projloc = glGetUniformLocation(ID, "p");
+    /*GLint projloc = glGetUniformLocation(ID, "p");
     GLint rotloc = glGetUniformLocation(ID, "m");
     GLint lookloc = glGetUniformLocation(ID, "v");
 
 	glUniformMatrix4fv(projloc, 1, GL_FALSE, value_ptr(proj));
 	glUniformMatrix4fv(lookloc, 1, GL_FALSE, value_ptr((view)));
 
-
 	glCheckError();
+	*/
 
 	float sphereMat[16] = {}, boxMat[16] = {};
-
 
 	do {
 
@@ -197,20 +332,28 @@ int main(int argc, char **argv){
 		//coutMat(value_ptr(testmat));
 		//cout << "=========================" << endl;
 
+		glUseProgram(n_ID);
+		glUniformMatrix4fv(n_projloc, 1, GL_FALSE, value_ptr(proj));
+		glUniformMatrix4fv(n_lookloc, 1, GL_FALSE, value_ptr(view));
 
-		rot = rotate(rot, time * glm::radians(20.0f), vec3(0.0f,1.0f,0.0f));
+		plane -> draw();
 
-		glUniformMatrix4fv(rotloc, (GLuint) 1, GL_FALSE, boxMat);// value_ptr(transpose(dest)));
 
-		glCheckError();
-		cube -> draw();
+		//rot = rotate(rot, time * glm::radians(20.0f), vec3(0.0f,1.0f,0.0f));
+
+		//glUniformMatrix4fv(rotloc, (GLuint) 1, GL_FALSE, boxMat);// value_ptr(transpose(dest)));
+
+		//glCheckError();
+		//cube -> draw();
 
 		//memcpy(value_ptr(dest),sphereMat,16 * sizeof(float));
 
-		glUniformMatrix4fv(rotloc, (GLuint) 1, GL_FALSE, sphereMat);//value_ptr(transpose(dest)));
-		glCheckError();
+		//glUniformMatrix4fv(rotloc, (GLuint) 1, GL_FALSE, sphereMat);//value_ptr(transpose(dest)));
+		//glCheckError();
 		
-		sphere -> draw();
+		//sphere -> draw();
+
+
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
@@ -222,6 +365,10 @@ int main(int argc, char **argv){
 	delete cube;
 	sphere -> deleteBuffers();
 	delete sphere;
+	plane -> deleteBuffers();
+	delete plane;
+
+	delete img_data;
 
 	glDeleteProgram(ID);
 	glfwTerminate();

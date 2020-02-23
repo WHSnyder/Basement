@@ -17,5 +17,5 @@ void main(){
 	float mult = clamp(1.0 - dot(norm,lightdir),0.0,1.0);
 	
 	gl_Position = p * v * m * vec4(pos,1.0);
-    vertOutColor = vec4(mult * vec3(1.0,0.0,0.6), 1.0);
+    vertOutColor = vec4(mult * vec3(.2,0.0,0.8), 1.0);
 }

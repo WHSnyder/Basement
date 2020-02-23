@@ -6,3 +6,5 @@ bin
 *.o
 **/libs
 libs
+**/assets
+assets

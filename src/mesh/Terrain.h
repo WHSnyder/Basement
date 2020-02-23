@@ -18,19 +18,7 @@ using namespace glm;
 using namespace std;
 
 
-GLenum glCheckError_(const char *file, int line);
-
-#define glCheckError() glCheckError_(__FILE__, __LINE__) 
-
-
-
-struct MeshVertex {
-	glm::vec3 position, normal;
-	glm::vec2 uv;
-};
-
-
-class Mesh {
+class Terrain {
 
 	public:
 
@@ -48,20 +36,4 @@ class Mesh {
 		Mesh(string filename){
 			read_obj_file(filename);
 		}
-
-		Mesh(vector<vec3> vertices, vector<vec3> norms, vector<GLuint> inds){
-			
-			indices = inds;
-			MeshVertex mv;
-
-			for (int i = 0; i < vertices.size(); i++){
-
-				mv.position = vertices[i];
-				mv.normal = norms[i];
-
-				verts.push_back(mv);
-			}
-		}
-
-
 };
