@@ -10,14 +10,10 @@
 
 #include <mesh/Mesh.h>
 #include <phys/Physics.h>
-
-#include <utils/ShaderUtils.h>
 #include <gtx/transform.hpp>
 #include <perlin/PerlinNoise.hpp>
 
-
 using namespace std;
-
 
 void coutMat(float *mat){
 
@@ -27,8 +23,7 @@ void coutMat(float *mat){
 	cout << " " << mat[12] << ", " << mat[13] << ", " << mat[14] << ", " << mat[15] << "}" << endl;
 }
 
-
-float *generate_terrain(int cols, int rows){
+float *generate_terrain(int rows, int cols){
 
 	cout << "Generating terrain" << endl;
 
@@ -52,20 +47,14 @@ float *generate_terrain(int cols, int rows){
 	return result;
 }
 
-
 static void error_callback(int error, const char* description){
     fputs(description, stderr);
 }
-
 
 static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods){
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
         glfwSetWindowShouldClose(window, GL_TRUE);
 }
-
-
-
-
 
 Mesh *gen_plane(){
 
@@ -74,42 +63,6 @@ Mesh *gen_plane(){
 	GLuint inds[] = {0,1,2,1,3,2};
 
 	return new Mesh(vector<vec3>(verts,verts+4), vector<vec3>(norms,norms+4), vector<GLuint>(inds,inds+6));
-}
-
-
-GLuint bindTexture(int cols, int rows, float *data){
-
-	GLuint tex;
-	//glActiveTexture(GL_TEXTURE0);
-
-	glGenTextures(1, &tex);
-    glBindTexture(GL_TEXTURE_2D, tex);
-    glCheckError();
-
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glCheckError();
-
-    // Set texture clamping method
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glCheckError();
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glCheckError();
-
-    glTexImage2D(GL_TEXTURE_2D,     // Type of texture
-                0,                 // Pyramid level (for mip-mapping) - 0 is the top level
-                GL_RED,            // Internal colour format to convert to
-                cols,          // Image width  i.e. 640 for Kinect in standard mode
-                rows,          // Image height i.e. 480 for Kinect in standard mode
-                0,                 // Border width in pixels (can either be 1 or 0)
-                GL_RED, // Input image format (i.e. GL_RGB, GL_RGBA, GL_BGR etc.)
-                GL_FLOAT,  // Image data type
-                (void *) data);        // The actual image data itself
-
-    glGenerateMipmap(GL_TEXTURE_2D);
-    glCheckError();
-
-    return tex;
 }
 
 
@@ -131,7 +84,12 @@ int main(int argc, char **argv){
 	Mesh *terrain_plane = new Mesh(path2);
 
 	Mesh *plane = gen_plane();
+
+	int rows = 120, cols = rows;
+    float *img_data = generate_terrain(img_data,rows,cols);
+	Material *perlin = new Material(img_data, rows, cols, "src/rendering/shaders/plane");
 	
+
 	if(!glfwInit()){
 		fprintf( stderr, "Failed to initialize GLFW\n" );
 		getchar();
@@ -177,79 +135,33 @@ int main(int argc, char **argv){
     ratio = width / (float) height;
     glViewport(0, 0, width, height);
 
+
     glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LESS); 
 
-	//Binding phys test objs
-   	cube -> bindBuffers();
-   	sphere -> bindBuffers();
 
     string vshader = read_shader("src/rendering/shaders/BasicVert.hlsl");
     string fshader = read_shader("src/rendering/shaders/BasicFrag.hlsl");
 
-    unsigned int vertex = compile_shader(GL_VERTEX_SHADER, vshader);
-    unsigned int fragment = compile_shader(GL_FRAGMENT_SHADER, fshader);
-    glCheckError();
 
-    unsigned int ID = glCreateProgram();
-    int success;
 
-    char infoLog[512];
-
-    glCheckError();
-	glAttachShader(ID, vertex);
-	glAttachShader(ID, fragment);
-	glCheckError();
-
-	glLinkProgram(ID);
-	glCheckError();
 
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-    glCheckError();
 
-
-    //Binding noise test objs
-    int rows = 120, cols = rows;
-    float *img_data = generate_terrain(cols,rows);
-
-    GLuint tex_num = bindTexture(cols,rows,img_data);
-    glCheckError();
-
-   	terrain_plane -> bindBuffers();
 
     string noise_vshader = read_shader("src/rendering/shaders/NoiseTestVert.glsl");
     string noise_fshader = read_shader("src/rendering/shaders/NoiseTestFrag.glsl");
 
-    unsigned int n_vertex = compile_shader(GL_VERTEX_SHADER, noise_vshader);
-    unsigned int n_fragment = compile_shader(GL_FRAGMENT_SHADER, noise_fshader);
-
-    unsigned int n_ID = glCreateProgram();
-
-    glCheckError();
-	glAttachShader(n_ID, n_vertex);
-	glAttachShader(n_ID, n_fragment);
-	glCheckError();
-
-	glLinkProgram(n_ID);
-	glCheckError();
 
 	glUseProgram(n_ID);
 
 	GLint n_projloc = glGetUniformLocation(n_ID, "p");
     GLint n_lookloc = glGetUniformLocation(n_ID, "v");
-    GLint n_texloc = glGetUniformLocation(n_ID, "tex");
     GLint n_lightDir = glGetUniformLocation(n_ID, "lightDir");
-    GLint n_dim = glGetUniformLocation(n_ID, "dim");
 
-    glUniform1f(n_dim,cols);
 
-    vec3 lDir = vec3(0.0,-1.0,0.0);
 
-    glUniform3fv(n_lightDir,1,(float *)&lDir);
-    glUniform1i(n_texloc,0);
 
-    glActiveTexture(GL_TEXTURE0 + 0);
-	glBindTexture(GL_TEXTURE_2D, tex_num);
 
 
 
@@ -330,21 +242,13 @@ int main(int argc, char **argv){
 
 	while( glfwGetKey(window, GLFW_KEY_ESCAPE ) != GLFW_PRESS && glfwWindowShouldClose(window) == 0 );
 
-	cube -> deleteBuffers();
 	delete cube;
-	sphere -> deleteBuffers();
 	delete sphere;
-	terrain_plane -> deleteBuffers();
 	delete terrain_plane;
-
-	plane -> deleteBuffers();
 	delete plane;
 
-	delete img_data;
+	delete
 
-	glDeleteTextures(1,&tex_num);
-
-	glDeleteProgram(ID);
 	glfwTerminate();
 
 	return 0;

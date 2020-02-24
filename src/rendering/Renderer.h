@@ -12,9 +12,12 @@
 
 class Renderer {
 
+	public:
+
+		Material *mat;
+		Mesh *mesh;
+
 	
-
-
 
 }
 

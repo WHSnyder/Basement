@@ -3,7 +3,6 @@
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>           // Output data structure
 #include <assimp/postprocess.h>
-//#include "perlin/PerlinNoise.hpp"
 
 using namespace glm;
 using namespace std;
@@ -47,7 +46,7 @@ int Mesh::deleteBuffers(){
 
 int Mesh::bindBuffers(){
 
-	cout << verts.size() << " " << indices.size() << endl;
+	cout << "Num vertices: " << verts.size() << " Num triangles: " << indices.size() / 3 << endl;
 
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);

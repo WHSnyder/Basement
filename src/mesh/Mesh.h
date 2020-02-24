@@ -47,6 +47,7 @@ class Mesh {
 
 		Mesh(string filename){
 			read_obj_file(filename);
+			bindBuffers();
 		}
 
 		Mesh(vector<vec3> vertices, vector<vec3> norms, vector<GLuint> inds){
@@ -61,5 +62,11 @@ class Mesh {
 
 				verts.push_back(mv);
 			}
+
+			bindBuffers();
+		}
+
+		~Mesh(){
+			deleteBuffers();
 		}
 };

@@ -8,20 +8,35 @@
 #include <iostream>
 #include <vector>
 
-#include <utils/ShaderUtils.h>
+#include "utils/ShaderUtils.h"
+#include "rendering/Texture.h"
 
 
 
-class Material {
+class Shader {
 
 	private:
 
 		GLuint progID;
-		Gluint model;
 		GLuint texture;
-		float *tex_data = nullptr;
+		GLuint proj_loc, view_loc;
 
 	public:
 
 		static void *view_ptr, frustum_ptr;
+
+		Shader(Texture *tex, string shaderpath);
+		Shader(string shaderpath);
+
+		setMats(){
+
+		}
+
+		~Shader(){
+			delete tex_data;
+			glDeleteProgram(ID);
+			glDeleteTextures(1,&texture);
+		}
+
+
 }
