@@ -16,7 +16,6 @@
 #include "rendering/Texture.h"
 #include "rendering/Shader.h"
 
-
 using namespace std;
 
 void coutMat(float *mat){
