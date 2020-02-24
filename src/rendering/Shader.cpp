@@ -60,15 +60,19 @@ Shader::Shader(string shader_path){
 
 	progID = build_program(shader_path);
 
+	GLint n_texloc = glGetUniformLocation(progID, "tex");
+
+
+	proj_loc, view_loc;
+
 }
 
 
-Shader::Shader(float *data, int rows, int cols, string shader_path){
+Shader::Shader(Texture *tex, string shader_path){
 
 	progID = build_program(shader_path);
-	texture = bindTexture(cols,rows,data);
 
-	glUseProgram(progID);
+	glUseProgram(progID); 
 
 	GLint n_texloc = glGetUniformLocation(progID, "tex");
 
@@ -78,5 +82,36 @@ Shader::Shader(float *data, int rows, int cols, string shader_path){
 	glBindTexture(GL_TEXTURE_2D, texture);
 
     GLint n_dim = glGetUniformLocation(n_ID, "dim");
-    glUniform1f(n_dim,cols);
+    glUniform1f(n_dim,tex->cols);
+}
+
+
+void Shader::setMats(float *model, float *view, float *proj){
+
+	glUseProgram(progID);
+	glUniformMatrix4fv(model_loc, 1, GL_FALSE, (void *) model);
+	glUniformMatrix4fv(view_loc, 1, GL_FALSE, (void *) view);
+	glUniformMatrix4fv(proj_loc, 1, GL_FALSE, (void *) proj);
+}
+
+
+void Shader::printUniforms(){
+	
+	GLint i, count, size;
+	GLenum type; // type of the variable (float, vec3 or mat4, etc)
+
+	const GLsizei bufSize = 16; // maximum name length
+	GLchar name[bufSize]; // variable name in GLSL
+	GLsizei length;
+
+	glUseProgram(progID);
+	glGetProgramiv(progID, GL_ACTIVE_UNIFORMS, &count);
+	
+	printf("Active Uniforms: %d\n", count);
+
+	for (i = 0; i < count; i++){
+	    
+	    glGetActiveUniform(program, (GLuint)i, bufSize, &length, &size, &type, name);
+	    printf("Uniform #%d Type: %u Name: %s\n", i, type, name);
+	}
 }

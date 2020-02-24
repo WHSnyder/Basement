@@ -36,7 +36,8 @@ GLuint bindTexture(int cols, int rows, float *data, int color){
 }
 
 
-Texture::Texture(float *data, int width, int height, int color){
+Texture::Texture(float *_data, int width, int height, int color){
 	rows = height, cols = width;
-	texID = bindTexture_bw(cols, rows, data, color);
+	texID = bindTexture_bw(cols, rows, _data, color);
+	data = _data
 }

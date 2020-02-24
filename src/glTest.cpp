@@ -13,6 +13,10 @@
 #include <gtx/transform.hpp>
 #include <perlin/PerlinNoise.hpp>
 
+#include "rendering/Texture.h"
+#include "rendering/Shader.h"
+
+
 using namespace std;
 
 void coutMat(float *mat){
@@ -85,10 +89,17 @@ int main(int argc, char **argv){
 
 	Mesh *plane = gen_plane();
 
+	Shader terrain_shader = Shader("src/rendering/shaders/noise_test");
+
+
 	int rows = 120, cols = rows;
     float *img_data = generate_terrain(img_data,rows,cols);
-	Material *perlin = new Material(img_data, rows, cols, "src/rendering/shaders/plane");
-	
+    Texture noise_tex = Texture(img_data, rows, cols, 0);
+
+	Shader *perlin = new Material(img_data, rows, cols, "src/rendering/shaders/plane");
+	perlin -> printUniforms();
+
+	delte perlin;
 
 	if(!glfwInit()){
 		fprintf( stderr, "Failed to initialize GLFW\n" );
@@ -140,26 +151,6 @@ int main(int argc, char **argv){
 	glDepthFunc(GL_LESS); 
 
 
-    string vshader = read_shader("src/rendering/shaders/BasicVert.hlsl");
-    string fshader = read_shader("src/rendering/shaders/BasicFrag.hlsl");
-
-
-
-
-    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-
-
-    string noise_vshader = read_shader("src/rendering/shaders/NoiseTestVert.glsl");
-    string noise_fshader = read_shader("src/rendering/shaders/NoiseTestFrag.glsl");
-
-
-	glUseProgram(n_ID);
-
-	GLint n_projloc = glGetUniformLocation(n_ID, "p");
-    GLint n_lookloc = glGetUniformLocation(n_ID, "v");
-    GLint n_lightDir = glGetUniformLocation(n_ID, "lightDir");
-
-
 
 
 
@@ -191,7 +182,7 @@ int main(int argc, char **argv){
 	*/
 
 	float sphereMat[16] = {}, boxMat[16] = {};
-
+	/*
 	do {
 
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -241,13 +232,11 @@ int main(int argc, char **argv){
 	} 
 
 	while( glfwGetKey(window, GLFW_KEY_ESCAPE ) != GLFW_PRESS && glfwWindowShouldClose(window) == 0 );
-
+	*/
 	delete cube;
 	delete sphere;
 	delete terrain_plane;
 	delete plane;
-
-	delete
 
 	glfwTerminate();
 

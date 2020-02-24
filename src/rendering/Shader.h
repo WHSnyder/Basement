@@ -19,7 +19,7 @@ class Shader {
 
 		GLuint progID;
 		GLuint texture;
-		GLuint proj_loc, view_loc;
+		GLuint proj_loc, view_loc, model_loc;
 
 	public:
 
@@ -28,9 +28,8 @@ class Shader {
 		Shader(Texture *tex, string shaderpath);
 		Shader(string shaderpath);
 
-		setMats(){
-
-		}
+		void setMats(float *model, float *view, float *proj);
+		void printUniforms();
 
 		~Shader(){
 			delete tex_data;
