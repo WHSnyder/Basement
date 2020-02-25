@@ -13,4 +13,4 @@
 using namespace std;
 
 
-string read_shader(char* shaderPath);
+string read_shader(string shaderPath);

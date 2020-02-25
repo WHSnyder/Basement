@@ -8,8 +8,8 @@ using namespace glm;
 using namespace std;
 
 
-GLenum glCheckError_(const char *file, int line)
-{
+extern GLenum glCheckError_(const char *file, int line);
+/*{
     GLenum errorCode;
     while ((errorCode = glGetError()) != GL_NO_ERROR)
     {
@@ -27,10 +27,13 @@ GLenum glCheckError_(const char *file, int line)
         std::cout << error << " | " << file << " (" << line << ")" << std::endl;
     }
     return errorCode;
-}
+}*/
 
 
-int Mesh::draw(){
+int Mesh::draw(GLuint id){
+
+    glUseProgram(id);
+
 	glBindVertexArray(VAO);
     glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, (void*)0);
     glBindVertexArray(0);
@@ -62,10 +65,8 @@ int Mesh::bindBuffers(){
     glEnableVertexAttribArray(1);	
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(MeshVertex), (void*) offsetof(MeshVertex,normal));
 
-
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(GLuint), &indices[0], GL_STATIC_DRAW);
-
 
     glBindVertexArray(0);
 } 
@@ -74,7 +75,7 @@ int Mesh::bindBuffers(){
 
 void Mesh::read_obj_file(string filename){
 
-	cout << "Starting assimp load" << endl;
+	//cout << "Starting assimp load" << endl;
 
 	Assimp::Importer importer;
     const aiScene* scene = importer.ReadFile(filename, aiProcess_GenNormals | aiProcess_JoinIdenticalVertices);
@@ -86,11 +87,13 @@ void Mesh::read_obj_file(string filename){
         return -1;
     }
 
+    //cout << "Beginning Assimp load" << endl;
+
     for (unsigned int i = 0; i < scene->mNumMeshes; ++i){
 
         aiMesh* mesh = scene->mMeshes[i];
         MeshVertex mv = MeshVertex();
-        vec3 norm,pos;
+        //vec3 norm,pos;
   
         //Iterate over the vertices of the mesh
         for (unsigned int j = 0; j < mesh->mNumVertices; ++j){
@@ -117,4 +120,6 @@ void Mesh::read_obj_file(string filename){
             for (unsigned int k = 0; k < face.mNumIndices; ++k) {indices.push_back(face.mIndices[k]);}
         }
     }
+
+    //cout << "Assimp loaded" << endl;
 }

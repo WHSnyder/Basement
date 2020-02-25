@@ -25,4 +25,4 @@ class Texture {
 			delete data;
 			glDeleteTextures(1,&texID);
 		}
-}
+};

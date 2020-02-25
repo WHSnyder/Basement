@@ -1,6 +1,32 @@
 #include "rendering/Shader.h"
 #include "utils/ShaderUtils.h"
 
+extern GLenum glCheckError_(const char *file, int line);
+
+//extern GLenum glCheckError();//const char *file, int line);
+/*{
+    GLenum errorCode;
+    while ((errorCode = glGetError()) != GL_NO_ERROR)
+    {
+        std::string error;
+        switch (errorCode)
+        {
+            case GL_INVALID_ENUM:                  error = "INVALID_ENUM"; break;
+            case GL_INVALID_VALUE:                 error = "INVALID_VALUE"; break;
+            case GL_INVALID_OPERATION:             error = "INVALID_OPERATION"; break;
+            case GL_STACK_OVERFLOW:                error = "STACK_OVERFLOW"; break;
+            case GL_STACK_UNDERFLOW:               error = "STACK_UNDERFLOW"; break;
+            case GL_OUT_OF_MEMORY:                 error = "OUT_OF_MEMORY"; break;
+            case GL_INVALID_FRAMEBUFFER_OPERATION: error = "INVALID_FRAMEBUFFER_OPERATION"; break;
+        }
+        std::cout << error << " | " << file << " (" << line << ")" << std::endl;
+    }
+    return errorCode;
+}*/
+
+#define glCheckError() glCheckError_(__FILE__, __LINE__) 
+
+
 
 int compile_shader(GLenum shaderType, string shaderCode){
 	
@@ -60,14 +86,34 @@ Shader::Shader(string shader_path){
 
 	progID = build_program(shader_path);
 
-	GLint n_texloc = glGetUniformLocation(progID, "tex");
+	glUseProgram(progID); 
 
-
-	proj_loc, view_loc;
-
+	data_texture = glGetUniformLocation(progID, "tex");
+	proj_loc = glGetUniformLocation(progID, "p");
+	view_loc = glGetUniformLocation(progID, "v");
+	model_loc = glGetUniformLocation(progID, "m");
 }
 
 
+int Shader::setDataTexture(Texture *tex){
+
+	glUseProgram(progID); 
+
+	glUniform1i(data_texture, 0);
+
+    glActiveTexture(GL_TEXTURE0 + 0);
+	glBindTexture(GL_TEXTURE_2D, tex->texID);
+
+	glCheckError();
+
+	GLint n_dim = glGetUniformLocation(progID, "dim");
+    glUniform1f(n_dim,tex->cols);
+
+    glCheckError();
+    return 0;
+}
+
+/*
 Shader::Shader(Texture *tex, string shader_path){
 
 	progID = build_program(shader_path);
@@ -81,17 +127,17 @@ Shader::Shader(Texture *tex, string shader_path){
     glActiveTexture(GL_TEXTURE0 + 0);
 	glBindTexture(GL_TEXTURE_2D, texture);
 
-    GLint n_dim = glGetUniformLocation(n_ID, "dim");
+    GLint n_dim = glGetUniformLocation(progID, "dim");
     glUniform1f(n_dim,tex->cols);
-}
+}*/
 
 
 void Shader::setMats(float *model, float *view, float *proj){
 
 	glUseProgram(progID);
-	glUniformMatrix4fv(model_loc, 1, GL_FALSE, (void *) model);
-	glUniformMatrix4fv(view_loc, 1, GL_FALSE, (void *) view);
-	glUniformMatrix4fv(proj_loc, 1, GL_FALSE, (void *) proj);
+	glUniformMatrix4fv(model_loc, 1, GL_FALSE, model);
+	glUniformMatrix4fv(view_loc, 1, GL_FALSE, view);
+	glUniformMatrix4fv(proj_loc, 1, GL_FALSE, proj);
 }
 
 
@@ -111,7 +157,7 @@ void Shader::printUniforms(){
 
 	for (i = 0; i < count; i++){
 	    
-	    glGetActiveUniform(program, (GLuint)i, bufSize, &length, &size, &type, name);
+	    glGetActiveUniform(progID, (GLuint) i, bufSize, &length, &size, &type, name);
 	    printf("Uniform #%d Type: %u Name: %s\n", i, type, name);
 	}
 }

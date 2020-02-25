@@ -77,7 +77,7 @@ bin/glTest.o: src/glTest.cpp
 	$(CC) $(CFLAGS) $(GLFLAGS) -I/Users/will/projects/cpprtx/libs/physx/PxShared/include -I/Users/will/projects/cpprtx/libs/physx/PhysX_3.4/Include -c src/glTest.cpp -o bin/glTest.o
 
 bin/gltst: bin/glTest.o bin/Mesh.o bin/Physics.o
-	$(CC) $(CFLAGS) $(GLFLAGS) $(ASSIMP) $(LDFLAGS) $(PHYSX) bin/Physics.o bin/ShaderUtils.o bin/glTest.o bin/Mesh.o -o bin/gltst
+	$(CC) $(CFLAGS) $(GLFLAGS) $(ASSIMP) $(LDFLAGS) $(PHYSX) src/rendering/Shader.cpp src/rendering/Texture.cpp bin/Physics.o bin/ShaderUtils.o bin/glTest.o bin/Mesh.o -o bin/gltst
 
 clean: 
 	rm bin/*

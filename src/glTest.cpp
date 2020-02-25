@@ -13,7 +13,7 @@
 #include <gtx/transform.hpp>
 #include <perlin/PerlinNoise.hpp>
 
-#include "rendering/Texture.h"
+//#include "rendering/Texture.h"
 #include "rendering/Shader.h"
 
 using namespace std;
@@ -27,8 +27,6 @@ void coutMat(float *mat){
 }
 
 float *generate_terrain(int rows, int cols){
-
-	cout << "Generating terrain" << endl;
 
 	std::uint32_t seed = 6782;
 
@@ -77,29 +75,6 @@ int main(int argc, char **argv){
 
 	Simu mainSimu;
 
-	string path("/Users/will/projects/cpprtx/meshes/cube.obj");
-	Mesh *cube = new Mesh(path);
-
-	string path1("/Users/will/projects/cpprtx/meshes/ball.obj");
-	Mesh *sphere = new Mesh(path1);
-
-	string path2("/Users/will/projects/cpprtx/meshes/terrain_plane.obj");
-	Mesh *terrain_plane = new Mesh(path2);
-
-	Mesh *plane = gen_plane();
-
-	Shader terrain_shader = Shader("src/rendering/shaders/noise_test");
-
-
-	int rows = 120, cols = rows;
-    float *img_data = generate_terrain(img_data,rows,cols);
-    Texture noise_tex = Texture(img_data, rows, cols, 0);
-
-	Shader *perlin = new Material(img_data, rows, cols, "src/rendering/shaders/plane");
-	perlin -> printUniforms();
-
-	delte perlin;
-
 	if(!glfwInit()){
 		fprintf( stderr, "Failed to initialize GLFW\n" );
 		getchar();
@@ -138,6 +113,42 @@ int main(int argc, char **argv){
         exit(EXIT_FAILURE);
 
     glfwSetKeyCallback(window, key_callback);
+
+
+
+	string path("/Users/will/projects/cpprtx/assets/meshes/cube.obj");
+	Mesh *cube = new Mesh(path);
+
+	cout << "Loaded cube" << endl;
+
+	string path1("/Users/will/projects/cpprtx/assets/meshes/ball.obj");
+	Mesh *sphere = new Mesh(path1);
+
+	cout << "Loaded sphere" << endl;
+
+	string path2("/Users/will/projects/cpprtx/assets/meshes/terrain_plane.obj");
+	Mesh *terrain_plane = new Mesh(path2);
+
+	Mesh *plane = gen_plane();
+
+	Shader terrain_shader = Shader("src/rendering/shaders/noise_test");
+
+	int rows = 120, cols = rows;
+    float *img_data = generate_terrain(rows,cols);
+    Texture noise_tex = Texture(img_data, rows, cols, 0);
+
+    cout << "Generated terrain" << endl;
+
+	Shader *perlin = new Shader("src/rendering/shaders/plane");
+	perlin -> setDataTexture(&noise_tex);
+	perlin -> printUniforms();
+
+	delete perlin;
+
+
+
+
+
 
     float ratio;
     int width, height;

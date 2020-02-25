@@ -15,7 +15,7 @@
 using namespace std;
 
 
-string read_shader(char* filePath){
+string read_shader(string filePath){
 
 	std::string content;
     std::ifstream fileStream(filePath, std::ios::in);

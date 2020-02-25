@@ -18,24 +18,18 @@ class Shader {
 	private:
 
 		GLuint progID;
-		GLuint texture;
+		GLuint data_texture, image_texture;
 		GLuint proj_loc, view_loc, model_loc;
 
 	public:
 
-		static void *view_ptr, frustum_ptr;
-
-		Shader(Texture *tex, string shaderpath);
 		Shader(string shaderpath);
 
 		void setMats(float *model, float *view, float *proj);
 		void printUniforms();
+		int setDataTexture(Texture *tex);
 
 		~Shader(){
-			delete tex_data;
-			glDeleteProgram(ID);
-			glDeleteTextures(1,&texture);
+			glDeleteProgram(progID);
 		}
-
-
-}
+};
