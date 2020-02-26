@@ -16,8 +16,6 @@ out vec3 normal;
 void main(){
 	
 	float inc = 1.0/dim;
-	vec3 mult = 5.0 * vec3(3.0,4.0,3.0);
-	float scale = .025;	
 	
 	vec2 texCoord = (pos.xz + vec2(1.0)) * scale;
 	float height = texture(tex,texCoord).r;

@@ -30,8 +30,8 @@ class Shader {
 		Shader(string shaderpath);
 
 		void setMats(float *model, float *view, float *proj);
-		void setFloat(string name, float *f);
-		void setVec3(string name, vec3 *v);
+		void setFloat(string name, float f);
+		void setVec3(string name, glm::vec3 v);
 		void printUniforms();
 		int setDataTexture(Texture *tex);
 		int setImageTexture(Texture *tex);

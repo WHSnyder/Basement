@@ -16,7 +16,6 @@ int compile_shader(GLenum shaderType, string shaderCode){
 
 	glShaderSource(shader, 1, &contents, NULL);
 	glCompileShader(shader);
-	//glCheckError();
 
 	glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
 	
@@ -93,7 +92,7 @@ int Shader::setDataTexture(Texture *tex){
 
 void Shader::setFloat(string name, float f){
 	
-	GLuit tempID;
+	GLuint tempID;
 
 	glUseProgram(progID); 
 	tempID = glGetUniformLocation(progID, name.c_str());
@@ -101,32 +100,14 @@ void Shader::setFloat(string name, float f){
 }
 
 
-void Shader::setVec3(string name, vec3 *v){
+void Shader::setVec3(string name, glm::vec3 v){
 
-	GLuit tempID;
+	GLuint tempID;
 
 	glUseProgram(progID); 
 	tempID = glGetUniformLocation(progID, name.c_str());
-	glUniform3fv(tempID, 1, v);	
+	glUniform3fv(tempID, 1, glm::value_ptr(v));	
 }
-
-/*
-Shader::Shader(Texture *tex, string shader_path){
-
-	progID = build_program(shader_path);
-
-	glUseProgram(progID); 
-
-	GLint n_texloc = glGetUniformLocation(progID, "tex");
-
-    glUniform1i(texture, 0);
-
-    glActiveTexture(GL_TEXTURE0 + 0);
-	glBindTexture(GL_TEXTURE_2D, texture);
-
-    GLint n_dim = glGetUniformLocation(progID, "dim");
-    glUniform1f(n_dim,tex->cols);
-}*/
 
 
 void Shader::setMats(float *model, float *view, float *proj){

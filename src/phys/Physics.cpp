@@ -1,6 +1,7 @@
 #include "phys/Physics.h"
 
 
+
 void Simu::getModelMats(float *sphereMat, float *boxMat){
 
 	PxU32 nbActiveTransforms;
@@ -27,11 +28,12 @@ void Simu::getModelMats(float *sphereMat, float *boxMat){
 	}
 }
 
+/*
 void Simu::addActor(){
 
 
 }
-
+*/
 
 void Simu::stepSimu(float timestep){
 	PX_UNUSED(true);
@@ -61,11 +63,11 @@ void Simu::initSimu(){
 	gScene -> setFlag(PxSceneFlag::eENABLE_ACTIVETRANSFORMS, true);
 
 
-	/*float halfExtent = 1.0;
+	float halfExtent = 1.0;
 	PxShape* sphere = gPhysics->createShape(PxSphereGeometry(halfExtent), *gMaterial);
 	PxShape* box = gPhysics->createShape(PxBoxGeometry(halfExtent, halfExtent, halfExtent), *gMaterial);
 
-	PxTransform localTm(PxVec3(-.5,2.0,-2.0));
+	PxTransform localTm(PxVec3(.0,.6,-5.0));
 	body = gPhysics -> createRigidDynamic(localTm);
 	body -> attachShape(*sphere);
 	body -> userData = (void *) 1;
@@ -73,17 +75,17 @@ void Simu::initSimu(){
 	body->setMassSpaceInertiaTensor(PxVec3(0.f, 0.f, 10.f));
 	gScene -> addActor(*body);
 
-	PxTransform localTm2(PxVec3(.5,6.0,-2.0));
+	PxTransform localTm2(PxVec3(.0,.6,-6.0));
 	body2 = gPhysics->createRigidDynamic(localTm2);
 	body2 -> attachShape(*box);
 	body2 -> userData = (void *) 2;
 	body2->setMass(4.f);
 	body2->setMassSpaceInertiaTensor(PxVec3(0.f, 0.f, 10.f));
-	gScene -> addActor(*body2);*/
+	gScene -> addActor(*body2);
 
 
-	//box -> release();
-	//sphere -> release();
+	box -> release();
+	sphere -> release();
 
 	std::cout << "Initialized simu" << std::endl;
 }
