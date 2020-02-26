@@ -12,9 +12,8 @@
 #include <phys/Physics.h>
 #include <gtx/transform.hpp>
 #include <perlin/PerlinNoise.hpp>
-
-//#include "rendering/Texture.h"
 #include "rendering/Shader.h"
+#include "utils/controls.hpp"
 
 using namespace std;
 
@@ -28,25 +27,37 @@ void coutMat(float *mat){
 
 float *generate_terrain(int rows, int cols){
 
-	std::uint32_t seed = 6782;
+	std::uint32_t seed = 678462;
 
 	const siv::PerlinNoise perlin(seed);
-	const siv::PerlinNoise perlin2(5892);
 	float *result = (float *) calloc(cols * rows, sizeof(float));
-	double freq = 16.0;
+	double freq = 8.0;
 	double fx = cols/freq, fy = rows/freq;
 
 	for (int i = 0; i < rows; i++){
 		for (int j = 0; j < cols; j++){
 
-			float per = (float) perlin.accumulatedOctaveNoise2D_0_1(j/fx, i/fy, 16);
-			float per2 = (float) perlin.accumulatedOctaveNoise2D_0_1(j/fx, i/fy, 5);
-			result[i * cols + j] = .5 * (per + per2);
+			float per = (float) perlin.accumulatedOctaveNoise2D_0_1(j/fx, i/fy, 8);
+			float per1 = (float) perlin.accumulatedOctaveNoise2D_0_1((j+2)/fx, i/fy, 8);
+			float per2 = (float) perlin.accumulatedOctaveNoise2D_0_1(j/fx, (i+2)/fy, 8);
+			float per3 = (float) perlin.accumulatedOctaveNoise2D_0_1((j+2)/fx, (i+2)/fy, 8);
+			result[i * cols + j] = (per + per1 + per2 + per3)/4.0;
 		}
 	}
 
 	return result;
 }
+
+
+Mesh gen_plane(){
+
+    vec3 verts[] = {vec3(-1,1,0), vec3(1,1,0), vec3(-1,-1,0), vec3(1,-1,0)};
+    vec3 norms[] = {vec3(0,0,1), vec3(0,0,1), vec3(0,0,1), vec3(0,0,1)};
+    GLuint inds[] = {0,1,2,1,3,2};
+
+    return Mesh(vector<vec3>(verts,verts+4), vector<vec3>(norms,norms+4), vector<GLuint>(inds,inds+6));
+}
+
 
 static void error_callback(int error, const char* description){
     fputs(description, stderr);
@@ -57,21 +68,18 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
         glfwSetWindowShouldClose(window, GL_TRUE);
 }
 
-Mesh *gen_plane(){
-
-	vec3 verts[] = {vec3(-1,1,1), vec3(1,1,1), vec3(-1,-1,1), vec3(1,-1,1)};
-	vec3 norms[] = {vec3(0,0,1), vec3(0,0,1), vec3(0,0,1), vec3(0,0,1)};
-	GLuint inds[] = {0,1,2,1,3,2};
-
-	return new Mesh(vector<vec3>(verts,verts+4), vector<vec3>(norms,norms+4), vector<GLuint>(inds,inds+6));
-}
-
-
+/*
+mat4 playerViewMat = lookAt(vec3(0,0,5),vec3(0,0,-100),vec3(0,1.0,0));
+float lastX = 300, lastY = 300, _pitch, _yaw = 90.0f, mult;
+int firstMouse = 1;
+vec3 direction, up = vec3(0.0,1.0,0.0),rightvec;
+*/
+GLFWwindow* window;
 
 
 int main(int argc, char **argv){
 	
-	GLFWwindow* window;
+	//GLFWwindow* window;
 
 	Simu mainSimu;
 
@@ -88,7 +96,7 @@ int main(int argc, char **argv){
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
 	// Open a window and create its OpenGL context
-	window = glfwCreateWindow(480, 480, "Test", NULL, NULL);
+	window = glfwCreateWindow(600, 600, "Test", NULL, NULL);
 	if (!window){
         glfwTerminate();
         exit(EXIT_FAILURE);
@@ -107,46 +115,40 @@ int main(int argc, char **argv){
 
 	// Ensure we can capture the escape key being pressed below
 	glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
+	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);  
+
 
     glfwSetErrorCallback(error_callback);
     if (!glfwInit())
         exit(EXIT_FAILURE);
 
     glfwSetKeyCallback(window, key_callback);
+    //glfwSetCursorPosCallback(window, mouse_callback);  
 
 
 
 	string path("/Users/will/projects/cpprtx/assets/meshes/cube.obj");
-	Mesh *cube = new Mesh(path);
-
-	cout << "Loaded cube" << endl;
+	Mesh cube = Mesh(path);
 
 	string path1("/Users/will/projects/cpprtx/assets/meshes/ball.obj");
-	Mesh *sphere = new Mesh(path1);
-
-	cout << "Loaded sphere" << endl;
+	Mesh sphere = Mesh(path1);
 
 	string path2("/Users/will/projects/cpprtx/assets/meshes/terrain_plane.obj");
-	Mesh *terrain_plane = new Mesh(path2);
+	Mesh terrain_plane = Mesh(path2);
 
-	Mesh *plane = gen_plane();
+	Mesh plane = gen_plane();
 
-	Shader terrain_shader = Shader("src/rendering/shaders/noise_test");
+
 
 	int rows = 120, cols = rows;
     float *img_data = generate_terrain(rows,cols);
     Texture noise_tex = Texture(img_data, rows, cols, 0);
 
-    cout << "Generated terrain" << endl;
-
-	Shader *perlin = new Shader("src/rendering/shaders/plane");
-	perlin -> setDataTexture(&noise_tex);
-	perlin -> printUniforms();
-
-	delete perlin;
-
-
-
+	Shader plane_shader = Shader("src/rendering/shaders/plane");
+	plane_shader.setDataTexture(&noise_tex);
+	
+	Shader terrain_shader = Shader("src/rendering/shaders/noise_test");
+	terrain_shader.setDataTexture(&noise_tex);
 
 
 
@@ -156,43 +158,22 @@ int main(int argc, char **argv){
     ratio = width / (float) height;
     glViewport(0, 0, width, height);
 
-
     glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LESS); 
-
-
-
-
-
-
-
-
 
 
     auto t_start = std::chrono::high_resolution_clock::now();
 	auto t_now = std::chrono::high_resolution_clock::now();
 	float time = std::chrono::duration_cast<std::chrono::duration<float>>(t_now - t_start).count();
 
+	mat4 playerViewMat = lookAt(vec3(0,0,5),vec3(0,0,-100),vec3(0,1.0,0));
 	mat4 proj = perspective(glm::radians(45.0f), 1.0f, 0.01f, 100.0f);
 	mat4 rot = mat4(1.0),testmat;
-	mat4 dest = mat4(1.0);
-	mat4 trans = transpose(translate(vec3(-1,1.0,-20.0)));
-	mat4 trans2 = transpose(translate(vec3(1,1.0,-20.0)));
-
-	mat4 view = lookAt(vec3(0,0,5),vec3(0,0,-100),vec3(0,1.0,0));
-    
-    /*GLint projloc = glGetUniformLocation(ID, "p");
-    GLint rotloc = glGetUniformLocation(ID, "m");
-    GLint lookloc = glGetUniformLocation(ID, "v");
-
-	glUniformMatrix4fv(projloc, 1, GL_FALSE, value_ptr(proj));
-	glUniformMatrix4fv(lookloc, 1, GL_FALSE, value_ptr((view)));
-
-	glCheckError();
-	*/
+	mat4 trans = translate(vec3(0,.3,-5.0));
 
 	float sphereMat[16] = {}, boxMat[16] = {};
-	/*
+	
+
 	do {
 
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -202,8 +183,8 @@ int main(int argc, char **argv){
 		time = std::chrono::duration_cast<std::chrono::duration<float>>(t_now - t_start).count();
 		t_start = t_now;
 
-		mainSimu.stepSimu(time);
-		mainSimu.getModelMats(sphereMat, boxMat);
+		//mainSimu.stepSimu(time);
+		//mainSimu.getModelMats(sphereMat, boxMat);
 
 		//cout << "=========================" << endl;
 		//coutMat((boxMat));
@@ -214,14 +195,21 @@ int main(int argc, char **argv){
 		//coutMat(value_ptr(testmat));
 		//cout << "=========================" << endl;
 
-		glUseProgram(n_ID);
-		glUniformMatrix4fv(n_projloc, 1, GL_FALSE, value_ptr(proj));
-		glUniformMatrix4fv(n_lookloc, 1, GL_FALSE, value_ptr(view));
+		//glUseProgram(n_ID);
+		//glUniformMatrix4fv(n_projloc, 1, GL_FALSE, value_ptr(proj));
+		//glUniformMatrix4fv(n_lookloc, 1, GL_FALSE, value_ptr(view));		
 
-		terrain_plane -> draw();
+		rot = rotate(rot, time * glm::radians(20.0f), vec3(0.0f,1.0f,0.0f));
+		testmat = trans * rot;
 
 
-		//rot = rotate(rot, time * glm::radians(20.0f), vec3(0.0f,1.0f,0.0f));
+		terrain_shader.setMats(value_ptr(testmat), value_ptr(playerViewMat), value_ptr(proj));
+		terrain_plane.draw(terrain_shader.progID);
+
+		plane_shader.setMats(value_ptr(testmat), value_ptr(playerViewMat), value_ptr(proj));
+		plane.draw(plane_shader.progID);
+
+
 
 		//glUniformMatrix4fv(rotloc, (GLuint) 1, GL_FALSE, boxMat);// value_ptr(transpose(dest)));
 
@@ -234,19 +222,14 @@ int main(int argc, char **argv){
 		//glCheckError();
 		
 		//sphere -> draw();
-
-
+		playerViewMat = computeMatricesFromInputs();
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 	} 
 
 	while( glfwGetKey(window, GLFW_KEY_ESCAPE ) != GLFW_PRESS && glfwWindowShouldClose(window) == 0 );
-	*/
-	delete cube;
-	delete sphere;
-	delete terrain_plane;
-	delete plane;
+	
 
 	glfwTerminate();
 

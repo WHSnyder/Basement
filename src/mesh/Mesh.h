@@ -36,7 +36,7 @@ class Mesh {
 
 		int bindBuffers();
 		int deleteBuffers();
-		int draw();
+		int draw(GLuint id);
 		void read_obj_file(string filename);
 		void generate_terrain(int width, int height, int numw, int numh);
 

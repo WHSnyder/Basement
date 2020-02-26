@@ -10,14 +10,13 @@ uniform float dim;
 uniform sampler2D tex;
 
 out vec3 normal;
-out float color;
 
 void main(){
 	
 	float inc = 1.0/dim;
 	vec3 mult = 5.0 * vec3(3.0,1.0,3.0);	
 	
-	vec2 texCoord = (pos.xz + vec2(1.0)) * .5;
+	vec2 texCoord = (pos.xy + vec2(1.0)) * .5;
 	float height = texture(tex,texCoord).r;
 
 	vec3 position = mult * vec3(pos.x,height,pos.z);

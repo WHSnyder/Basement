@@ -17,17 +17,19 @@ class Shader {
 
 	private:
 
-		GLuint progID;
 		GLuint data_texture, image_texture;
 		GLuint proj_loc, view_loc, model_loc;
 
 	public:
+
+		GLuint progID;
 
 		Shader(string shaderpath);
 
 		void setMats(float *model, float *view, float *proj);
 		void printUniforms();
 		int setDataTexture(Texture *tex);
+		int setImageTexture(Texture *tex);
 
 		~Shader(){
 			glDeleteProgram(progID);
