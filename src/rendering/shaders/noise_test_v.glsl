@@ -14,9 +14,10 @@ out vec3 normal;
 void main(){
 	
 	float inc = 1.0/dim;
-	vec3 mult = 5.0 * vec3(3.0,1.0,3.0);	
+	vec3 mult = 5.0 * vec3(3.0,4.0,3.0);
+	float scale = .025;	
 	
-	vec2 texCoord = (pos.xy + vec2(1.0)) * .5;
+	vec2 texCoord = (pos.xy + vec2(1.0)) * scale;
 	float height = texture(tex,texCoord).r;
 
 	vec3 position = mult * vec3(pos.x,height,pos.z);
@@ -26,19 +27,19 @@ void main(){
 	vec3 posx = vec3(pos.x + inc, pos.yz);
 	vec3 posz = vec3(pos.xy, pos.z + inc);
 
-	texCoord = (negx.xz + vec2(1.0)) * .5;
+	texCoord = (negx.xz + vec2(1.0)) * scale;
 	negx.y = texture(tex,texCoord).r;
 	negx *= mult; 
 
-	texCoord = (negz.xz + vec2(1.0)) * .5;
+	texCoord = (negz.xz + vec2(1.0)) * scale;
 	negz.y = texture(tex,texCoord).r;
 	negz *= mult; 
 
-	texCoord = (posx.xz + vec2(1.0)) * .5;
+	texCoord = (posx.xz + vec2(1.0)) * scale;
 	posx.y = texture(tex,texCoord).r;
 	posx *= mult; 
 
-	texCoord = (posz.xz + vec2(1.0)) * .5;
+	texCoord = (posz.xz + vec2(1.0)) * scale;
 	posz.y = texture(tex,texCoord).r;
 	posz *= mult; 
 

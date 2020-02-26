@@ -115,6 +115,7 @@ int main(int argc, char **argv){
 
 	// Ensure we can capture the escape key being pressed below
 	glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
+
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);  
 
 
@@ -167,7 +168,7 @@ int main(int argc, char **argv){
 	float time = std::chrono::duration_cast<std::chrono::duration<float>>(t_now - t_start).count();
 
 	mat4 playerViewMat = lookAt(vec3(0,0,5),vec3(0,0,-100),vec3(0,1.0,0));
-	mat4 proj = perspective(glm::radians(45.0f), 1.0f, 0.01f, 100.0f);
+	mat4 proj = infinitePerspective(glm::radians(45.0f), 1.0f, 0.01f);
 	mat4 rot = mat4(1.0),testmat;
 	mat4 trans = translate(vec3(0,.3,-5.0));
 
