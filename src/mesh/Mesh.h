@@ -37,7 +37,7 @@ class Mesh {
 		int bindBuffers();
 		int deleteBuffers();
 		int draw(GLuint id);
-		void read_obj_file(string filename);
+		void read_obj_file(string filename, vec3 mult = vec3(1.0,1.0,1.0));
 		void generate_terrain(int width, int height, int numw, int numh);
 
 		vector<GLuint> indices;
@@ -45,8 +45,8 @@ class Mesh {
 
 		GLuint VAO, VBO, EBO;
 
-		Mesh(string filename){
-			read_obj_file(filename);
+		Mesh(string filename, vec3 mult = vec3(1.0,1.0,1.0)){
+			read_obj_file(filename, mult);
 			bindBuffers();
 		}
 

@@ -57,7 +57,7 @@ int Mesh::bindBuffers(){
 
 
 
-void Mesh::read_obj_file(string filename){
+void Mesh::read_obj_file(string filename, vec3 mult){
 
 	//cout << "Starting assimp load" << endl;
 
@@ -86,6 +86,7 @@ void Mesh::read_obj_file(string filename){
             mv.position.x = mesh->mVertices[j].x;
             mv.position.y = mesh->mVertices[j].y;
             mv.position.z = mesh->mVertices[j].z;
+            mv.position *= mult;
 
             //Set the normals
             mv.normal.x = mesh->mNormals[j].x;

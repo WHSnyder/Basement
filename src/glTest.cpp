@@ -27,15 +27,14 @@ void coutMat(float *mat){
 	cout << " " << mat[12] << ", " << mat[13] << ", " << mat[14] << ", " << mat[15] << "}" << endl;
 }
 
-float *generate_terrain(int rows, int cols, float height_mult, uint32_t **physx_samples){
+float *generate_terrain(int rows, int cols, double freq, float height_mult, int32_t **physx_samples){
 
-	uint32_t seed = 678462;
-	const siv::PerlinNoise perlin(seed);
+	//double seed = 678462;
+	const siv::PerlinNoise perlin(678462);
 	
 	float *result = (float *) calloc(cols * rows, sizeof(float));
-	uint32_t *px_result = (uint32_t *) calloc(cols * rows, sizeof(uint32_t));
+	int32_t *px_result = (int32_t *) calloc(cols * rows, sizeof(int32_t));
 	
-	double freq = 8.0;
 	double fx = cols/freq, fy = rows/freq;
 
 	for (int i = 0; i < rows; i++){
@@ -44,7 +43,7 @@ float *generate_terrain(int rows, int cols, float height_mult, uint32_t **physx_
 			float per = (float) perlin.accumulatedOctaveNoise2D_0_1(j/fx, i/fy, 8);
 			result[i * cols + j] = per;
 
-			uint32_t cur = (uint32_t) height_mult * per;
+			int32_t cur = (int32_t) height_mult * per;
 			px_result[i * cols + j] = 16 << cur;
 		}
 	}
@@ -129,17 +128,19 @@ int main(int argc, char **argv){
 	Mesh sphere = Mesh(path1);
 
 	string path2("/Users/will/projects/cpprtx/assets/meshes/terrain_plane.obj");
-	Mesh terrain_plane = Mesh(path2);
+	Mesh terrain_plane = Mesh(path2,vec3(1.0/12.0,1.0,1.0/12.0));
 
 	Mesh plane = gen_plane();
 
-	uint32_t *px_samples;
-	vec3 terrain_mult = 5.0f * vec3(3.0,5.0,3.0);
+	int32_t *px_samples;
+	vec3 terrain_mult = 3.0f * vec3(10.0,5.0,10.0);
 
 
-	int rows = 120, cols = rows;
-    float *img_data = generate_terrain(rows, cols, terrain_mult.y, &px_samples);
+	int rows = 20, cols = rows;
+	double freq = 4.0;
+    float *img_data = generate_terrain(rows, cols, freq, terrain_mult.y, &px_samples);
     Texture noise_tex = Texture(img_data, rows, cols, 0);
+    float scale = 1.0;
 
     delete px_samples;
 
@@ -148,7 +149,7 @@ int main(int argc, char **argv){
 	
 	Shader terrain_shader = Shader("src/rendering/shaders/noise_test");
 	terrain_shader.setDataTexture(&noise_tex);
-	terrain_shader.setFloat(string("scale"), .01f);
+	terrain_shader.setFloat(string("scale"), .5f * scale);
 	terrain_shader.setVec3(string("mult"), terrain_mult);
 
 	Shader basic_shader = Shader("src/rendering/shaders/basic");
@@ -169,13 +170,17 @@ int main(int argc, char **argv){
 	auto t_now = std::chrono::high_resolution_clock::now();
 	float time = std::chrono::duration_cast<std::chrono::duration<float>>(t_now - t_start).count();
 
-	mat4 playerViewMat = lookAt(vec3(0,0,5),vec3(0,0,-100),vec3(0,1.0,0));
+	mat4 playerViewMat = lookAt(vec3(5,5,5),vec3(0,0,-100),vec3(0,1.0,0));
 	mat4 proj = infinitePerspective(glm::radians(45.0f), 1.0f, 0.01f);
 	mat4 rot = mat4(1.0),testmat;
 	mat4 trans = translate(vec3(0,.3,-5.0)), trans1 = translate(vec3(0,2,-9.0)), trans2 = translate(vec3(0,2,-1.0));
 
-	float sphereMat[16] = {}, boxMat[16] = {};
+	float sphereMat[16] = {}, boxMat[16] = {}; 
+	float *viewptr = value_ptr(playerViewMat), *projptr = value_ptr(proj);
 	
+	mainSimu.addTerrain(px_samples, rows-1, cols-1, terrain_mult.z);
+
+	cout << "Terrain added" << endl;
 
 	do {
 
@@ -191,49 +196,34 @@ int main(int argc, char **argv){
 		mainSimu.getModelMats(sphereMat, boxMat);
 
 
-		//cout << "=========================" << endl;
-		//coutMat((boxMat));
-		//cout << "-------------------------" << endl;
-		//coutMat(value_ptr(trans));
-		//cout << "-------------------------" << endl;
-		//testmat = trans * rot;
-		//coutMat(value_ptr(testmat));
-		//cout << "=========================" << endl;
-
-
 		rot = rotate(rot, time * glm::radians(20.0f), vec3(0.0f,1.0f,0.0f));
 		testmat = trans * rot;
 
-		terrain_shader.setMats(value_ptr(testmat), value_ptr(playerViewMat), value_ptr(proj));
+		terrain_shader.setMats(value_ptr(testmat), viewptr, projptr);
 		terrain_plane.draw(terrain_shader.progID);
 
-		plane_shader.setMats(value_ptr(testmat), value_ptr(playerViewMat), value_ptr(proj));
+		plane_shader.setMats(value_ptr(testmat), viewptr, projptr);
 		plane.draw(plane_shader.progID);
 
 
-
-		//testmat = trans1 * rot;
-
-		basic_shader.setMats(sphereMat, value_ptr(playerViewMat), value_ptr(proj));
+		basic_shader.setMats(sphereMat, viewptr, projptr);
 		sphere.draw(basic_shader.progID);
 		glCheckError();
 
-		//testmat = trans2 * rot;
-
-		basic_shader.setMats(boxMat, value_ptr(playerViewMat), value_ptr(proj));
+		basic_shader.setMats(boxMat, viewptr, projptr);
 		cube.draw(basic_shader.progID);
 		glCheckError();
 
 
 
 		playerViewMat = computeMatricesFromInputs();
+		viewptr = value_ptr(playerViewMat);		
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 	} 
 
 	while( glfwGetKey(window, GLFW_KEY_ESCAPE ) != GLFW_PRESS && glfwWindowShouldClose(window) == 0 );
-	
 
 	glfwTerminate();
 

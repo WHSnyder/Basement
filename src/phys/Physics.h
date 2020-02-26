@@ -4,6 +4,10 @@
 #define NDEBUG
 #include "PxPhysicsAPI.h"
 
+
+#include <glm.hpp>
+#include <ext.hpp>
+
 using namespace physx;
 
 
@@ -14,15 +18,16 @@ private:
 	PxDefaultAllocator gAllocator;
 	PxDefaultErrorCallback gErrorCallback;
 
-	PxFoundation *gFoundation = NULL;
-	PxPhysics *gPhysics	= NULL;
+	PxFoundation *gFoundation = nullptr;
+	PxPhysics *gPhysics	= nullptr;
+	PxCooking *cook = nullptr;
 
-	PxDefaultCpuDispatcher *gDispatcher = NULL;
-	PxScene *gScene	= NULL;
+	PxDefaultCpuDispatcher *gDispatcher = nullptr;
+	PxScene *gScene	= nullptr;
 
-	PxMaterial *gMaterial = NULL;
+	PxMaterial *gMaterial = nullptr;
 
-	PxRigidDynamic *body,*body2;
+	PxRigidDynamic *body1,*body2;
 
 public:
 
@@ -31,6 +36,10 @@ public:
 	void initSimu();
 	void stepSimu(float timestep);
 	void cleanupSimu();
+
+	void addCube(glm::vec3 center, float extent, int tag);
+	void addSphere(glm::vec3 center, float extent, int tag);
+	void addTerrain(std::int32_t *data, int rows, int cols, int scale);
 
 	Simu(){
 		initSimu();
