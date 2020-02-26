@@ -11,6 +11,9 @@
 #include "utils/ShaderUtils.h"
 #include "rendering/Texture.h"
 
+#include <glm.hpp>
+#include <ext.hpp>
+
 
 
 class Shader {
@@ -27,6 +30,8 @@ class Shader {
 		Shader(string shaderpath);
 
 		void setMats(float *model, float *view, float *proj);
+		void setFloat(string name, float *f);
+		void setVec3(string name, vec3 *v);
 		void printUniforms();
 		int setDataTexture(Texture *tex);
 		int setImageTexture(Texture *tex);

@@ -6,6 +6,8 @@ uniform mat4 p;
 uniform mat4 v;
 
 uniform float dim;
+uniform vec3 mult;
+uniform float scale;
 
 uniform sampler2D tex;
 
@@ -17,7 +19,7 @@ void main(){
 	vec3 mult = 5.0 * vec3(3.0,4.0,3.0);
 	float scale = .025;	
 	
-	vec2 texCoord = (pos.xy + vec2(1.0)) * scale;
+	vec2 texCoord = (pos.xz + vec2(1.0)) * scale;
 	float height = texture(tex,texCoord).r;
 
 	vec3 position = mult * vec3(pos.x,height,pos.z);

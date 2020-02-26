@@ -90,6 +90,26 @@ int Shader::setDataTexture(Texture *tex){
     return 0;
 }
 
+
+void Shader::setFloat(string name, float f){
+	
+	GLuit tempID;
+
+	glUseProgram(progID); 
+	tempID = glGetUniformLocation(progID, name.c_str());
+	glUniform1f(tempID, f);
+}
+
+
+void Shader::setVec3(string name, vec3 *v){
+
+	GLuit tempID;
+
+	glUseProgram(progID); 
+	tempID = glGetUniformLocation(progID, name.c_str());
+	glUniform3fv(tempID, 1, v);	
+}
+
 /*
 Shader::Shader(Texture *tex, string shader_path){
 

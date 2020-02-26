@@ -27,6 +27,11 @@ void Simu::getModelMats(float *sphereMat, float *boxMat){
 	}
 }
 
+void Simu::addActor(){
+
+
+}
+
 
 void Simu::stepSimu(float timestep){
 	PX_UNUSED(true);
@@ -53,7 +58,10 @@ void Simu::initSimu(){
 	PxRigidStatic* groundPlane = PxCreatePlane(*gPhysics, PxPlane(0,1,0,0), *gMaterial);
 	gScene->addActor(*groundPlane);
 
-	float halfExtent = 1.0;
+	gScene -> setFlag(PxSceneFlag::eENABLE_ACTIVETRANSFORMS, true);
+
+
+	/*float halfExtent = 1.0;
 	PxShape* sphere = gPhysics->createShape(PxSphereGeometry(halfExtent), *gMaterial);
 	PxShape* box = gPhysics->createShape(PxBoxGeometry(halfExtent, halfExtent, halfExtent), *gMaterial);
 
@@ -71,9 +79,8 @@ void Simu::initSimu(){
 	body2 -> userData = (void *) 2;
 	body2->setMass(4.f);
 	body2->setMassSpaceInertiaTensor(PxVec3(0.f, 0.f, 10.f));
-	gScene -> addActor(*body2);
+	gScene -> addActor(*body2);*/
 
-	gScene -> setFlag(PxSceneFlag::eENABLE_ACTIVETRANSFORMS, true);
 
 	//box -> release();
 	//sphere -> release();

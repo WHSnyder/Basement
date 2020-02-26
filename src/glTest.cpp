@@ -15,6 +15,8 @@
 #include "rendering/Shader.h"
 #include "utils/controls.hpp"
 
+#include "Object.h"
+
 using namespace std;
 
 void coutMat(float *mat){
@@ -79,8 +81,6 @@ GLFWwindow* window;
 
 int main(int argc, char **argv){
 	
-	//GLFWwindow* window;
-
 	Simu mainSimu;
 
 	if(!glfwInit()){
@@ -134,22 +134,22 @@ int main(int argc, char **argv){
 	string path1("/Users/will/projects/cpprtx/assets/meshes/ball.obj");
 	Mesh sphere = Mesh(path1);
 
-	string path2("/Users/will/projects/cpprtx/assets/meshes/terrain_plane.obj");
-	Mesh terrain_plane = Mesh(path2);
+	//string path2("/Users/will/projects/cpprtx/assets/meshes/terrain_plane.obj");
+	//Mesh terrain_plane = Mesh(path2);
 
-	Mesh plane = gen_plane();
+	//Mesh plane = gen_plane();
 
 
 
-	int rows = 120, cols = rows;
-    float *img_data = generate_terrain(rows,cols);
-    Texture noise_tex = Texture(img_data, rows, cols, 0);
+	//int rows = 120, cols = rows;
+    //float *img_data = generate_terrain(rows,cols);
+    //Texture noise_tex = Texture(img_data, rows, cols, 0);
 
-	Shader plane_shader = Shader("src/rendering/shaders/plane");
-	plane_shader.setDataTexture(&noise_tex);
+	//Shader plane_shader = Shader("src/rendering/shaders/plane");
+	//plane_shader.setDataTexture(&noise_tex);
 	
-	Shader terrain_shader = Shader("src/rendering/shaders/noise_test");
-	terrain_shader.setDataTexture(&noise_tex);
+	//Shader terrain_shader = Shader("src/rendering/shaders/noise_test");
+	//terrain_shader.setDataTexture(&noise_tex);
 
 
 
@@ -184,8 +184,8 @@ int main(int argc, char **argv){
 		time = std::chrono::duration_cast<std::chrono::duration<float>>(t_now - t_start).count();
 		t_start = t_now;
 
-		//mainSimu.stepSimu(time);
-		//mainSimu.getModelMats(sphereMat, boxMat);
+		mainSimu.stepSimu(time);
+		mainSimu.getModelMats(sphereMat, boxMat);
 
 		//cout << "=========================" << endl;
 		//coutMat((boxMat));
@@ -200,15 +200,17 @@ int main(int argc, char **argv){
 		//glUniformMatrix4fv(n_projloc, 1, GL_FALSE, value_ptr(proj));
 		//glUniformMatrix4fv(n_lookloc, 1, GL_FALSE, value_ptr(view));		
 
-		rot = rotate(rot, time * glm::radians(20.0f), vec3(0.0f,1.0f,0.0f));
-		testmat = trans * rot;
+		//rot = rotate(rot, time * glm::radians(20.0f), vec3(0.0f,1.0f,0.0f));
+		//testmat = trans * rot;
 
 
-		terrain_shader.setMats(value_ptr(testmat), value_ptr(playerViewMat), value_ptr(proj));
-		terrain_plane.draw(terrain_shader.progID);
+		//terrain_shader.setMats(value_ptr(testmat), value_ptr(playerViewMat), value_ptr(proj));
+		//terrain_plane.draw(terrain_shader.progID);
 
-		plane_shader.setMats(value_ptr(testmat), value_ptr(playerViewMat), value_ptr(proj));
-		plane.draw(plane_shader.progID);
+		//plane_shader.setMats(value_ptr(testmat), value_ptr(playerViewMat), value_ptr(proj));
+		//plane.draw(plane_shader.progID);
+
+
 
 
 

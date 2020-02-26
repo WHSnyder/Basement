@@ -26,7 +26,6 @@ private:
 
 public:
 
-	//float *getSphereModelMat();
 	void getModelMats(float *o1, float *o2);
 
 	void initSimu();
