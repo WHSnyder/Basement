@@ -141,7 +141,7 @@ int main(int argc, char **argv){
 
     float *img_data = generate_terrain(rows, cols, freq, terrain_mult.y, px_samples);
     Texture noise_tex = Texture(img_data, rows, cols, 0);
-    
+
     float scale = 1.0;
 
 
@@ -180,6 +180,8 @@ int main(int argc, char **argv){
 	float *viewptr = value_ptr(playerViewMat), *projptr = value_ptr(proj);
 	
 	mainSimu.addTerrain(px_samples, rows, cols, terrain_mult.z);
+	mainSimu.addSphere(vec3(0.0,33,1.2), 1.0, 1);
+	mainSimu.addCube(vec3(0.0,38,0.0), 1.0, 2);
 
 	cout << "Terrain added" << endl;
 

@@ -53,7 +53,7 @@ void Simu::addSphere(glm::vec3 center, float extent, int tag){
 	body -> attachShape(*sphere);
 	body -> userData = (void *) tag;
 	body-> setMass(4.f);
-	body-> setMassSpaceInertiaTensor(PxVec3(0.f, 0.f, 10.f));
+	//body-> setMassSpaceInertiaTensor(PxVec3(10.0f, 10.0f, 10.0f));
 	gScene -> addActor(*body);
 
 	sphere -> release();
@@ -69,7 +69,7 @@ void Simu::addCube(glm::vec3 center, float extent, int tag){
 	body -> attachShape(*box);
 	body -> userData = (void *) tag;
 	body -> setMass(4.f);
-	body -> setMassSpaceInertiaTensor(PxVec3(0.f, 0.f, 10.f));
+	//body -> setMassSpaceInertiaTensor(PxVec3(10.0f, 10.0f, 10.0f));
 	gScene -> addActor(*body);
 
 	box -> release();
@@ -128,12 +128,12 @@ void Simu::initSimu(){
 
 	gMaterial = gPhysics -> createMaterial(0.5f, 0.5f, 0.6f);
 
-	//PxRigidStatic *groundPlane = PxCreatePlane(*gPhysics, PxPlane(0,1,0,0), *gMaterial);
-	//gScene->addActor(*groundPlane);
+    PxRigidStatic *groundPlane = PxCreatePlane(*gPhysics, PxPlane(0,1,0,0), *gMaterial);
+	gScene->addActor(*groundPlane);
 
 	gScene -> setFlag(PxSceneFlag::eENABLE_ACTIVETRANSFORMS, true);
 
-	float halfExtent = 1.0;
+	/*float halfExtent = 1.0;
 	PxShape* sphere = gPhysics->createShape(PxSphereGeometry(halfExtent), *gMaterial);
 	PxShape* box = gPhysics->createShape(PxBoxGeometry(halfExtent, halfExtent, halfExtent), *gMaterial);
 
@@ -152,7 +152,7 @@ void Simu::initSimu(){
 	gScene -> addActor(*body2);
 
 	box -> release();
-	sphere -> release();
+	sphere -> release();*/
 
 	std::cout << "Initialized simu" << std::endl;
 }
