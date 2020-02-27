@@ -14,7 +14,7 @@ extern GLenum glCheckError_(const char *file, int line);
 int Mesh::draw(GLuint id){
 
     glUseProgram(id);
-    //glPolygonMode(GL_FRONT_AND_BACK,GL_LINE);
+    glPolygonMode(GL_FRONT_AND_BACK,GL_LINE);
 
 	glBindVertexArray(VAO);
     glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, (void*)0);
