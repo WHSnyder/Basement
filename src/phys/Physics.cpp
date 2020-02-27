@@ -4,14 +4,79 @@ using namespace std;
 
 
 
-void print_hf_test(std::int32_t *raw_hf, PxHeightField *hf, int x, int z){
+void print_hf_test(int32_t *raw_hf, PxHeightField *hf, int x, int z){
 
 	int hraw = raw_hf[z * 20 + x];
 	float raw_data = (float) (hraw >> 16);
-	float hf_data = hf -> getHeight(x/10.0f, z/10.0f);
+	
+	//int hf_data = hf[z * 20 + x] ;// x/10.0f, z/10.0f];
+	//hf_data = hf_data >> 16;
 
-	cout << "Raw value: " << raw_data << " HF value: " << hf_data << endl; 
+	int height = (int) hf -> getHeight(x,z);
+
+	cout << "Raw value: " << raw_data << " HF value: " << height << endl; 
 }
+
+
+PxHeightFieldSample *fill_terrain(int32_t *raw_hf, int rows, int cols){
+
+	PxHeightFieldSample *result = new PxHeightFieldSample[rows * cols];
+
+	for (int i = 0; i < rows; i++){
+		for (int j = 0; j < cols; j++){
+
+			int height = raw_hf[i * cols + j] >> 16;
+			result[i * cols + j].height = height;
+			result[i * cols + j].clearTessFlag();
+		}
+	}
+
+	return result;
+}
+
+
+void Simu::addTerrain(int32_t *data, int rows, int cols, int scale){
+
+	//PxHeightFieldSample *samples = (PxHeightFieldSample *) malloc(sizeof(PxHeightFieldSample) * (rows * cols));
+	PxRigidStatic *aHeightFieldActor = gPhysics -> createRigidStatic(PxTransform(PxVec3(0.0,0.0,0.0)));
+
+	PxHeightFieldSample *samples = fill_terrain(data, rows, cols);
+
+    /*this->aHeightField = sdk.createHeightField(hfDesc);
+    this->hfGeom = new PxHeightFieldGeometry(aHeightField, PxMeshGeometryFlags(), this->terrain.dy / 255.0, this->terrain.dx, this->terrain.dz);
+    this->terrainPos = new PxTransform(PxVec3(-this->terrain.dx*(this->width - 1) / 2, 0.0f, this->terrain.dz*(this->height - 1) / 2), PxQuat(3.1415 / 2.0, PxVec3(0, 1, 0)));
+    this->g_pxHeightField = sdk.createRigidDynamic(*this->terrainPos);
+    this->g_pxHeightField->setRigidDynamicFlag(PxRigidDynamicFlag::eKINEMATIC, true);
+    PxShape* aHeightFieldShape = this->g_pxHeightField->createShape(*(this->hfGeom), material);*/
+
+
+	PxHeightFieldDesc hfDesc;// = new PxHeightFieldDesc();
+	hfDesc.format = PxHeightFieldFormat::eS16_TM;
+	hfDesc.nbColumns = cols;
+	hfDesc.nbRows = rows;
+	hfDesc.thickness = 2.0;
+	hfDesc.samples.data = samples;
+	hfDesc.samples.stride = sizeof(PxHeightFieldSample);
+
+	//PxHeightField hf = gPhysics -> createHeightField(hfDesc);
+	//hfGeom = new PxHeightFieldGeometry(aHeightField, PxMeshGeometryFlags(), this->terrain.dy / 255.0, this->terrain.dx, this->terrain.dz);
+
+	PxHeightField *aHeightField = cook -> createHeightField(hfDesc, gPhysics -> getPhysicsInsertionCallback());
+
+	PxHeightFieldGeometry hfGeom(aHeightField, PxMeshGeometryFlags(), 1.0, 1.0, 1.0);
+	PxShape *aHeightFieldShape = PxRigidActorExt::createExclusiveShape(*aHeightFieldActor, hfGeom, &gMaterial, 1);
+
+
+	print_hf_test(data, aHeightField, 0,5);
+	print_hf_test(data, aHeightField, 8,8);
+	print_hf_test(data, aHeightField, 5,5);
+	print_hf_test(data, aHeightField, 5,8);
+
+	cout << "Is descriptor valid? " << hfDesc.isValid() << endl;
+
+	gScene -> addActor(*aHeightFieldActor);
+}
+
 
 
 
@@ -52,7 +117,7 @@ void Simu::addSphere(glm::vec3 center, float extent, int tag){
 	PxRigidDynamic *body = gPhysics -> createRigidDynamic(localTm);
 	body -> attachShape(*sphere);
 	body -> userData = (void *) tag;
-	body-> setMass(4.f);
+	body-> setMass(4.0f);
 	//body-> setMassSpaceInertiaTensor(PxVec3(10.0f, 10.0f, 10.0f));
 	gScene -> addActor(*body);
 
@@ -68,7 +133,7 @@ void Simu::addCube(glm::vec3 center, float extent, int tag){
 	PxRigidDynamic *body = gPhysics -> createRigidDynamic(localTm);
 	body -> attachShape(*box);
 	body -> userData = (void *) tag;
-	body -> setMass(4.f);
+	body -> setMass(4.0f);
 	//body -> setMassSpaceInertiaTensor(PxVec3(10.0f, 10.0f, 10.0f));
 	gScene -> addActor(*body);
 
@@ -76,37 +141,8 @@ void Simu::addCube(glm::vec3 center, float extent, int tag){
 }
 
 
-void Simu::addTerrain(int32_t *data, int rows, int cols, int scale){
-
-	//PxHeightFieldSample *samples = (PxHeightFieldSample *) malloc(sizeof(PxHeightFieldSample) * (rows * cols));
-	PxRigidStatic *aHeightFieldActor = gPhysics -> createRigidStatic(PxTransform(PxVec3(0.0,0.0,0.0)));
-
-	PxHeightFieldDesc hfDesc;
-	hfDesc.format = PxHeightFieldFormat::eS16_TM;
-	hfDesc.nbColumns = cols;
-	hfDesc.nbRows = rows;
-	hfDesc.thickness = 2.0;
-	hfDesc.samples.data = (PxHeightFieldSample *) data;
-	hfDesc.samples.stride = sizeof(PxHeightFieldSample);
-
-	PxHeightField *aHeightField = cook -> createHeightField(hfDesc, gPhysics -> getPhysicsInsertionCallback());
-
-	PxHeightFieldGeometry hfGeom(aHeightField, PxMeshGeometryFlags(), 1.0, 10, 10);
-	PxShape *aHeightFieldShape = PxRigidActorExt::createExclusiveShape(*aHeightFieldActor, hfGeom, &gMaterial, 1);
-
-	print_hf_test(data, aHeightField, 0,5);
-	print_hf_test(data, aHeightField, 8,8);
-	print_hf_test(data, aHeightField, 5,5);
-	print_hf_test(data, aHeightField, 5,8);
-
-	cout << "Is descriptor valid? " << hfDesc.isValid() << endl;
-
-	gScene -> addActor(*aHeightFieldActor);
-}
-
-
 void Simu::stepSimu(float timestep){
-	//PX_UNUSED(true);
+	PX_UNUSED(true);
 	gScene->simulate(timestep);
 	gScene->fetchResults(true);
 }
@@ -121,38 +157,17 @@ void Simu::initSimu(){
 	PxSceneDesc sceneDesc(gPhysics -> getTolerancesScale());
 	
 	sceneDesc.gravity = PxVec3(0.0f, -10.0f, 0.0f);
-	gDispatcher = PxDefaultCpuDispatcherCreate(1);
+	gDispatcher = PxDefaultCpuDispatcherCreate(0);
 	sceneDesc.cpuDispatcher	= gDispatcher;
 	sceneDesc.filterShader = PxDefaultSimulationFilterShader;
 	gScene = gPhysics -> createScene(sceneDesc);
 
 	gMaterial = gPhysics -> createMaterial(0.5f, 0.5f, 0.6f);
 
-    PxRigidStatic *groundPlane = PxCreatePlane(*gPhysics, PxPlane(0,1,0,0), *gMaterial);
-	gScene->addActor(*groundPlane);
+    //PxRigidStatic *groundPlane = PxCreatePlane(*gPhysics, PxPlane(0,1,0,0), *gMaterial);
+	//gScene->addActor(*groundPlane);
 
 	gScene -> setFlag(PxSceneFlag::eENABLE_ACTIVETRANSFORMS, true);
-
-	/*float halfExtent = 1.0;
-	PxShape* sphere = gPhysics->createShape(PxSphereGeometry(halfExtent), *gMaterial);
-	PxShape* box = gPhysics->createShape(PxBoxGeometry(halfExtent, halfExtent, halfExtent), *gMaterial);
-
-	PxTransform localTm( PxVec3(0.0,28,0.0) );
-	body1 = gPhysics -> createRigidDynamic(localTm);
-	body1 -> attachShape(*sphere);
-	body1 -> userData = (void *) 1;
-	body1 -> setMass(4.f);
-	gScene -> addActor(*body1);
-
-	PxTransform localTm2(PxVec3(0.0,23,0.0));
-	body2 = gPhysics -> createRigidDynamic(localTm2);
-	body2 -> attachShape(*box);
-	body2 -> userData = (void *) 2;
-	body2 -> setMass(4.f);
-	gScene -> addActor(*body2);
-
-	box -> release();
-	sphere -> release();*/
 
 	std::cout << "Initialized simu" << std::endl;
 }
