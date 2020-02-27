@@ -29,11 +29,9 @@ void coutMat(float *mat){
 
 float *generate_terrain(int rows, int cols, double freq, float height_mult, int32_t *physx_samples){
 
-	//double seed = 678462;
-	const siv::PerlinNoise perlin(678462);
+	const siv::PerlinNoise perlin(6462);
 	
 	float *result = (float *) calloc(cols * rows, sizeof(float));
-	//int32_t *px_result = (int32_t *) calloc(cols * rows, sizeof(int32_t));
 	
 	double fx = cols/freq, fy = rows/freq;
 
@@ -47,7 +45,7 @@ float *generate_terrain(int rows, int cols, double freq, float height_mult, int3
 			physx_samples[i * cols + j] = cur << 16;
 		}
 	}
-	//*physx_samples = px_result;
+
 	return result;
 }
 
@@ -128,7 +126,7 @@ int main(int argc, char **argv){
 	Mesh sphere = Mesh(path1);
 
 	string path2("/Users/will/projects/cpprtx/assets/meshes/terrain_plane.obj");
-	Mesh terrain_plane = Mesh(path2,vec3(1.0/12.0,1.0,1.0/12.0));
+	Mesh terrain_plane = Mesh(path2);
 
 	Mesh plane = gen_plane();
 
@@ -150,7 +148,6 @@ int main(int argc, char **argv){
 	
 	Shader terrain_shader = Shader("src/rendering/shaders/noise_test");
 	terrain_shader.setDataTexture(&noise_tex);
-	terrain_shader.setFloat(string("scale"), .5f * scale);
 	terrain_shader.setVec3(string("mult"), terrain_mult);
 
 	Shader basic_shader = Shader("src/rendering/shaders/basic");
@@ -180,8 +177,8 @@ int main(int argc, char **argv){
 	float *viewptr = value_ptr(playerViewMat), *projptr = value_ptr(proj);
 	
 	mainSimu.addTerrain(px_samples, rows, cols, terrain_mult.z);
-	mainSimu.addSphere(vec3(2.0,28,2.0), 1.0, 1);
-	mainSimu.addCube(vec3(2.0,23,2.0), 1.0, 2);
+	mainSimu.addSphere(vec3(2.0,15,2.0), 1.0, 1);
+	mainSimu.addCube(vec3(0.0,13,0.0), 1.0, 2);
 
 	cout << "Terrain added" << endl;
 
@@ -197,6 +194,7 @@ int main(int argc, char **argv){
 
 		mainSimu.stepSimu(time);
 		mainSimu.getModelMats(sphereMat, boxMat);
+
 
 
 		rot = rotate(rot, time * glm::radians(20.0f), vec3(0.0f,1.0f,0.0f));
@@ -216,7 +214,6 @@ int main(int argc, char **argv){
 		basic_shader.setMats(boxMat, viewptr, projptr);
 		cube.draw(basic_shader.progID);
 		glCheckError();
-
 
 
 		playerViewMat = computeMatricesFromInputs();

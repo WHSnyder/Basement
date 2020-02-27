@@ -7,7 +7,6 @@ uniform mat4 v;
 
 uniform float dim;
 uniform vec3 mult;
-uniform float scale;
 
 uniform sampler2D tex;
 
@@ -16,6 +15,7 @@ out vec3 normal;
 void main(){
 	
 	float inc = 1.0/dim;
+	float scale = .5;
 	
 	vec2 texCoord = (pos.xz + vec2(1.0)) * scale;
 	float height = texture(tex,texCoord).r;
@@ -45,5 +45,5 @@ void main(){
 
 
 	normal = 1.0 * normalize(cross(negz - posz, negx - posx));
-	gl_Position = p * v * vec4(.25 * (posz + negz + posx + negx) - vec3(0.0,15.0,0.0),1.0);
+	gl_Position = p * v * vec4(position - vec3(0.0,15.0,0.0),1.0);
 }

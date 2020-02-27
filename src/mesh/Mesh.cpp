@@ -14,7 +14,7 @@ extern GLenum glCheckError_(const char *file, int line);
 int Mesh::draw(GLuint id){
 
     glUseProgram(id);
-    glPolygonMode(GL_FRONT_AND_BACK,GL_LINE);
+    //glPolygonMode(GL_FRONT_AND_BACK,GL_LINE);
 
 	glBindVertexArray(VAO);
     glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, (void*)0);
@@ -57,7 +57,7 @@ int Mesh::bindBuffers(){
 
 
 
-void Mesh::read_obj_file(string filename, vec3 mult){
+void Mesh::read_obj_file(string filename){
 
 	//cout << "Starting assimp load" << endl;
 
@@ -86,7 +86,6 @@ void Mesh::read_obj_file(string filename, vec3 mult){
             mv.position.x = mesh->mVertices[j].x;
             mv.position.y = mesh->mVertices[j].y;
             mv.position.z = mesh->mVertices[j].z;
-            mv.position *= mult;
 
             //Set the normals
             mv.normal.x = mesh->mNormals[j].x;
