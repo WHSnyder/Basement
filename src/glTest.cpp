@@ -27,13 +27,13 @@ void coutMat(float *mat){
 	cout << " " << mat[12] << ", " << mat[13] << ", " << mat[14] << ", " << mat[15] << "}" << endl;
 }
 
-float *generate_terrain(int rows, int cols, double freq, float height_mult, int32_t **physx_samples){
+float *generate_terrain(int rows, int cols, double freq, float height_mult, int32_t *physx_samples){
 
 	//double seed = 678462;
 	const siv::PerlinNoise perlin(678462);
 	
 	float *result = (float *) calloc(cols * rows, sizeof(float));
-	int32_t *px_result = (int32_t *) calloc(cols * rows, sizeof(int32_t));
+	//int32_t *px_result = (int32_t *) calloc(cols * rows, sizeof(int32_t));
 	
 	double fx = cols/freq, fy = rows/freq;
 
@@ -44,10 +44,10 @@ float *generate_terrain(int rows, int cols, double freq, float height_mult, int3
 			result[i * cols + j] = per;
 
 			int32_t cur = (int32_t) height_mult * per;
-			px_result[i * cols + j] = 16 << cur;
+			physx_samples[i * cols + j] = cur << 16;
 		}
 	}
-	*physx_samples = px_result;
+	//*physx_samples = px_result;
 	return result;
 }
 
@@ -132,17 +132,18 @@ int main(int argc, char **argv){
 
 	Mesh plane = gen_plane();
 
-	int32_t *px_samples;
-	vec3 terrain_mult = 3.0f * vec3(10.0,5.0,10.0);
-
 
 	int rows = 20, cols = rows;
 	double freq = 4.0;
-    float *img_data = generate_terrain(rows, cols, freq, terrain_mult.y, &px_samples);
+
+	int32_t *px_samples = (int32_t *) calloc(cols * rows, sizeof(int32_t));
+	vec3 terrain_mult = 3.0f * vec3(10.0,5.0,10.0);
+
+    float *img_data = generate_terrain(rows, cols, freq, terrain_mult.y, px_samples);
     Texture noise_tex = Texture(img_data, rows, cols, 0);
+    
     float scale = 1.0;
 
-    delete px_samples;
 
 	Shader plane_shader = Shader("src/rendering/shaders/plane");
 	plane_shader.setDataTexture(&noise_tex);
@@ -178,7 +179,7 @@ int main(int argc, char **argv){
 	float sphereMat[16] = {}, boxMat[16] = {}; 
 	float *viewptr = value_ptr(playerViewMat), *projptr = value_ptr(proj);
 	
-	mainSimu.addTerrain(px_samples, rows-1, cols-1, terrain_mult.z);
+	mainSimu.addTerrain(px_samples, rows, cols, terrain_mult.z);
 
 	cout << "Terrain added" << endl;
 
@@ -226,6 +227,9 @@ int main(int argc, char **argv){
 	while( glfwGetKey(window, GLFW_KEY_ESCAPE ) != GLFW_PRESS && glfwWindowShouldClose(window) == 0 );
 
 	glfwTerminate();
+
+	delete px_samples;
+
 
 	return 0;
 }
