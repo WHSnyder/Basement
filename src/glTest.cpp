@@ -29,7 +29,7 @@ void coutMat(float *mat){
 
 float *generate_terrain(int dim, double freq, float height_mult, int32_t *physx_samples){
 
-	const siv::PerlinNoise perlin(121245462);
+	const siv::PerlinNoise perlin(16479203914722);
 	
 	float *result = (float *) calloc(dim * dim, sizeof(float));
 	
@@ -40,18 +40,10 @@ float *generate_terrain(int dim, double freq, float height_mult, int32_t *physx_
 
 			float per = (float) perlin.accumulatedOctaveNoise2D_0_1(j * mult, i * mult, 8);
 
-			if (j % 6 == 0){
-				per = 1.0;
-			}
-
-			if (i == 0 || i == dim - 1){
-				per = 0.0;
-			}
-
-			if (j == 0 || j == dim - 1){
-				per = 0.0;
-			}
-
+			//if (j % 16 <= 2) per = 1.0;
+			if (i == 0 || i == dim - 1) per = 0.0;
+			if (j == 0 || j == dim - 1) per = 0.0;
+			
 			result[(j) * dim + i] = per;
 
 			int32_t cur = (int32_t) height_mult * per;
@@ -144,8 +136,8 @@ int main(int argc, char **argv){
 	Mesh plane = gen_plane();
 
 
-	int dim = 20;
-	double freq = 2.0;
+	int dim = 64;
+	double freq = 3.0;
 
 	int32_t *px_samples = (int32_t *) calloc(dim * dim, sizeof(int32_t));
 
@@ -191,8 +183,8 @@ int main(int argc, char **argv){
 	float *viewptr = value_ptr(playerViewMat), *projptr = value_ptr(proj);
 	
 	mainSimu.addTerrain(px_samples, dim, terrain_mult);
-	mainSimu.addSphere(vec3(0,6,0), 1.0, 1);
-	mainSimu.addCube(vec3(5.0,13,5.0), 1.0, 2);
+	mainSimu.addSphere(vec3(6,15,6), 1.0, 1);
+	mainSimu.addCube(vec3(-9,13,-9), 1.0, 2);
 
 	plane_shader.setProj(projptr);
 	basic_shader.setProj(projptr);

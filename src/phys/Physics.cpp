@@ -4,9 +4,9 @@ using namespace std;
 
 
 
-void print_hf_test(int32_t *raw_hf, PxHeightField *hf, int x, int z){
+void print_hf_test(int32_t *raw_hf, PxHeightField *hf, int dim, int x, int z){
 
-	int hraw = raw_hf[x * 20 + z];
+	int hraw = raw_hf[x * dim + z];
 	float raw_data = (float) (hraw >> 16);
 	int height = (int) hf -> getHeight(x,z);
 
@@ -22,7 +22,6 @@ PxHeightFieldSample *fill_terrain(int32_t *raw_hf, int dim){
 		for (int j = 0; j < dim; j++){
 
 			int index = i * dim + j;
-
 			int height = raw_hf[index] >> 16;
 			
 			result[index].height = height;
@@ -57,11 +56,11 @@ void Simu::addTerrain(int32_t *data, int dim, glm::vec3 scale){
     g_pxHeightField -> setRigidBodyFlag(PxRigidBodyFlag::eKINEMATIC, true);
 
     PxShape* aHeightFieldShape = g_pxHeightField -> createShape(*hfGeom, *gMaterial);
-
-	print_hf_test(data, aHeightField, 18,2);
-	print_hf_test(data, aHeightField, 0,8);
-	print_hf_test(data, aHeightField, 9,5);
-	print_hf_test(data, aHeightField, 1,12);
+	
+	print_hf_test(data, aHeightField, dim, 32, 32);
+	print_hf_test(data, aHeightField, dim, 30, 32);
+	print_hf_test(data, aHeightField, dim, 32, 30);
+	print_hf_test(data, aHeightField, dim, 30, 30);
 
 	cout << "Is descriptor valid? " << hfDesc.isValid() << endl;
 
