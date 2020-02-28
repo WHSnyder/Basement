@@ -2,8 +2,7 @@
 
 layout (location = 0) in vec3 pos;
 
-uniform mat4 p;
-uniform mat4 v;
+uniform mat4 p, v;
 
 uniform float dim;
 uniform vec3 mult;
@@ -45,5 +44,5 @@ void main(){
 
 
 	normal = 1.0 * normalize(cross(negz - posz, negx - posx));
-	gl_Position = p * v * vec4(position - vec3(0.0,15.0,0.0),1.0);
+	gl_Position = p * v * vec4(position, 1.0);
 }

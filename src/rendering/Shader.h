@@ -21,7 +21,7 @@ class Shader {
 	private:
 
 		GLuint data_texture, image_texture;
-		GLuint proj_loc, view_loc, model_loc;
+		GLuint proj_loc, view_loc, model_loc, col_loc;
 
 	public:
 
@@ -29,12 +29,18 @@ class Shader {
 
 		Shader(string shaderpath);
 
-		void setMats(float *model, float *view, float *proj);
+		void setModel(float *model);
+		void setView(float *view);
+		void setProj(float *proj);
+
 		void setFloat(string name, float f);
 		void setVec3(string name, glm::vec3 v);
-		void printUniforms();
+		void setColor(glm::vec3 v);
+
 		int setDataTexture(Texture *tex);
 		int setImageTexture(Texture *tex);
+
+		void printUniforms();
 
 		~Shader(){
 			glDeleteProgram(progID);

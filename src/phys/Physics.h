@@ -39,7 +39,7 @@ public:
 
 	void addCube(glm::vec3 center, float extent, int tag);
 	void addSphere(glm::vec3 center, float extent, int tag);
-	void addTerrain(std::int32_t *data, int rows, int cols, int scale);
+	void addTerrain(std::int32_t *data, int dim, glm::vec3 scale);
 
 	Simu(){
 		initSimu();

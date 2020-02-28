@@ -6,7 +6,7 @@ using namespace std;
 
 void print_hf_test(int32_t *raw_hf, PxHeightField *hf, int x, int z){
 
-	int hraw = raw_hf[z * 20 + x];
+	int hraw = raw_hf[x * 20 + z];
 	float raw_data = (float) (hraw >> 16);
 	int height = (int) hf -> getHeight(x,z);
 
@@ -14,19 +14,21 @@ void print_hf_test(int32_t *raw_hf, PxHeightField *hf, int x, int z){
 }
 
 
-PxHeightFieldSample *fill_terrain(int32_t *raw_hf, int rows, int cols){
+PxHeightFieldSample *fill_terrain(int32_t *raw_hf, int dim){
 
-	PxHeightFieldSample *result = new PxHeightFieldSample[rows * cols];
+	PxHeightFieldSample *result = new PxHeightFieldSample[dim * dim];
 
-	for (int i = 0; i < cols; i++){
-		for (int j = 0; j < rows; j++){
+	for (int i = 0; i < dim; i++){
+		for (int j = 0; j < dim; j++){
 
-			int height = raw_hf[j * cols + i] >> 16;
+			int index = i * dim + j;
+
+			int height = raw_hf[index] >> 16;
 			
-			result[i * cols + j].height = height;
-			result[i * cols + j].materialIndex0 = 3;
-			result[i * cols + j].materialIndex1 = 3;
-			result[i * cols + j].clearTessFlag();
+			result[index].height = height;
+			result[index].materialIndex0 = 3;
+			result[index].materialIndex1 = 3;
+			result[index].clearTessFlag();
 		}
 	}
 
@@ -34,47 +36,32 @@ PxHeightFieldSample *fill_terrain(int32_t *raw_hf, int rows, int cols){
 }
 
 //Rigid kinematic version
-void Simu::addTerrain(int32_t *data, int rows, int cols, int scale){
+void Simu::addTerrain(int32_t *data, int dim, glm::vec3 scale){
 
-	//PxHeightFieldSample *samples = (PxHeightFieldSample *) malloc(sizeof(PxHeightFieldSample) * (rows * cols));
+	PxTransform trans = PxTransform(PxVec3(-30.0,0.0,-30.0));//-scale.x,-15.0,-scale.z));
 
-	PxTransform trans = PxTransform( PxVec3(-30.0,-15.0,-30.0) );//, PxQuat(3.1415 / 2.0, PxVec3(0, 1, 0)) ); //PxQuat(3.14/4.0, PxVec3(1,0,0)) );
-	//PxRigidStatic *aHeightFieldActor = gPhysics -> createRigidStatic(trans);
+	PxHeightFieldSample *samples = fill_terrain(data, dim);
 
-	PxHeightFieldSample *samples = fill_terrain(data, rows, cols);
-
-    /*this->aHeightField = sdk.createHeightField(hfDesc);
-    this->hfGeom = new PxHeightFieldGeometry(aHeightField, PxMeshGeometryFlags(), this->terrain.dy / 255.0, this->terrain.dx, this->terrain.dz);
-    this->terrainPos = new PxTransform(PxVec3(-this->terrain.dx*(this->width - 1) / 2, 0.0f, this->terrain.dz*(this->height - 1) / 2), PxQuat(3.1415 / 2.0, PxVec3(0, 1, 0)));
-    this->g_pxHeightField = sdk.createRigidDynamic(*this->terrainPos);
-    this->g_pxHeightField->setRigidDynamicFlag(PxRigidDynamicFlag::eKINEMATIC, true);
-    PxShape* aHeightFieldShape = this->g_pxHeightField->createShape(*(this->hfGeom), material);*/
-
-	PxHeightFieldDesc hfDesc = PxHeightFieldDesc();// = new PxHeightFieldDesc();
+	PxHeightFieldDesc hfDesc = PxHeightFieldDesc();
 	hfDesc.format = PxHeightFieldFormat::eS16_TM;
-	hfDesc.nbColumns = cols;
-	hfDesc.nbRows = rows;
+	hfDesc.nbColumns = dim;
+	hfDesc.nbRows = dim;
 	hfDesc.samples.data = samples;
 	hfDesc.samples.stride = sizeof(PxHeightFieldSample);
 
-	//PxHeightField hf = gPhysics -> createHeightField(hfDesc);
 	PxHeightField *aHeightField = cook -> createHeightField(hfDesc, gPhysics -> getPhysicsInsertionCallback());
-	PxHeightFieldGeometry *hfGeom = new PxHeightFieldGeometry(aHeightField, PxMeshGeometryFlags(), 1.0, 3.0, 3.0);
+	PxHeightFieldGeometry *hfGeom = new PxHeightFieldGeometry(aHeightField, PxMeshGeometryFlags(), 1.0, 3.0, 3.0);//scale.x * 2.0 / dim, scale.z * 2.0 / dim);
 
 	PxRigidDynamic *g_pxHeightField = gPhysics -> createRigidDynamic(trans);
-	g_pxHeightField-> setMass(400000.0f);
-
+	g_pxHeightField-> setMass(999999999999999.0f);
     g_pxHeightField -> setRigidBodyFlag(PxRigidBodyFlag::eKINEMATIC, true);
 
     PxShape* aHeightFieldShape = g_pxHeightField -> createShape(*hfGeom, *gMaterial);
-	
-	//PxShape *aHeightFieldShape = PxRigidActorExt::createExclusiveShape(*aHeightFieldActor, hfGeom, &gMaterial, 1);
-	//g_pxHeightField -> attachShape(*aHeightFieldShape);
 
-	print_hf_test(data, aHeightField, 2,2);
-	print_hf_test(data, aHeightField, 8,8);
+	print_hf_test(data, aHeightField, 18,2);
+	print_hf_test(data, aHeightField, 0,8);
 	print_hf_test(data, aHeightField, 9,5);
-	print_hf_test(data, aHeightField, 10,12);
+	print_hf_test(data, aHeightField, 1,12);
 
 	cout << "Is descriptor valid? " << hfDesc.isValid() << endl;
 

@@ -1,9 +1,6 @@
 #include <stdlib.h> 
-
 #include <vector>
-
 #include <string>
-
 #include <fstream>
 #include <sstream>
 #include <iostream>
@@ -13,15 +10,11 @@
 
 #include <GL/glew.h>
 
-
 using namespace glm;
 using namespace std;
 
-
 GLenum glCheckError_(const char *file, int line);
-
 #define glCheckError() glCheckError_(__FILE__, __LINE__) 
-
 
 
 struct MeshVertex {

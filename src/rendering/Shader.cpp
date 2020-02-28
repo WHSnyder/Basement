@@ -68,6 +68,7 @@ Shader::Shader(string shader_path){
 	proj_loc = glGetUniformLocation(progID, "p");
 	view_loc = glGetUniformLocation(progID, "v");
 	model_loc = glGetUniformLocation(progID, "m");
+	col_loc = glGetUniformLocation(progID, "color");
 }
 
 
@@ -87,6 +88,24 @@ int Shader::setDataTexture(Texture *tex){
 
     glCheckError();
     return 0;
+}
+
+
+void Shader::setModel(float *model){
+	glUseProgram(progID);
+	glUniformMatrix4fv(model_loc, 1, GL_FALSE, model);
+}
+
+
+void Shader::setView(float *view){
+	glUseProgram(progID);
+	glUniformMatrix4fv(view_loc, 1, GL_FALSE, view);
+}
+
+
+void Shader::setProj(float *proj){
+	glUseProgram(progID);
+	glUniformMatrix4fv(proj_loc, 1, GL_FALSE, proj);
 }
 
 
@@ -110,12 +129,10 @@ void Shader::setVec3(string name, glm::vec3 v){
 }
 
 
-void Shader::setMats(float *model, float *view, float *proj){
+void Shader::setColor(glm::vec3 v){
 
-	glUseProgram(progID);
-	glUniformMatrix4fv(model_loc, 1, GL_FALSE, model);
-	glUniformMatrix4fv(view_loc, 1, GL_FALSE, view);
-	glUniformMatrix4fv(proj_loc, 1, GL_FALSE, proj);
+	glUseProgram(progID); 
+	glUniform3fv(col_loc, 1, glm::value_ptr(v));	
 }
 
 
