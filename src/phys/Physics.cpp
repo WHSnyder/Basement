@@ -38,7 +38,7 @@ PxHeightFieldSample *fill_terrain(int32_t *raw_hf, int dim){
 //Rigid kinematic version
 void Simu::addTerrain(int32_t *data, int dim, glm::vec3 scale){
 
-	PxTransform trans = PxTransform(PxVec3(-30.0,0.0,-30.0));//-scale.x,-15.0,-scale.z));
+	PxTransform trans = PxTransform(PxVec3(-scale.x,0.0,-scale.z));//-scale.x,-15.0,-scale.z));
 
 	PxHeightFieldSample *samples = fill_terrain(data, dim);
 
@@ -50,7 +50,7 @@ void Simu::addTerrain(int32_t *data, int dim, glm::vec3 scale){
 	hfDesc.samples.stride = sizeof(PxHeightFieldSample);
 
 	PxHeightField *aHeightField = cook -> createHeightField(hfDesc, gPhysics -> getPhysicsInsertionCallback());
-	PxHeightFieldGeometry *hfGeom = new PxHeightFieldGeometry(aHeightField, PxMeshGeometryFlags(), 1.0, 3.0, 3.0);//scale.x * 2.0 / dim, scale.z * 2.0 / dim);
+	PxHeightFieldGeometry *hfGeom = new PxHeightFieldGeometry(aHeightField, PxMeshGeometryFlags(), 1.0, scale.x * 2.0 / dim, scale.z * 2.0 / dim);//scale.x * 2.0 / dim, scale.z * 2.0 / dim);
 
 	PxRigidDynamic *g_pxHeightField = gPhysics -> createRigidDynamic(trans);
 	g_pxHeightField-> setMass(999999999999999.0f);
