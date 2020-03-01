@@ -28,7 +28,7 @@ void coutMat(float *mat){
 
 float *generate_terrain(int dim, double freq, float height_mult, int32_t *physx_samples){
 
-	const siv::PerlinNoise perlin(164714722);
+	const siv::PerlinNoise perlin(9042);
 	
 	float *result = (float *) calloc(dim * dim, sizeof(float));
 	
@@ -133,14 +133,14 @@ int main(int argc, char **argv){
 	Mesh plane = gen_plane();
 
 	//Perlin noise params
-	int dim = 32;
+	int dim = 64;
 	double freq = 3.0;
 
 	//Memory for storing physx heightmap cells
 	int32_t *px_samples = (int32_t *) calloc(dim * dim, sizeof(int32_t));
 
 	//Spatial multiplier for heightmap coordinates
-	vec3 terrain_mult = 3.0f * vec3(15.0,3.0,15.0);
+	vec3 terrain_mult = 3.0f * vec3(10.0f,5.0f,10.0f);
 
 	//Img_data is OpenGL texture data itself
     float *img_data = generate_terrain(dim, freq, terrain_mult.y, px_samples);
@@ -190,8 +190,8 @@ int main(int argc, char **argv){
 	float *viewptr = value_ptr(playerViewMat), *projptr = value_ptr(proj);
 	
 	mainSimu.addTerrain(px_samples, dim, terrain_mult);
-	mainSimu.addSphere(vec3(6,15,6), 1.2, 1);
-	mainSimu.addCube(vec3(-9,13,-9), 1.2, 2);
+	mainSimu.addSphere(vec3(6,15,6), 1.0f, 1);
+	mainSimu.addCube(vec3(-9,13,-9), 1.0f, 2);
 
 	plane_shader.setProj(projptr);
 	basic_shader.setProj(projptr);
