@@ -14,6 +14,7 @@
 #include <perlin/PerlinNoise.hpp>
 #include "rendering/Shader.h"
 #include "utils/controls.hpp"
+#include "rendering/RenderTarget.h"
 
 
 using namespace std;
@@ -33,19 +34,19 @@ float *generate_terrain(int dim, double freq, float height_mult, int32_t *physx_
 	float *result = (float *) calloc(dim * dim, sizeof(float));
 	
 	double mult = freq/dim;
+	//double sample_mult = 32766.0/height_mult; //divide max 16 bit signed value 
 
 	for (int i = 0; i < dim; i++){
 		for (int j = 0; j < dim; j++){
 
 			float per = (float) perlin.accumulatedOctaveNoise2D_0_1(j * mult, i * mult, 8);
 
-			//if (j % 16 <= 2) per = 1.0;
 			if (i == 0 || i == dim - 1) per = 0.0;
 			if (j == 0 || j == dim - 1) per = 0.0;
 			
-			result[j * dim + i] = per;
+			result[j * dim + i] = per; //has to be flipped due opengl flipping textures.... I think?
 
-			int32_t cur = (int32_t) 100.0 * height_mult * per;
+			int32_t cur = (int32_t) 3000.0 * height_mult * per;
 			physx_samples[i * dim + j] = cur << 16;
 		}
 	}
@@ -140,7 +141,7 @@ int main(int argc, char **argv){
 	int32_t *px_samples = (int32_t *) calloc(dim * dim, sizeof(int32_t));
 
 	//Spatial multiplier for heightmap coordinates
-	vec3 terrain_mult = 3.0f * vec3(10.0f,5.0f,10.0f);
+	vec3 terrain_mult = 3.0f * vec3(10.0f, 5.0f, 10.0f);
 
 	//Img_data is OpenGL texture data itself
     float *img_data = generate_terrain(dim, freq, terrain_mult.y, px_samples);
@@ -184,7 +185,9 @@ int main(int argc, char **argv){
 	mat4 rot = mat4(1.0),testmat;
 	mat4 trans = translate(vec3(0,9,0));
 
-	mat t1 = translate(vec3(-30.0,0,-30.0)), t2 = translate(vec3(30.0,0,-30.0)), t3 = translate(vec3(-30.0,0,30.0)), t4 = translate(vec3(30.0,0,30.0));
+	vec3 tm = terrain_mult;
+
+	mat t1 = translate(vec3(-1,0,-1) * tm), t2 = translate(vec3(1,0,-1) * tm), t3 = translate(vec3(-1,0,1) * tm), t4 = translate(vec3(1,0,1) * tm);
 	float *t1p = value_ptr(t1), *t2p = value_ptr(t2), *t3p = value_ptr(t3), *t4p = value_ptr(t4);
 	float sphereMat[16] = {}, boxMat[16] = {}; 
 	float *viewptr = value_ptr(playerViewMat), *projptr = value_ptr(proj);

@@ -31,35 +31,29 @@ GLenum glCheckError_(const char *file, int line){
 
 vector<string> face_tags({string("_rt"), string("_lf"), string("_up"), string("_dn"), string("_bk"), string("_ft")});
 
-/*
+
 GLuint loadCubemap(string basepath){
 
     GLuint textureID;
     glGenTextures(1, &textureID);
     glBindTexture(GL_TEXTURE_CUBE_MAP, textureID);
 
-    unsigned char *data;
-    cv::Mat *cur;
+    cv::Mat *img;
 
-
-    for (unsigned int i = 0; i < faces.size(); i++){
+    for (int i = 0; i < face_tags.size(); i++){
         
-        cv::Mat cur = new(imread(basepath + face_tags[i], cv::IMREAD_COLOR));
+        img = new cv::Mat(imread(basepath + face_tags[i], cv::IMREAD_COLOR));
         cv::resize(*img, *img, cv::Size(512,512), 0, 0, cv::INTER_LINEAR);
 
-        if (data){
+        if (img -> data){
 
             glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 
-                         0, GL_RGB, 512, 512, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-            //stbi_image_free(data);
-        }
-        else {
-
-            cout << "Cubemap tex failed to load at path: " << faces[i] << endl;
-            //stbi_image_free(data);
+                        0, GL_RGB, 512, 512, 0, GL_RGB, GL_UNSIGNED_BYTE, img -> data);
         }
 
-        delete cur;
+        else cout << "Cubemap tex failed to load at path: " << basepath << endl;
+
+        delete img;
     }
 
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -69,7 +63,7 @@ GLuint loadCubemap(string basepath){
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 
     return textureID;
-}*/
+}
 
 
 GLuint bindTexture(int color, int rows, int cols, void *data){
@@ -101,7 +95,6 @@ GLuint bindTexture(int color, int rows, int cols, void *data){
                 color ? GL_UNSIGNED_BYTE : GL_FLOAT,  //If color, were using opencv image, else, perlin map
                 data); 
 
-    //delete data;
     glGenerateMipmap(GL_TEXTURE_2D);
     glCheckError();
 
@@ -133,13 +126,11 @@ Texture::Texture(string filepath, int cubemap){
         memcpy(data, (void *) img.data, 3 * rows * cols);
 
         texID = bindTexture(1, rows, cols, data);
-
-        //data = nullptr;
     }
 
     else {
 
-        
-
+        texID = loadCubemap(filepath);   
+        rows = 512, cols = 512;     
     }
 }

@@ -8,6 +8,7 @@
 #include <iostream>
 #include <vector>
 
+class Texture;
 
 class RenderTarget {
 
@@ -17,6 +18,8 @@ class RenderTarget {
 		GLenum outBuffers[] = GLenum[3];
 		int numOutBuffers, rows, cols;
 
-		RenderTarget(int rows_, int cols_);
+		RenderTarget(int rows_, int cols_, int shadow);
 		void set();
+
+		Texture getTexture();
 }

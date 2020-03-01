@@ -47,5 +47,5 @@ void main(){
 	normal = normalize(cross(negz - posz, negx - posx));
 	gl_Position = p * v * vec4(position, 1);
 
-	texCoordsOut = position.xz/10.0;
+	texCoordsOut = position.xz/2.5;
 }

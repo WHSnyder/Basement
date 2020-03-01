@@ -1,3 +1,6 @@
+#ifndef TEX_
+#define TEX_
+
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
@@ -26,3 +29,4 @@ class Texture {
 			glDeleteTextures(1,&texID);
 		}
 };
+#endif
