@@ -51,7 +51,7 @@ void Simu::addTerrain(int32_t *data, int dim, glm::vec3 scale){
 	hfDesc.samples.stride = sizeof(PxHeightFieldSample);
 
 	PxHeightField *aHeightField = cook -> createHeightField(hfDesc, gPhysics -> getPhysicsInsertionCallback());
-	PxHeightFieldGeometry *hfGeom = new PxHeightFieldGeometry(aHeightField, PxMeshGeometryFlags(), 1.0, scale.x * 2.0 / dim, scale.z * 2.0 / dim);//scale.x * 2.0 / dim, scale.z * 2.0 / dim);
+	PxHeightFieldGeometry *hfGeom = new PxHeightFieldGeometry(aHeightField, PxMeshGeometryFlags(), .01, scale.x * 2.0 / dim, scale.z * 2.0 / dim);//scale.x * 2.0 / dim, scale.z * 2.0 / dim);
 
 	PxRigidDynamic *g_pxHeightField = gPhysics -> createRigidDynamic(trans);
 	g_pxHeightField-> setMass(999999999999999.0f); //should probably switch to static sometime soon haha

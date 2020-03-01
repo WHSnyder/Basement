@@ -45,7 +45,7 @@ float *generate_terrain(int dim, double freq, float height_mult, int32_t *physx_
 			
 			result[j * dim + i] = per;
 
-			int32_t cur = (int32_t) height_mult * per;
+			int32_t cur = (int32_t) 100.0 * height_mult * per;
 			physx_samples[i * dim + j] = cur << 16;
 		}
 	}
