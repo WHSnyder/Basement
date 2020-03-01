@@ -2,13 +2,7 @@
 #include <GLFW/glfw3.h>
 
 #include <stdlib.h>
-#include <string>
-#include <chrono>
 
-#include <iostream>
-#include <vector>
-
-class Texture;
 
 class RenderTarget {
 	
@@ -28,6 +22,5 @@ class RenderTarget {
 		~RenderTarget(){
 			glDeleteFramebuffers(1, &framebufferID);
 			delete outBuffers;
-			//glDeleteTexture(1, &texID);
 		}
 };

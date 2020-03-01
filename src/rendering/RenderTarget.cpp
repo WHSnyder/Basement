@@ -1,10 +1,9 @@
 #include "rendering/RenderTarget.h"
-#include "rendering/Texture.h"
 
+#include <iostream>
 
 extern GLenum glCheckError_(const char *file, int line);
 #define glCheckError() glCheckError_(__FILE__, __LINE__) 
-
 
 using namespace std;
 
@@ -83,9 +82,6 @@ void bindTextureFramebuffer(GLuint& framebufferID, GLuint& depthBufferID, GLuint
 		glCheckError();
 	}
 }
-
-
-
 
 
 RenderTarget::RenderTarget(int rows_, int cols_, int shadow){

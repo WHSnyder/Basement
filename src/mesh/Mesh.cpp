@@ -1,7 +1,7 @@
 #include <mesh/Mesh.h>
 
 #include <assimp/Importer.hpp>
-#include <assimp/scene.h>           // Output data structure
+#include <assimp/scene.h>
 #include <assimp/postprocess.h>
 
 using namespace glm;

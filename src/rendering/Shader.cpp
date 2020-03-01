@@ -74,44 +74,44 @@ Shader::Shader(string shader_path){
 }
 
 
-int Shader::setImageTexture(Texture *tex){
+int Shader::setImageTexture(GLuint tID){
 
 	glUseProgram(progID); 
 
 	glUniform1i(image_texture, 1);
 
     glActiveTexture(GL_TEXTURE0 + 1);
-	glBindTexture(GL_TEXTURE_2D, tex -> texID);
+	glBindTexture(GL_TEXTURE_2D, tID);
 
     return 0;
 }
 
 
 
-int Shader::setDataTexture(Texture *tex){
+int Shader::setDataTexture(GLuint tID, int tDim){
 
 	glUseProgram(progID); 
 
 	glUniform1i(data_texture, 0);
 
     glActiveTexture(GL_TEXTURE0 + 0);
-	glBindTexture(GL_TEXTURE_2D, tex -> texID);
+	glBindTexture(GL_TEXTURE_2D, tID);
 
 	GLint n_dim = glGetUniformLocation(progID, "dim");
-    glUniform1f(n_dim,tex -> cols);
+    glUniform1f(n_dim, tDim);
 
     return 0;
 }
 
 
-int Shader::setShadowTexture(Texture *tex){
+int Shader::setShadowTexture(GLuint tID){
 
 	glUseProgram(progID); 
 
-	glUniform1i(shadow_texture, 1);
+	glUniform1i(shadow_texture, 2);
 
-    glActiveTexture(GL_TEXTURE0 + 1);
-	glBindTexture(GL_TEXTURE_2D, tex -> texID);
+    glActiveTexture(GL_TEXTURE0 + 2);
+	glBindTexture(GL_TEXTURE_2D, tID);
 
     glCheckError();
     return 0;

@@ -102,8 +102,6 @@ GLuint bindTexture(int color, int rows, int cols, void *data){
 }
 
 
-
-
 Texture::Texture(float *_data, int width, int height, int color){
     
     rows = height, cols = width;

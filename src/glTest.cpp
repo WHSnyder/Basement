@@ -8,6 +8,7 @@
 #include <iostream>
 #include <vector>
 
+#include "rendering/Texture.h"
 #include <mesh/Mesh.h>
 #include <phys/Physics.h>
 #include <gtx/transform.hpp>
@@ -155,11 +156,11 @@ int main(int argc, char **argv){
     glCheckError();
 
 	Shader plane_shader = Shader("src/rendering/shaders/plane");
-	plane_shader.setDataTexture(&noise_tex);
+	plane_shader.setDataTexture(noise_tex.getID(), noise_tex.getDim());
 	
 	Shader terrain_shader = Shader("src/rendering/shaders/noise_test");
-	terrain_shader.setDataTexture(&noise_tex);
-	terrain_shader.setImageTexture(&grass_tex);
+	terrain_shader.setDataTexture(noise_tex.getID(), noise_tex.getDim());
+	terrain_shader.setImageTexture(grass_tex.getID());
 	terrain_shader.setVec3(string("mult"), terrain_mult);
 
 	Shader basic_shader = Shader("src/rendering/shaders/basic");
@@ -199,6 +200,11 @@ int main(int argc, char **argv){
 	plane_shader.setProj(projptr);
 	basic_shader.setProj(projptr);
 	terrain_shader.setProj(projptr);
+
+	//Setting up shadow data
+	/*RenderTarget shadowTarget(512,512,1);
+	shadow_shader.setShadowTexture(shadowTarget.getTexture());
+	*/
 
 
 	do {
