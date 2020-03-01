@@ -64,12 +64,28 @@ Shader::Shader(string shader_path){
 
 	glUseProgram(progID); 
 
-	data_texture = glGetUniformLocation(progID, "tex");
+	data_texture = glGetUniformLocation(progID, "dataTex");
+	image_texture = glGetUniformLocation(progID, "imageTex");
 	proj_loc = glGetUniformLocation(progID, "p");
 	view_loc = glGetUniformLocation(progID, "v");
 	model_loc = glGetUniformLocation(progID, "m");
 	col_loc = glGetUniformLocation(progID, "color");
+	shadow_texture = glGetUniformLocation(progID, "shadowTex");
 }
+
+
+int Shader::setImageTexture(Texture *tex){
+
+	glUseProgram(progID); 
+
+	glUniform1i(image_texture, 1);
+
+    glActiveTexture(GL_TEXTURE0 + 1);
+	glBindTexture(GL_TEXTURE_2D, tex -> texID);
+
+    return 0;
+}
+
 
 
 int Shader::setDataTexture(Texture *tex){
@@ -79,16 +95,28 @@ int Shader::setDataTexture(Texture *tex){
 	glUniform1i(data_texture, 0);
 
     glActiveTexture(GL_TEXTURE0 + 0);
-	glBindTexture(GL_TEXTURE_2D, tex->texID);
-
-	glCheckError();
+	glBindTexture(GL_TEXTURE_2D, tex -> texID);
 
 	GLint n_dim = glGetUniformLocation(progID, "dim");
-    glUniform1f(n_dim,tex->cols);
+    glUniform1f(n_dim,tex -> cols);
+
+    return 0;
+}
+
+
+int Shader::setShadowTexture(Texture *tex){
+
+	glUseProgram(progID); 
+
+	glUniform1i(shadow_texture, 1);
+
+    glActiveTexture(GL_TEXTURE0 + 1);
+	glBindTexture(GL_TEXTURE_2D, tex -> texID);
 
     glCheckError();
     return 0;
 }
+
 
 
 void Shader::setModel(float *model){

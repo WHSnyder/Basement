@@ -3,7 +3,7 @@
 using namespace std;
 
 
-
+//For testing the layout pattern of HF data
 void print_hf_test(int32_t *raw_hf, PxHeightField *hf, int dim, int x, int z){
 
 	int hraw = raw_hf[x * dim + z];
@@ -14,6 +14,7 @@ void print_hf_test(int32_t *raw_hf, PxHeightField *hf, int dim, int x, int z){
 }
 
 
+//This may not be necessary, was written when figuring out HFs
 PxHeightFieldSample *fill_terrain(int32_t *raw_hf, int dim){
 
 	PxHeightFieldSample *result = new PxHeightFieldSample[dim * dim];
@@ -34,10 +35,11 @@ PxHeightFieldSample *fill_terrain(int32_t *raw_hf, int dim){
 	return result;
 }
 
-//Rigid kinematic version
+
+//Rigid kinematic version, from stackoverflow answer when figuring HFs out
 void Simu::addTerrain(int32_t *data, int dim, glm::vec3 scale){
 
-	PxTransform trans = PxTransform(PxVec3(-scale.x,0.0,-scale.z));//-scale.x,-15.0,-scale.z));
+	PxTransform trans = PxTransform(PxVec3(-scale.x,0.0f,-scale.z));//-scale.x,-15.0,-scale.z));
 
 	PxHeightFieldSample *samples = fill_terrain(data, dim);
 
@@ -52,7 +54,7 @@ void Simu::addTerrain(int32_t *data, int dim, glm::vec3 scale){
 	PxHeightFieldGeometry *hfGeom = new PxHeightFieldGeometry(aHeightField, PxMeshGeometryFlags(), 1.0, scale.x * 2.0 / dim, scale.z * 2.0 / dim);//scale.x * 2.0 / dim, scale.z * 2.0 / dim);
 
 	PxRigidDynamic *g_pxHeightField = gPhysics -> createRigidDynamic(trans);
-	g_pxHeightField-> setMass(999999999999999.0f);
+	g_pxHeightField-> setMass(999999999999999.0f); //should probably switch to static sometime soon haha
     g_pxHeightField -> setRigidBodyFlag(PxRigidBodyFlag::eKINEMATIC, true);
 
     PxShape* aHeightFieldShape = g_pxHeightField -> createShape(*hfGeom, *gMaterial);
@@ -111,9 +113,7 @@ void Simu::addTerrain(int32_t *data, int rows, int cols, int scale){
 }*/
 
 
-
-
-
+//Simple transform update for testing purposes
 void Simu::getModelMats(float *sphereMat, float *boxMat){
 
 	PxU32 nbActiveTransforms;
@@ -141,7 +141,7 @@ void Simu::getModelMats(float *sphereMat, float *boxMat){
 	}
 }
 
-
+//Simple collider insertion for testing
 void Simu::addSphere(glm::vec3 center, float extent, int tag){
 
 	PxShape* sphere = gPhysics->createShape(PxSphereGeometry(extent), *gMaterial);
@@ -156,7 +156,7 @@ void Simu::addSphere(glm::vec3 center, float extent, int tag){
 	sphere -> release();
 }
 
-
+//Simple collider insertion for testing
 void Simu::addCube(glm::vec3 center, float extent, int tag){
 
 	PxShape* box = gPhysics->createShape(PxBoxGeometry(extent, extent, extent), *gMaterial);

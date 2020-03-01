@@ -16,7 +16,7 @@ else
 endif
 
 
-OPENCV = `pkg-config --cflags --libs opencv`
+OPENCV = `pkg-config --cflags --libs opencv4`
 OPENCV_LIBS = $(OPENCV)
 
 
@@ -77,7 +77,7 @@ bin/glTest.o: src/glTest.cpp
 	$(CC) $(CFLAGS) $(GLFLAGS) -I/Users/will/projects/cpprtx/libs/physx/PxShared/include -I/Users/will/projects/cpprtx/libs/physx/PhysX_3.4/Include -c src/glTest.cpp -o bin/glTest.o
 
 bin/gltst: bin/glTest.o bin/Mesh.o bin/Physics.o
-	$(CC) $(CFLAGS) $(GLFLAGS) $(ASSIMP) $(LDFLAGS) $(PHYSX) src/utils/controls.cpp src/rendering/Shader.cpp src/rendering/Texture.cpp bin/Physics.o bin/ShaderUtils.o bin/glTest.o bin/Mesh.o -o bin/gltst
+	$(CC) $(OPENCV_LIBS) $(CFLAGS) $(GLFLAGS) $(ASSIMP) $(LDFLAGS) $(PHYSX) src/utils/controls.cpp src/rendering/Shader.cpp src/rendering/Texture.cpp bin/Physics.o bin/ShaderUtils.o bin/glTest.o bin/Mesh.o -o bin/gltst
 
 clean: 
 	rm bin/*

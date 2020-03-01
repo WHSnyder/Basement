@@ -1,15 +1,12 @@
 #include "rendering/Texture.h"
+#include <opencv2/opencv.hpp> 
 
 
-
-GLenum glCheckError_(const char *file, int line)
-{
+GLenum glCheckError_(const char *file, int line){
     GLenum errorCode;
-    while ((errorCode = glGetError()) != GL_NO_ERROR)
-    {
+    while ((errorCode = glGetError()) != GL_NO_ERROR) {
         std::string error;
-        switch (errorCode)
-        {
+        switch (errorCode) {
             case GL_INVALID_ENUM:                  error = "INVALID_ENUM"; break;
             case GL_INVALID_VALUE:                 error = "INVALID_VALUE"; break;
             case GL_INVALID_OPERATION:             error = "INVALID_OPERATION"; break;
@@ -26,35 +23,34 @@ GLenum glCheckError_(const char *file, int line)
 #define glCheckError() glCheckError_(__FILE__, __LINE__) 
 
 
+GLuint bindCubemap(int color, int rows, int cols, void *data){
 
+    GLuint tex;
 
-GLuint bindTexture(int cols, int rows, float *data, int color){
-
-	GLuint tex;
-
-	glGenTextures(1, &tex);
+    glGenTextures(1, &tex);
     glBindTexture(GL_TEXTURE_2D, tex);
     glCheckError();
 
+    //interp method
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glCheckError();
 
-    // Set texture clamping method
+    //clamping method
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glCheckError();
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
     glCheckError();
 
-    glTexImage2D(GL_TEXTURE_2D,     // Type of texture
-                0,                 // Pyramid level (for mip-mapping) - 0 is the top level
-                color ? GL_RGB : GL_RED,            // Internal colour format to convert to
+    glTexImage2D(GL_TEXTURE_2D,     // tex type
+                0,                 // 0 mipmap level = top level
+                color ? GL_RGB : GL_RED,            
                 cols,
                 rows,
-                0,                 // Border width in pixels (can either be 1 or 0)
-                color ? GL_RGB : GL_RED, // Input image format (i.e. GL_RGB, GL_RGBA, GL_BGR etc.)
-                GL_FLOAT,  // Image data type
-                (void *) data);        // The actual image data itself
+                0,                 // Border 0 for now, might change with atlessing + mipmapping
+                color ? GL_RGB : GL_RED, // Single channel for perlin map, rgb for opencv
+                color ? GL_UNSIGNED_BYTE : GL_FLOAT,  //If color, were using opencv image, else, perlin map
+                data);       
 
     glGenerateMipmap(GL_TEXTURE_2D);
     glCheckError();
@@ -63,8 +59,72 @@ GLuint bindTexture(int cols, int rows, float *data, int color){
 }
 
 
+GLuint bindTexture(int color, int rows, int cols, void *data){
+
+	GLuint tex;
+
+	glGenTextures(1, &tex);
+    glBindTexture(GL_TEXTURE_2D, tex);
+    glCheckError();
+
+    //interp method
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glCheckError();
+
+    //clamping method
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glCheckError();
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glCheckError();
+
+    glTexImage2D(GL_TEXTURE_2D,     // tex type
+                0,                 // 0 mipmap level = top level
+                color ? GL_RGB : GL_RED,            
+                cols,
+                rows,
+                0,                 // Border 0 for now, might change with atlessing + mipmapping
+                color ? GL_RGB : GL_RED, // Single channel for perlin map, rgb for opencv
+                color ? GL_UNSIGNED_BYTE : GL_FLOAT,  //If color, were using opencv image, else, perlin map
+                data);       
+
+    glGenerateMipmap(GL_TEXTURE_2D);
+    glCheckError();
+
+    return tex;
+}
+
+
+
+
 Texture::Texture(float *_data, int width, int height, int color){
-	rows = height, cols = width;
-	texID = bindTexture(cols, rows, _data, color);
-	data = _data;
+    
+    rows = height, cols = width;
+    data = (void *) _data;
+	texID = bindTexture(0, rows, cols, data);
+}
+
+
+Texture::Texture(std::string filepath, int cubemap){
+
+    if (!cubemap){
+        
+        cv::Mat rawimg = imread(filepath, cv::IMREAD_COLOR);
+        cv::Mat img(rawimg);
+        rawimg.convertTo(img, CV_8UC3);//this and the above line may be unnecessary but I don't wish to spend a lot of time messing with opencv in a constructor
+        cv::resize(img, img, cv::Size(512,512), 0, 0, cv::INTER_LINEAR);
+
+        rows = 512, cols = 512;
+
+        data = malloc(3 * rows * cols);
+
+        memcpy(data, (void *) img.data, 3 * rows * cols);
+
+        texID = bindTexture(1, rows, cols, data);
+    }
+    else {
+
+        //
+
+    }
 }

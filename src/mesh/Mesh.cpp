@@ -59,15 +59,14 @@ int Mesh::bindBuffers(){
 
 void Mesh::read_obj_file(string filename){
 
-	//cout << "Starting assimp load" << endl;
+	cout << "Loading mesh at " << filename << endl;
 
 	Assimp::Importer importer;
-    const aiScene* scene = importer.ReadFile(filename, aiProcess_GenNormals | aiProcess_JoinIdenticalVertices);
+    const aiScene *scene = importer.ReadFile(filename, aiProcess_GenNormals | aiProcess_JoinIdenticalVertices);
 
-    //Check for errors
+    //Check errors
     if ((!scene) || (scene->mFlags == AI_SCENE_FLAGS_INCOMPLETE) || (!scene->mRootNode)){
         cerr << "Error loading w/assimp" << string(importer.GetErrorString()) << endl;
-        //Return fail
         return -1;
     }
 
@@ -75,35 +74,36 @@ void Mesh::read_obj_file(string filename){
 
     for (unsigned int i = 0; i < scene->mNumMeshes; ++i){
 
-        aiMesh* mesh = scene->mMeshes[i];
+        aiMesh* mesh = scene -> mMeshes[i];
         MeshVertex mv = MeshVertex();
-        //vec3 norm,pos;
   
         //Iterate over the vertices of the mesh
         for (unsigned int j = 0; j < mesh->mNumVertices; ++j){
 
-            //Set the positions
-            mv.position.x = mesh->mVertices[j].x;
-            mv.position.y = mesh->mVertices[j].y;
-            mv.position.z = mesh->mVertices[j].z;
+            //Set positions
+            mv.position.x = mesh -> mVertices[j].x;
+            mv.position.y = mesh -> mVertices[j].y;
+            mv.position.z = mesh -> mVertices[j].z;
 
-            //Set the normals
-            mv.normal.x = mesh->mNormals[j].x;
-            mv.normal.y = mesh->mNormals[j].y;
-            mv.normal.z = mesh->mNormals[j].z;
+            //Set normals
+            mv.normal.x = mesh -> mNormals[j].x;
+            mv.normal.y = mesh -> mNormals[j].y;
+            mv.normal.z = mesh -> mNormals[j].z;
 
-            //Add the vertex to the vertices vector
+            //Add vertex
             verts.push_back(mv);
         }
 
-        //Iterate over the faces of the mesh
+        //Iterate over faces
         for (unsigned int j = 0; j < mesh->mNumFaces; ++j){
-            //Get the face
+            
+            //Get face
             aiFace face = mesh->mFaces[j];
-            //Add the indices of the face to the vector
+            
+            //Add indices
             for (unsigned int k = 0; k < face.mNumIndices; ++k) {indices.push_back(face.mIndices[k]);}
         }
     }
 
-    //cout << "Assimp loaded" << endl;
+   // delete scene;
 }

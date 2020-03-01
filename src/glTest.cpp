@@ -15,7 +15,6 @@
 #include "rendering/Shader.h"
 #include "utils/controls.hpp"
 
-//#include "Object.h"
 
 using namespace std;
 
@@ -29,7 +28,7 @@ void coutMat(float *mat){
 
 float *generate_terrain(int dim, double freq, float height_mult, int32_t *physx_samples){
 
-	const siv::PerlinNoise perlin(16479203914722);
+	const siv::PerlinNoise perlin(164714722);
 	
 	float *result = (float *) calloc(dim * dim, sizeof(float));
 	
@@ -44,7 +43,7 @@ float *generate_terrain(int dim, double freq, float height_mult, int32_t *physx_
 			if (i == 0 || i == dim - 1) per = 0.0;
 			if (j == 0 || j == dim - 1) per = 0.0;
 			
-			result[(j) * dim + i] = per;
+			result[j * dim + i] = per;
 
 			int32_t cur = (int32_t) height_mult * per;
 			physx_samples[i * dim + j] = cur << 16;
@@ -73,6 +72,7 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
         glfwSetWindowShouldClose(window, GL_TRUE);
 }
+
 
 GLFWwindow* window;
 
@@ -111,11 +111,8 @@ int main(int argc, char **argv){
 		return -1;
 	}
 
-	// Ensure we can capture the escape key being pressed below
 	glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
-
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);  
-
 
     glfwSetErrorCallback(error_callback);
     if (!glfwInit())
@@ -135,23 +132,33 @@ int main(int argc, char **argv){
 
 	Mesh plane = gen_plane();
 
-
-	int dim = 64;
+	//Perlin noise params
+	int dim = 32;
 	double freq = 3.0;
 
+	//Memory for storing physx heightmap cells
 	int32_t *px_samples = (int32_t *) calloc(dim * dim, sizeof(int32_t));
 
-	vec3 terrain_mult = 3.0f * vec3(10.0,3.0,10.0);
+	//Spatial multiplier for heightmap coordinates
+	vec3 terrain_mult = 3.0f * vec3(15.0,3.0,15.0);
 
+	//Img_data is OpenGL texture data itself
     float *img_data = generate_terrain(dim, freq, terrain_mult.y, px_samples);
     Texture noise_tex = Texture(img_data, dim, dim, 0);
 
+    //Terrain grass texture
+    Texture grass_tex = Texture(string("assets/images/grass.jpg"), 0);
+
+
+    Shader shadow_shader = Shader("src/rendering/shaders/shadow");
+    glCheckError();
 
 	Shader plane_shader = Shader("src/rendering/shaders/plane");
 	plane_shader.setDataTexture(&noise_tex);
 	
 	Shader terrain_shader = Shader("src/rendering/shaders/noise_test");
 	terrain_shader.setDataTexture(&noise_tex);
+	terrain_shader.setImageTexture(&grass_tex);
 	terrain_shader.setVec3(string("mult"), terrain_mult);
 
 	Shader basic_shader = Shader("src/rendering/shaders/basic");
@@ -183,8 +190,8 @@ int main(int argc, char **argv){
 	float *viewptr = value_ptr(playerViewMat), *projptr = value_ptr(proj);
 	
 	mainSimu.addTerrain(px_samples, dim, terrain_mult);
-	mainSimu.addSphere(vec3(6,15,6), 1.0, 1);
-	mainSimu.addCube(vec3(-9,13,-9), 1.0, 2);
+	mainSimu.addSphere(vec3(6,15,6), 1.2, 1);
+	mainSimu.addCube(vec3(-9,13,-9), 1.2, 2);
 
 	plane_shader.setProj(projptr);
 	basic_shader.setProj(projptr);

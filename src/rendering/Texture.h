@@ -9,17 +9,21 @@
 #include <vector>
 
 
+/*
+Basic texture class
+*/
 
 
 class Texture {
 
 	public:
 
-		float *data = nullptr;
+		void *data = nullptr;
 		GLuint texID;
 		int rows,cols;
 
 		Texture(float *data, int width, int height, int color);
+		Texture(std::string filepath, int cubemap);
 
 		~Texture(){
 			delete data;

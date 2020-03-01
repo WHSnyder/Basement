@@ -7,9 +7,10 @@ uniform mat4 p, v;
 uniform float dim;
 uniform vec3 mult;
 
-uniform sampler2D tex;
+uniform sampler2D dataTex;
 
 out vec3 normal;
+out vec2 texCoordsOut;
 
 void main(){
 	
@@ -17,7 +18,7 @@ void main(){
 	float scale = .5;
 	
 	vec2 texCoord = (pos.xz + vec2(1.0)) * scale;
-	float height = texture(tex,texCoord).r;
+	float height = texture(dataTex,texCoord).r;
 
 	vec3 position = mult * vec3(pos.x,height,pos.z);
 
@@ -27,22 +28,24 @@ void main(){
 	vec3 posz = vec3(pos.xy, pos.z + inc);
 
 	texCoord = (negx.xz + vec2(1.0)) * scale;
-	negx.y = texture(tex,texCoord).r;
+	negx.y = texture(dataTex,texCoord).r;
 	negx *= mult; 
 
 	texCoord = (negz.xz + vec2(1.0)) * scale;
-	negz.y = texture(tex,texCoord).r;
+	negz.y = texture(dataTex,texCoord).r;
 	negz *= mult; 
 
 	texCoord = (posx.xz + vec2(1.0)) * scale;
-	posx.y = texture(tex,texCoord).r;
+	posx.y = texture(dataTex,texCoord).r;
 	posx *= mult; 
 
 	texCoord = (posz.xz + vec2(1.0)) * scale;
-	posz.y = texture(tex,texCoord).r;
+	posz.y = texture(dataTex,texCoord).r;
 	posz *= mult; 
 
 
-	normal = 1.0 * normalize(cross(negz - posz, negx - posx));
+	normal = normalize(cross(negz - posz, negx - posx));
 	gl_Position = p * v * vec4(position, 1.0);
+
+	texCoordsOut = position.xz/10.0;
 }

@@ -15,12 +15,18 @@
 #include <ext.hpp>
 
 
+/*
+Wrapper class for OpenGL/GLSL shaders.  Different matrix and texture types have 
+standardized names in GLSL so other classes dont have to reference them by string
+name. 
+*/
+
 
 class Shader {
 
 	private:
 
-		GLuint data_texture, image_texture;
+		GLuint data_texture, image_texture, shadow_texture;
 		GLuint proj_loc, view_loc, model_loc, col_loc;
 
 	public:
@@ -39,6 +45,7 @@ class Shader {
 
 		int setDataTexture(Texture *tex);
 		int setImageTexture(Texture *tex);
+		int setShadowTexture(Texture *tex);
 
 		void printUniforms();
 
