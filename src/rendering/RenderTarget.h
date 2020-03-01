@@ -11,15 +11,23 @@
 class Texture;
 
 class RenderTarget {
+	
+	private:
+
+		GLuint framebufferID, depthBufferID, colorAttachmentID, texID;
+		GLenum *outBuffers;
+		int numOutBuffers, rows, cols;
 
 	public:
 
-		GLuint framebufferID, depthBufferID, colorAttachmentID, texID;
-		GLenum outBuffers[] = GLenum[3];
-		int numOutBuffers, rows, cols;
-
 		RenderTarget(int rows_, int cols_, int shadow);
+		
 		void set();
+		GLuint getTexture();
 
-		Texture getTexture();
-}
+		~RenderTarget(){
+			glDeleteFramebuffers(1, &framebufferID);
+			delete outBuffers;
+			//glDeleteTexture(1, &texID);
+		}
+};

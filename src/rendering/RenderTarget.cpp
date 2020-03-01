@@ -9,24 +9,19 @@ extern GLenum glCheckError_(const char *file, int line);
 using namespace std;
 
 
-Texture RenderTarget::getTexture(){
 
-	Texture tex();
-	tex.texID = texID;
-	tex.cols = cols;
-	tex.rows = rows;
-
-	return tex;
+GLuint RenderTarget::getTexture(){
+	return texID;
 }
 
 
 void RenderTarget::set(){
 	glBindFramebuffer(GL_FRAMEBUFFER, framebufferID);
-	glViewport(0,0,cols,rows);
+	glViewport(0, 0, cols, rows);
 }
 
 
-void bindShadowbuffer(Gluint& framebufferID, GLuint& texID, int rows, int cols){
+void bindShadowbuffer(GLuint& framebufferID, GLuint& texID, int rows, int cols){
 
 	glGenFramebuffers(1, &framebufferID);
 	glBindFramebuffer(GL_FRAMEBUFFER, framebufferID);
@@ -53,7 +48,7 @@ void bindShadowbuffer(Gluint& framebufferID, GLuint& texID, int rows, int cols){
 }
 
 
-void bindTextureFramebuffer(Gluint& framebufferID, GLuint& depthBufferID, GLuint& texID, GLenum& *outBuffers, int rows, int cols){
+void bindTextureFramebuffer(GLuint& framebufferID, GLuint& depthBufferID, GLuint& texID, GLenum *outBuffers, int rows, int cols){
 
 	glGenFramebuffers(1, &framebufferID);
 	glBindFramebuffer(GL_FRAMEBUFFER, framebufferID);
@@ -71,7 +66,6 @@ void bindTextureFramebuffer(Gluint& framebufferID, GLuint& depthBufferID, GLuint
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 
 	// The depth buffer
-	GLuint depthBufferID;
 	glGenRenderbuffers(1, &depthBufferID);
 	glBindRenderbuffer(GL_RENDERBUFFER, depthBufferID);
 	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, cols, rows);
@@ -98,6 +92,8 @@ RenderTarget::RenderTarget(int rows_, int cols_, int shadow){
 
 	rows = rows_;
 	cols = cols_;
+
+	outBuffers = new GLenum[3]();
 
 	if (shadow){
 
