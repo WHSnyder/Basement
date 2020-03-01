@@ -23,6 +23,8 @@ void bindShadowbuffer(GLuint& framebufferID, GLuint& texID, int rows, int cols){
 	//cout << "Shadow buffer ID: " << framebufferID << endl;
 
 	GLuint dummyID;
+	glActiveTexture(GL_TEXTURE0 + 4);
+
 
 	// Depth texture. Slower than a depth buffer, but you can sample it later in your shader
 	glGenTextures(1, &dummyID); //bug here and below....

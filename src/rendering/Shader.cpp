@@ -114,6 +114,7 @@ int Shader::setShadowTexture(GLuint tID){
 	glBindTexture(GL_TEXTURE_2D, tID);
 
     glCheckError();
+    
     return 0;
 }
 
