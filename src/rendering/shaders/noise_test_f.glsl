@@ -12,5 +12,5 @@ void main(){
 
 	vec3 lightDir = normalize(vec3(0.0,-1.0,1.0));
 	float mult = 0.0 - clamp(dot(normal,lightDir), -1.0, 0.0);
-    outColor = vec4(texture(imageTex, texCoordsOut).bgr * mult, 1.0);
+    outColor = vec4(texture(imageTex, texCoordsOut).bgr * mult + vec3(.3,.3,.3), 1.0);
 }

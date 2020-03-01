@@ -8,7 +8,7 @@ class RenderTarget {
 	
 	private:
 
-		GLuint framebufferID, depthBufferID, colorAttachmentID, texID;
+		GLuint framebufferID = 0, depthBufferID = 0, colorAttachmentID = 0, texID = 0;
 		GLenum *outBuffers;
 		int numOutBuffers, rows, cols;
 
@@ -17,7 +17,10 @@ class RenderTarget {
 		RenderTarget(int rows_, int cols_, int shadow);
 		
 		void set();
-		GLuint getTexture();
+
+		inline GLuint getTexture(){
+			return texID;
+		}
 
 		~RenderTarget(){
 			glDeleteFramebuffers(1, &framebufferID);

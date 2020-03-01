@@ -8,12 +8,6 @@ extern GLenum glCheckError_(const char *file, int line);
 using namespace std;
 
 
-
-GLuint RenderTarget::getTexture(){
-	return texID;
-}
-
-
 void RenderTarget::set(){
 	glBindFramebuffer(GL_FRAMEBUFFER, framebufferID);
 	glViewport(0, 0, cols, rows);
@@ -24,26 +18,40 @@ void bindShadowbuffer(GLuint& framebufferID, GLuint& texID, int rows, int cols){
 
 	glGenFramebuffers(1, &framebufferID);
 	glBindFramebuffer(GL_FRAMEBUFFER, framebufferID);
+	glCheckError();
+
+	//cout << "Shadow buffer ID: " << framebufferID << endl;
+
+	GLuint dummyID;
 
 	// Depth texture. Slower than a depth buffer, but you can sample it later in your shader
-	glGenTextures(1, &texID);
-	glBindTexture(GL_TEXTURE_2D, texID);
+	glGenTextures(1, &dummyID); //bug here and below....
+	glBindTexture(GL_TEXTURE_2D, dummyID);
 
+	cout << "Bound new texture at " << dummyID << endl;
+
+	
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT16, cols, rows, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-	glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, texID, 0);
+	glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, dummyID, 0);
+	
 
-	glDrawBuffer(GL_NONE); // No color buffer is drawn to.
-
+	glDrawBuffer(GL_NONE); 
 	// Always check that our framebuffer is ok
 	if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE){
 		cout << "framebuffer incomplete" << endl;
 		glCheckError();
 	}
+	glGenerateMipmap(GL_TEXTURE_2D);
+
+
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+	texID = dummyID;
 }
 
 
@@ -77,10 +85,12 @@ void bindTextureFramebuffer(GLuint& framebufferID, GLuint& depthBufferID, GLuint
 	outBuffers[0] = GL_COLOR_ATTACHMENT0;
 	glDrawBuffers(1, outBuffers); 
 
-	if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE){
+	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE){
 		cout << "Framebuffer incomplete" << endl;
 		glCheckError();
 	}
+
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
 
@@ -92,12 +102,10 @@ RenderTarget::RenderTarget(int rows_, int cols_, int shadow){
 	outBuffers = new GLenum[3]();
 
 	if (shadow){
-
 		bindShadowbuffer(framebufferID, texID, rows, cols);
 		numOutBuffers = 0;
 	}
 	else {
-
 		bindTextureFramebuffer(framebufferID, depthBufferID, texID, outBuffers, rows, cols);
 		numOutBuffers = 1;
 	}	

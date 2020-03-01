@@ -156,11 +156,8 @@ int main(int argc, char **argv){
     glCheckError();
 
 	Shader plane_shader = Shader("src/rendering/shaders/plane");
-	plane_shader.setDataTexture(noise_tex.getID(), noise_tex.getDim());
 	
 	Shader terrain_shader = Shader("src/rendering/shaders/noise_test");
-	terrain_shader.setDataTexture(noise_tex.getID(), noise_tex.getDim());
-	terrain_shader.setImageTexture(grass_tex.getID());
 	terrain_shader.setVec3(string("mult"), terrain_mult);
 
 	Shader basic_shader = Shader("src/rendering/shaders/basic");
@@ -190,6 +187,7 @@ int main(int argc, char **argv){
 
 	mat t1 = translate(vec3(-1,0,-1) * tm), t2 = translate(vec3(1,0,-1) * tm), t3 = translate(vec3(-1,0,1) * tm), t4 = translate(vec3(1,0,1) * tm);
 	float *t1p = value_ptr(t1), *t2p = value_ptr(t2), *t3p = value_ptr(t3), *t4p = value_ptr(t4);
+	
 	float sphereMat[16] = {}, boxMat[16] = {}; 
 	float *viewptr = value_ptr(playerViewMat), *projptr = value_ptr(proj);
 	
@@ -201,15 +199,27 @@ int main(int argc, char **argv){
 	basic_shader.setProj(projptr);
 	terrain_shader.setProj(projptr);
 
+
+	terrain_shader.setDataTexture(noise_tex.getID(), noise_tex.getDim());
+	plane_shader.setDataTexture(noise_tex.getID(), noise_tex.getDim());
+	terrain_shader.setImageTexture(grass_tex.getID());
+
+
 	//Setting up shadow data
-	/*RenderTarget shadowTarget(512,512,1);
-	shadow_shader.setShadowTexture(shadowTarget.getTexture());
-	*/
+	RenderTarget *shadowTarget = new RenderTarget(512,512,1);
+	//shadow_shader.setShadowTexture(shadowTarget.getTexture());
+
+	cout << "Noise tex ID: " << noise_tex.getID() << endl;
+	cout << "Grass tex ID: " << grass_tex.getID() << endl;
+
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glViewport(0, 0, width, height);
+
 
 
 	do {
 
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glCheckError();
 
@@ -270,6 +280,7 @@ int main(int argc, char **argv){
 
 	glfwTerminate();
 
+	delete shadowTarget;
 	delete px_samples;
 
 

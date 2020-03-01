@@ -38,6 +38,8 @@ GLuint loadCubemap(string basepath){
     glGenTextures(1, &textureID);
     glBindTexture(GL_TEXTURE_CUBE_MAP, textureID);
 
+    cout << "Bound new texture at " << textureID << endl;
+
     cv::Mat *img;
 
     for (int i = 0; i < face_tags.size(); i++){
@@ -73,6 +75,9 @@ GLuint bindTexture(int color, int rows, int cols, void *data){
 	glGenTextures(1, &tex);
     glBindTexture(GL_TEXTURE_2D, tex);
     glCheckError();
+
+    cout << "Bound new texture at " << tex << endl;
+
 
     //interp method
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);

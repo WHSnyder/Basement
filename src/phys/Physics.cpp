@@ -61,12 +61,12 @@ void Simu::addTerrain(int32_t *data, int dim, glm::vec3 scale){
 
     PxShape* aHeightFieldShape = g_pxHeightField -> createShape(*hfGeom, *gMaterial);
 	
-	print_hf_test(data, aHeightField, dim, 32, 32);
+	/*print_hf_test(data, aHeightField, dim, 32, 32);
 	print_hf_test(data, aHeightField, dim, 30, 32);
 	print_hf_test(data, aHeightField, dim, 32, 30);
 	print_hf_test(data, aHeightField, dim, 30, 30);
 
-	cout << "Is descriptor valid? " << hfDesc.isValid() << endl;
+	cout << "Is descriptor valid? " << hfDesc.isValid() << endl;*/
 
 	gScene -> addActor(*g_pxHeightField);
 }
