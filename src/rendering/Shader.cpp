@@ -88,13 +88,13 @@ int Shader::setImageTexture(GLuint tID){
 
 
 
-int Shader::setDataTexture(GLuint tID, int tDim){
+int Shader::setDataTexture(GLuint tID, int tDim, GLuint slot){
 
 	glUseProgram(progID); 
 
-	glUniform1i(data_texture, 0);
+	glUniform1i(data_texture, slot);
 
-    glActiveTexture(GL_TEXTURE0 + 0);
+    glActiveTexture(GL_TEXTURE0 + slot);
 	glBindTexture(GL_TEXTURE_2D, tID);
 
 	GLint n_dim = glGetUniformLocation(progID, "dim");
@@ -114,7 +114,7 @@ int Shader::setShadowTexture(GLuint tID){
 	glBindTexture(GL_TEXTURE_2D, tID);
 
     glCheckError();
-    
+
     return 0;
 }
 
@@ -155,6 +155,16 @@ void Shader::setVec3(string name, glm::vec3 v){
 	glUseProgram(progID); 
 	tempID = glGetUniformLocation(progID, name.c_str());
 	glUniform3fv(tempID, 1, glm::value_ptr(v));	
+}
+
+
+void Shader::setMat4(string name, glm::mat4 m){
+
+	GLuint tempID;
+
+	glUseProgram(progID); 
+	tempID = glGetUniformLocation(progID, name.c_str());
+	glUniformMatrix4fv(tempID, 1, GL_FALSE, glm::value_ptr(m));	
 }
 
 

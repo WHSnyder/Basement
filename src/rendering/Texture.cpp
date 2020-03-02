@@ -32,19 +32,19 @@ GLenum glCheckError_(const char *file, int line){
 vector<string> face_tags({string("_rt"), string("_lf"), string("_up"), string("_dn"), string("_bk"), string("_ft")});
 
 
-GLuint loadCubemap(string basepath){
+GLuint loadCubemap(string basepath, string extension){
 
     GLuint textureID;
     glGenTextures(1, &textureID);
     glBindTexture(GL_TEXTURE_CUBE_MAP, textureID);
 
-    cout << "Bound new texture at " << textureID << endl;
+    cout << "Bound new cubemap at " << textureID << endl;
 
     cv::Mat *img;
 
     for (int i = 0; i < face_tags.size(); i++){
         
-        img = new cv::Mat(imread(basepath + face_tags[i], cv::IMREAD_COLOR));
+        img = new cv::Mat(imread(basepath + face_tags[i] + extension, cv::IMREAD_COLOR));
         cv::resize(*img, *img, cv::Size(512,512), 0, 0, cv::INTER_LINEAR);
 
         if (img -> data){
@@ -77,7 +77,6 @@ GLuint bindTexture(int color, int rows, int cols, void *data){
     glCheckError();
 
     cout << "Bound new texture at " << tex << endl;
-
 
     //interp method
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -115,7 +114,7 @@ Texture::Texture(float *_data, int width, int height, int color){
 }
 
 
-Texture::Texture(string filepath, int cubemap){
+Texture::Texture(string filepath, int cubemap, std::string extension){
 
     if (!cubemap){
         
@@ -133,7 +132,7 @@ Texture::Texture(string filepath, int cubemap){
 
     else {
 
-        texID = loadCubemap(filepath);   
+        texID = loadCubemap(filepath, extension);   
         rows = 512, cols = 512;     
     }
 }

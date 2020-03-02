@@ -41,9 +41,10 @@ class Shader {
 
 		void setFloat(string name, float f);
 		void setVec3(string name, glm::vec3 v);
+		void setMat4(string name, glm::mat4 m);
 		void setColor(glm::vec3 v);
 
-		int setDataTexture(GLuint tID, int tDim);
+		int setDataTexture(GLuint tID, int tDim, GLuint slot);
 		int setImageTexture(GLuint tID);
 		int setShadowTexture(GLuint tID);
 

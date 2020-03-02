@@ -11,6 +11,8 @@ uniform sampler2D dataTex;
 
 out vec3 normal;
 out vec2 texCoordsOut;
+out vec3 position;
+
 
 void main(){
 	
@@ -20,7 +22,7 @@ void main(){
 	vec2 texCoord = (pos.xz + vec2(1.0)) * scale;
 	float height = texture(dataTex,texCoord).r;
 
-	vec3 position = mult * vec3(pos.x,height,pos.z);
+	position = mult * vec3(pos.x,height,pos.z);
 
 	vec3 negx = vec3(pos.x - inc, pos.yz);
 	vec3 negz = vec3(pos.xy, pos.z - inc);
@@ -45,7 +47,7 @@ void main(){
 
 
 	normal = normalize(cross(negz - posz, negx - posx));
-	gl_Position = p * v * vec4(position, 1);
+	gl_Position = p * v * vec4(position, 1.0);
 
-	texCoordsOut = position.xz/2.5;
+	texCoordsOut = position.xz/3.0;
 }
