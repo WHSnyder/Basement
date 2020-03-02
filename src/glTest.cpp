@@ -116,13 +116,12 @@ int main(int argc, char **argv){
         exit(EXIT_FAILURE);
     glfwSetKeyCallback(window, key_callback);
 
-
-    RenderTarget *shadowTarget = new RenderTarget(512,512,1);
-
 	Mesh cube = Mesh(string("/Users/will/projects/cpprtx/assets/meshes/cube.obj"));
 	Mesh sphere = Mesh(string("/Users/will/projects/cpprtx/assets/meshes/ball.obj"));
 	Mesh terrain_plane = Mesh(string("/Users/will/projects/cpprtx/assets/meshes/terrain_plane.obj"));
 	Mesh plane = gen_plane();
+
+	RenderTarget *shadowTarget = new RenderTarget(512,512,1);
 
 	//Perlin noise params
 	int dim = 64;
@@ -180,12 +179,10 @@ int main(int argc, char **argv){
 	plane_shader.setProj(projptr);
 	basic_shader.setProj(projptr);
 	terrain_shader.setProj(projptr);
-
 	skybox_shader.setProj(projptr);
 
 	terrain_shader.setDataTexture(noise_tex.getID(), noise_tex.getDim(), 6);
-	//plane_shader.setDataTexture(noise_tex.getID(), noise_tex.getDim(), 8);
-	plane_shader.setDataTexture(shadowTarget -> getTexture(), 512, 7);
+	plane_shader.setDataTexture(shadowTarget -> getTexture(), 512, 4);
 	terrain_shader.setImageTexture(grass_tex.getID(), 0, 8);
 	skybox_shader.setImageTexture(skybox.getID(), 1, 9);
 
@@ -198,9 +195,9 @@ int main(int argc, char **argv){
  	shadow_shader.setView(value_ptr(depthView));
  	shadow_shader.setProj(value_ptr(depthOrtho));
 
- 	terrain_shader.setMat4(string("shadowView"), depthView);
- 	terrain_shader.setMat4(string("shadowProj"), depthOrtho);
-    terrain_shader.setShadowTexture(shadowTarget -> getTexture());
+ 	//terrain_shader.setMat4(string("shadowView"), depthView);
+ 	//terrain_shader.setMat4(string("shadowProj"), depthOrtho);
+    //terrain_shader.setShadowTexture(shadowTarget -> getTexture());
 
 
 	do {
@@ -215,11 +212,13 @@ int main(int argc, char **argv){
 		rot = rotate(rot, time * glm::radians(20.0f), vec3(0.0f,1.0f,0.0f));
 		testmat = trans * rot;
 
-		/*shadowTarget -> set();
+		shadowTarget -> set();
 		shadow_shader.setModel(value_ptr(testmat));
 		plane.draw(shadow_shader.progID);
+		glCheckError();
 		shadow_shader.setModel(value_ptr(iden));
-		terrain_plane.draw(shadow_shader.progID);*/
+		terrain_plane.draw(shadow_shader.progID);
+		glCheckError();
 
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		glViewport(0, 0, width, height);

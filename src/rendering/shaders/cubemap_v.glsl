@@ -8,5 +8,5 @@ out vec3 texCoords;
 
 void main(){
     texCoords = pos;
-    gl_Position = p * vec4(mat3(v) * 100.0 * pos, 1.0);      /*v * vec4(100.0 * pos, 1.0);*/
+    gl_Position = p * vec4(mat3(v) * 1000.0 * pos, 1.0);      /*v * vec4(100.0 * pos, 1.0);*/
 } 

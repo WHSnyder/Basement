@@ -26,7 +26,7 @@ void bindShadowbuffer(GLuint& framebufferID, GLuint& texID, int rows, int cols){
 	//cout << "Shadow buffer ID: " << framebufferID << endl;
 
 	//Active texture unit must be set if new framebuffer is created after binding other textures!
-	glActiveTexture(GL_TEXTURE0 + 4);  
+	//glActiveTexture(GL_TEXTURE0 + 4);  
 
 	// Depth texture. Slower than a depth buffer, but you can sample it later in your shader
 	glGenTextures(1, &texID); //bug here and below....
@@ -50,10 +50,10 @@ void bindShadowbuffer(GLuint& framebufferID, GLuint& texID, int rows, int cols){
 		cout << "framebuffer incomplete" << endl;
 		glCheckError();
 	}
-	glGenerateMipmap(GL_TEXTURE_2D);
+	//glGenerateMipmap(GL_TEXTURE_2D);
 
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glClear(GL_DEPTH_BUFFER_BIT);
+	//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	//glClear(GL_DEPTH_BUFFER_BIT);
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
