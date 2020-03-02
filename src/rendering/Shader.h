@@ -44,7 +44,7 @@ class Shader {
 		void setMat4(string name, glm::mat4 m);
 		void setColor(glm::vec3 v);
 
-		int setDataTexture(GLuint tID, int tDim, GLuint slot);
+		int setDataTexture(GLuint tID, GLuint slot);
 		int setImageTexture(GLuint tID, int cubemap, int unit);
 		int setShadowTexture(GLuint tID);
 

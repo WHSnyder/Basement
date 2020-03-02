@@ -88,11 +88,7 @@ int Shader::setImageTexture(GLuint tID, int cubemap, int unit){
 }
 
 
-
-
-
-
-int Shader::setDataTexture(GLuint tID, int tDim, GLuint slot){
+int Shader::setDataTexture(GLuint tID, GLuint slot){
 
 	glUseProgram(progID); 
 
@@ -100,9 +96,6 @@ int Shader::setDataTexture(GLuint tID, int tDim, GLuint slot){
 
     glActiveTexture(GL_TEXTURE0 + slot);
 	glBindTexture(GL_TEXTURE_2D, tID);
-
-	//GLint n_dim = glGetUniformLocation(progID, "dim");
-    //glUniform1f(n_dim, tDim);
 
     return 0;
 }
