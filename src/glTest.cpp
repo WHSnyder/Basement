@@ -156,8 +156,8 @@ int main(int argc, char **argv){
 	float time = std::chrono::duration_cast<std::chrono::duration<float>>(t_now - t_start).count();
 
 	mat4 playerViewMat = lookAt(vec3(18,18,18),vec3(0,0,-10),vec3(0,1.0,0));
-	mat4 proj = infinitePerspective(glm::radians(45.0f), 1.0f, 0.01f);
-	//mat4 proj = perspective(glm::radians(45.0f), 1.0f, 0.01f, 100.0f);
+	mat4 proj = infinitePerspective(glm::radians(45.0f), 1.0f, 1.0f);
+	//mat4 proj = perspective(glm::radians(45.0f), 1.0f, 0.01f, 30.0f);
 	mat4 rot = mat4(1.0),testmat;
 	mat4 iden = mat4(1.0);
 	mat4 trans = translate(vec3(0,9,0));
@@ -175,19 +175,22 @@ int main(int argc, char **argv){
 	mainSimu.addSphere(vec3(6,15,6), 1.0f, 1);
 	mainSimu.addCube(vec3(-9,13,-9), 1.0f, 2);
 
-	plane_shader.setProj(projptr);
 	basic_shader.setProj(projptr);
-	terrain_shader.setProj(projptr);
-	skybox_shader.setProj(projptr);
 
+	terrain_shader.setProj(projptr);
 	terrain_shader.setDataTexture(noise_tex.getID(), 6);
 	terrain_shader.setImageTexture(grass_tex.getID(), 0, 8);
 	terrain_shader.setFloat(string("dim"), dim);
 	terrain_shader.setVec3(string("mult"), terrain_mult);
 
 	plane_shader.setImageTexture(shadowTarget -> getTexture(), 0, 4);
+	plane_shader.setProj(projptr);
 
+	skybox_shader.setProj(projptr);
 	skybox_shader.setImageTexture(skybox.getID(), 1, 9);
+
+	shadow_shader.setView(viewptr);
+ 	shadow_shader.setProj(projptr);
 
 	vec3 lightPos = vec3(0,18,18);
 	vec3 lookDir = vec3(0,9,0) - lightPos;
@@ -195,8 +198,7 @@ int main(int argc, char **argv){
 	mat4 depthOrtho = proj;// ortho<float>(-10,10,-10,10,0,20);
  	mat4 depthView = lookAt(lookDir, lightPos, normalize( cross(vec3(1,0,0),lookDir) ));
 
- 	shadow_shader.setView(viewptr);
- 	shadow_shader.setProj(projptr);
+
 
  	//terrain_shader.setMat4(string("shadowView"), depthView);
  	//terrain_shader.setMat4(string("shadowProj"), depthOrtho);
@@ -219,10 +221,7 @@ int main(int argc, char **argv){
 		shadow_shader.setView(viewptr);
 		shadow_shader.setModel(value_ptr(testmat));
 		plane.draw(shadow_shader.progID);
-		//glCheckError();
-		//shadow_shader.setModel(value_ptr(iden));
-		//terrain_plane.draw(shadow_shader.progID);
-		//glCheckError();
+
 
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		glViewport(0, 0, width, height);

@@ -1,7 +1,7 @@
 #version 410 core
 
-out float fragmentdepth;
+layout(location = 0) out float fragmentdepth;
 
 void main(){
-    fragmentdepth = .5;
+    fragmentdepth = gl_FragCoord.z;
 }

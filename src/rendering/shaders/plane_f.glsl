@@ -7,5 +7,6 @@ uniform sampler2D imageTex;
 out vec4 outColor;
 
 void main(){
-    outColor = vec4(texture(imageTex, texCoord).rgb, 1.0);
+	float d = texture(imageTex, texCoord).r;
+    outColor = vec4(d*d, d*d, d*d, 1.0);
 }
