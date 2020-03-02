@@ -27,5 +27,5 @@ void main(){
 		mult = shadowPos.z/shadowPos.w;
 	}*/
 
-    outColor = vec4(.5 * mult * texture(imageTex, texCoordsOut).bgr, 1.0);
+    outColor = vec4(mult * texture(imageTex, texCoordsOut).bgr, 1.0);
 }

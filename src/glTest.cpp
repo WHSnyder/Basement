@@ -138,7 +138,6 @@ int main(int argc, char **argv){
     Shader shadow_shader = Shader("src/rendering/shaders/shadow");
 	Shader plane_shader = Shader("src/rendering/shaders/plane");	
 	Shader terrain_shader = Shader("src/rendering/shaders/noise_test");
-	terrain_shader.setVec3(string("mult"), terrain_mult);
 	Shader basic_shader = Shader("src/rendering/shaders/basic");
 	Shader skybox_shader = Shader("src/rendering/shaders/cubemap");
 	glCheckError();
@@ -182,8 +181,13 @@ int main(int argc, char **argv){
 	skybox_shader.setProj(projptr);
 
 	terrain_shader.setDataTexture(noise_tex.getID(), noise_tex.getDim(), 6);
-	plane_shader.setDataTexture(shadowTarget -> getTexture(), 512, 4);
 	terrain_shader.setImageTexture(grass_tex.getID(), 0, 8);
+	terrain_shader.setFloat(string("dim"), dim);
+	glCheckError();
+	terrain_shader.setVec3(string("mult"), terrain_mult);
+	glCheckError();
+
+	plane_shader.setDataTexture(shadowTarget -> getTexture(), 512, 4);
 	skybox_shader.setImageTexture(skybox.getID(), 1, 9);
 
 	vec3 lightPos = vec3(0,18,18);
@@ -192,8 +196,8 @@ int main(int argc, char **argv){
 	mat4 depthOrtho = proj;// ortho<float>(-10,10,-10,10,0,20);
  	mat4 depthView = lookAt(lookDir, lightPos, normalize( cross(vec3(1,0,0),lookDir) ));
 
- 	shadow_shader.setView(value_ptr(depthView));
- 	shadow_shader.setProj(value_ptr(depthOrtho));
+ 	//shadow_shader.setView(value_ptr(depthView));
+ 	//shadow_shader.setProj(value_ptr(depthOrtho));
 
  	//terrain_shader.setMat4(string("shadowView"), depthView);
  	//terrain_shader.setMat4(string("shadowProj"), depthOrtho);
@@ -212,13 +216,13 @@ int main(int argc, char **argv){
 		rot = rotate(rot, time * glm::radians(20.0f), vec3(0.0f,1.0f,0.0f));
 		testmat = trans * rot;
 
-		shadowTarget -> set();
+		/*shadowTarget -> set();
 		shadow_shader.setModel(value_ptr(testmat));
 		plane.draw(shadow_shader.progID);
 		glCheckError();
 		shadow_shader.setModel(value_ptr(iden));
 		terrain_plane.draw(shadow_shader.progID);
-		glCheckError();
+		glCheckError();*/
 
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		glViewport(0, 0, width, height);
