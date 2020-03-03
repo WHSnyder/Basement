@@ -101,7 +101,6 @@ int main(int argc, char **argv){
 
 	glfwMakeContextCurrent(window);
 
-	// Initialize GLEW
 	glewExperimental = true; // Needed for core profile
 	if (glewInit() != GLEW_OK) {
 		fprintf(stderr, "Failed to initialize GLEW\n");
@@ -112,36 +111,23 @@ int main(int argc, char **argv){
 
 	glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);  
-
     glfwSetErrorCallback(error_callback);
     if (!glfwInit())
         exit(EXIT_FAILURE);
-
     glfwSetKeyCallback(window, key_callback);
 
-    GLint whichID;
-	glGetIntegerv(GL_TEXTURE_BINDING_2D, &whichID); 
-
-    cout << "Default active tex = " << whichID << endl;
 
     RenderTarget *shadowTarget = new RenderTarget(512,512,1);
 
-	//string path("/Users/will/projects/cpprtx/assets/meshes/cube.obj");
 	Mesh cube = Mesh(string("/Users/will/projects/cpprtx/assets/meshes/cube.obj"));
-	//string path1("/Users/will/projects/cpprtx/assets/meshes/ball.obj");
 	Mesh sphere = Mesh(string("/Users/will/projects/cpprtx/assets/meshes/ball.obj"));
-	//string path2("/Users/will/projects/cpprtx/assets/meshes/terrain_plane.obj");
 	Mesh terrain_plane = Mesh(string("/Users/will/projects/cpprtx/assets/meshes/terrain_plane.obj"));
 	Mesh plane = gen_plane();
 
 	//Perlin noise params
 	int dim = 64;
 	double freq = 3.0;
-
-	//Memory for storing physx heightmap cells
 	int32_t *px_samples = (int32_t *) calloc(dim * dim, sizeof(int32_t));
-
-	//Spatial multiplier for heightmap coordinates
 	vec3 terrain_mult = 3.0f * vec3(10.0f, 5.0f, 10.0f);
 
 	//Img_data is OpenGL texture data itself
@@ -150,15 +136,13 @@ int main(int argc, char **argv){
     Texture grass_tex = Texture(string("assets/images/grass.jpg"), 0);
     Texture skybox = Texture(string("assets/images/yellowcloud"), 1);
 
-
     Shader shadow_shader = Shader("src/rendering/shaders/shadow");
 	Shader plane_shader = Shader("src/rendering/shaders/plane");	
 	Shader terrain_shader = Shader("src/rendering/shaders/noise_test");
 	terrain_shader.setVec3(string("mult"), terrain_mult);
 	Shader basic_shader = Shader("src/rendering/shaders/basic");
-
+	Shader skybox_shader = Shader("src/rendering/shaders/cubemap");
 	glCheckError();
-
 
     float ratio;
     int width, height;
@@ -169,17 +153,17 @@ int main(int argc, char **argv){
     glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LESS); 
 
-
     auto t_start = std::chrono::high_resolution_clock::now();
 	auto t_now = std::chrono::high_resolution_clock::now();
 	float time = std::chrono::duration_cast<std::chrono::duration<float>>(t_now - t_start).count();
 
 	mat4 playerViewMat = lookAt(vec3(18,18,18),vec3(0,0,-10),vec3(0,1.0,0));
-	//mat4 proj = infinitePerspective(glm::radians(45.0f), 1.0f, 0.01f);
-	mat4 proj = perspective(glm::radians(45.0f), 1.0f, 0.01f, 100.0f);
+	mat4 proj = infinitePerspective(glm::radians(45.0f), 1.0f, 0.01f);
+	//mat4 proj = perspective(glm::radians(45.0f), 1.0f, 0.01f, 100.0f);
 	mat4 rot = mat4(1.0),testmat;
 	mat4 iden = mat4(1.0);
 	mat4 trans = translate(vec3(0,9,0));
+	mat4 lighttrans = translate(vec3(0,18,18));
 
 	vec3 tm = terrain_mult;
 
@@ -197,10 +181,13 @@ int main(int argc, char **argv){
 	basic_shader.setProj(projptr);
 	terrain_shader.setProj(projptr);
 
+	skybox_shader.setProj(projptr);
+
 	terrain_shader.setDataTexture(noise_tex.getID(), noise_tex.getDim(), 6);
 	//plane_shader.setDataTexture(noise_tex.getID(), noise_tex.getDim(), 8);
-	plane_shader.setDataTexture(shadowTarget -> getTexture(), 512, 8);
-	terrain_shader.setImageTexture(grass_tex.getID());
+	plane_shader.setDataTexture(shadowTarget -> getTexture(), 512, 7);
+	terrain_shader.setImageTexture(grass_tex.getID(), 0, 8);
+	skybox_shader.setImageTexture(skybox.getID(), 1, 9);
 
 	vec3 lightPos = vec3(0,18,18);
 	vec3 lookDir = vec3(0,9,0) - lightPos;
@@ -218,7 +205,6 @@ int main(int argc, char **argv){
 
 	do {
 
-
 		t_now = std::chrono::high_resolution_clock::now();
 		time = std::chrono::duration_cast<std::chrono::duration<float>>(t_now - t_start).count();
 		t_start = t_now;
@@ -229,20 +215,17 @@ int main(int argc, char **argv){
 		rot = rotate(rot, time * glm::radians(20.0f), vec3(0.0f,1.0f,0.0f));
 		testmat = trans * rot;
 
-		shadowTarget -> set();
+		/*shadowTarget -> set();
 		shadow_shader.setModel(value_ptr(testmat));
 		plane.draw(shadow_shader.progID);
 		shadow_shader.setModel(value_ptr(iden));
-		terrain_plane.draw(shadow_shader.progID);
-
+		terrain_plane.draw(shadow_shader.progID);*/
 
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		glViewport(0, 0, width, height);
 
-
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glCheckError();
-
 
 
 		terrain_shader.setModel(value_ptr(testmat));
@@ -276,13 +259,21 @@ int main(int argc, char **argv){
 		basic_shader.setColor(2.0f*vec3(0.0,0.0,1.0));
 		sphere.draw(basic_shader.progID);
 
-		basic_shader.setModel(t4p);
+		basic_shader.setModel(value_ptr(lighttrans));
 		basic_shader.setColor(2.0f*vec3(1.0,1.0,0.0));
 		sphere.draw(basic_shader.progID);
 
+		skybox_shader.setView(viewptr);
+		cube.draw(skybox_shader.progID);
+		glCheckError();
+
 
 		playerViewMat = computeMatricesFromInputs();
-		viewptr = value_ptr(playerViewMat);		
+		viewptr = value_ptr(playerViewMat);	
+
+
+
+
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();

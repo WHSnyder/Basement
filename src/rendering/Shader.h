@@ -45,7 +45,7 @@ class Shader {
 		void setColor(glm::vec3 v);
 
 		int setDataTexture(GLuint tID, int tDim, GLuint slot);
-		int setImageTexture(GLuint tID);
+		int setImageTexture(GLuint tID, int cubemap, int unit);
 		int setShadowTexture(GLuint tID);
 
 		void printUniforms();

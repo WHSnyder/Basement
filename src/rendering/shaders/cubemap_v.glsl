@@ -2,11 +2,11 @@
 
 layout (location = 0) in vec3 pos;
 
-out vec3 TexCoords;
-
 uniform mat4 p, v;
 
+out vec3 texCoords;
+
 void main(){
-    TexCoords = pos;
-    gl_Position = p * v * vec4(pos, 1.0);
+    texCoords = pos;
+    gl_Position = p * vec4(mat3(v) * 100.0 * pos, 1.0);      /*v * vec4(100.0 * pos, 1.0);*/
 } 

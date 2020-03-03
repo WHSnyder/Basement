@@ -1,10 +1,12 @@
 #version 410 core
-out vec4 FragColor;
 
-in vec3 TexCoords;
+in vec3 texCoords;
 
-uniform samplerCube skybox;
+uniform samplerCube imageTex;
 
-void main(){    
-    FragColor = texture(skybox, TexCoords);
+out vec4 fragColor;
+
+void main(){
+
+    fragColor = texture(imageTex, texCoords).bgra;/* + vec4(0.0,0.0,.6,1.0);*/
 }

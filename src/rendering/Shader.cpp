@@ -74,17 +74,21 @@ Shader::Shader(string shader_path){
 }
 
 
-int Shader::setImageTexture(GLuint tID){
+int Shader::setImageTexture(GLuint tID, int cubemap, int unit){
 
 	glUseProgram(progID); 
 
-	glUniform1i(image_texture, 1);
+	glUniform1i(image_texture, unit);
 
-    glActiveTexture(GL_TEXTURE0 + 1);
-	glBindTexture(GL_TEXTURE_2D, tID);
+    glActiveTexture(GL_TEXTURE0 + unit);
+	glBindTexture(cubemap ? GL_TEXTURE_CUBE_MAP : GL_TEXTURE_2D, tID);
+	glCheckError();
 
     return 0;
 }
+
+
+
 
 
 
