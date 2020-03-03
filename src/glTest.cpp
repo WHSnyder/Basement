@@ -134,6 +134,7 @@ int main(int argc, char **argv){
     Texture noise_tex = Texture(img_data, dim, dim, 0);
     Texture grass_tex = Texture(string("assets/images/grass.jpg"), 0);
     Texture skybox = Texture(string("assets/images/yellowcloud"), 1);
+    //Texture skybox = Texture(string("/Users/will/projects/TombVoyage/Assets/SpaceSkiesFree/Skybox_2/Textures/1K_Resolution/1K_TEX"), 1);
 
     Shader shadow_shader = Shader("src/rendering/shaders/shadow");
 	Shader plane_shader = Shader("src/rendering/shaders/plane");	
@@ -163,6 +164,12 @@ int main(int argc, char **argv){
 	mat4 trans = translate(vec3(0,9,0));
 	mat4 lighttrans = translate(vec3(0,18,18));
 
+	vec3 lightPos = vec3(0,18,18);
+	vec3 lookDir = vec3(0,9,0) - lightPos;
+
+	mat4 depthOrtho = proj;// ortho<float>(-10,10,-10,10,0,20);
+ 	mat4 depthView = lookAt(lookDir, lightPos, normalize( cross(vec3(1,0,0),lookDir) ));
+
 	mat4 biasMatrix(
 	0.5, 0.0, 0.0, 0.0,
 	0.0, 0.5, 0.0, 0.0,
@@ -170,7 +177,7 @@ int main(int argc, char **argv){
 	0.5, 0.5, 0.5, 1.0
 	);
 
-	mat4 depthProjMat = glm::ortho<float>(-20,20,-20,20,0,40);
+	mat4 depthProjMat = glm::ortho<float>(-30,30,-30,30,0,30);
 
 	vec3 tm = terrain_mult;
 
@@ -181,8 +188,8 @@ int main(int argc, char **argv){
 	float *viewptr = value_ptr(playerViewMat), *projptr = value_ptr(proj);
 	
 	mainSimu.addTerrain(px_samples, dim, terrain_mult);
-	mainSimu.addSphere(vec3(6,15,6), 1.0f, 1);
-	mainSimu.addCube(vec3(-9,13,-9), 1.0f, 2);
+	mainSimu.addSphere(vec3(-9,13,-9), 1.0f, 1);
+	mainSimu.addCube(vec3(6,15,6), 1.0f, 2);
 
 	basic_shader.setProj(projptr);
 
@@ -192,6 +199,9 @@ int main(int argc, char **argv){
 	terrain_shader.setFloat(string("dim"), dim);
 	terrain_shader.setVec3(string("mult"), terrain_mult);
 	terrain_shader.setMat4(string("shadowBias"), biasMatrix);
+	terrain_shader.setMat4(string("shadowView"), depthView);
+ 	terrain_shader.setMat4(string("shadowProj"), depthProjMat);
+    terrain_shader.setShadowTexture(shadowTarget -> getTexture());
 
 	plane_shader.setImageTexture(shadowTarget -> getTexture(), 0, 4);
 	plane_shader.setProj(projptr);
@@ -199,19 +209,10 @@ int main(int argc, char **argv){
 	skybox_shader.setProj(projptr);
 	skybox_shader.setImageTexture(skybox.getID(), 1, 9);
 
-	shadow_shader.setView(viewptr);
  	shadow_shader.setProj(value_ptr(depthProjMat));
+ 	shadow_shader.setView(value_ptr(depthView));
 
-	vec3 lightPos = vec3(0,18,18);
-	vec3 lookDir = vec3(0,9,0) - lightPos;
-
-	mat4 depthOrtho = proj;// ortho<float>(-10,10,-10,10,0,20);
- 	mat4 depthView = lookAt(lookDir, lightPos, normalize( cross(vec3(1,0,0),lookDir) ));
-
- 	terrain_shader.setMat4(string("shadowView"), depthView);
- 	terrain_shader.setMat4(string("shadowProj"), depthProjMat);
-    terrain_shader.setShadowTexture(shadowTarget -> getTexture());
-
+ 	//cout << ""
 
 	do {
 
@@ -226,7 +227,6 @@ int main(int argc, char **argv){
 		testmat = trans * rot;
 
 		shadowTarget -> set();
-		shadow_shader.setView(value_ptr(depthView));
 		shadow_shader.setModel(value_ptr(testmat));
 		plane.draw(shadow_shader.progID);
 
@@ -237,8 +237,7 @@ int main(int argc, char **argv){
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glCheckError();
 
-
-		terrain_shader.setModel(value_ptr(testmat));
+		//terrain_shader.setModel(value_ptr(testmat));
 		terrain_shader.setView(viewptr);
 		terrain_plane.draw(terrain_shader.progID);
 

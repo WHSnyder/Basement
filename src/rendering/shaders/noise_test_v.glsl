@@ -9,9 +9,12 @@ uniform vec3 mult;
 
 uniform sampler2D dataTex;
 
+uniform mat4 shadowView, shadowProj, shadowBias;
+
 out vec3 normal;
 out vec2 texCoordsOut;
 out vec3 position;
+out vec4 shadowCoord;
 
 
 void main(){
@@ -45,7 +48,7 @@ void main(){
 	posz.y = texture(dataTex,texCoord).r;
 	posz *= mult; 
 
-
+	shadowCoord = shadowBias * shadowProj * shadowView * vec4(position,1.0);
 	normal = normalize(cross(negz - posz, negx - posx));
 	gl_Position = p * v * vec4(position, 1.0);
 	texCoordsOut = position.xz/3.0;

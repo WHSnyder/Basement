@@ -45,12 +45,12 @@ GLuint loadCubemap(string basepath, string extension){
     for (int i = 0; i < face_tags.size(); i++){
         
         img = new cv::Mat(imread(basepath + face_tags[i] + extension, cv::IMREAD_COLOR));
-        cv::resize(*img, *img, cv::Size(512,512), 0, 0, cv::INTER_LINEAR);
+        cv::resize(*img, *img, cv::Size(1024,1024), 0, 0, cv::INTER_LINEAR);
 
         if (img -> data){
 
             glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 
-                        0, GL_RGB, 512, 512, 0, GL_RGB, GL_UNSIGNED_BYTE, img -> data);
+                        0, GL_RGB, 1024, 1024, 0, GL_RGB, GL_UNSIGNED_BYTE, img -> data);
         }
 
         else cout << "Cubemap tex failed to load at path: " << basepath << endl;
