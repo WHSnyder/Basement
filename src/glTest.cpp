@@ -181,7 +181,7 @@ int main(int argc, char **argv){
 	0.5, 0.5, 0.5, 1.0
 	);
 
-	mat4 depthProjMat = glm::ortho<float>(-10,10,-10,10,0,30);
+	mat4 depthProjMat = glm::ortho<float>(-20,20,-10,10,0,30);
 
 	vec3 tm = terrain_mult;
 
@@ -216,9 +216,6 @@ int main(int argc, char **argv){
  	shadow_shader.setProj(value_ptr(depthProjMat));
  	shadow_shader.setView(value_ptr(depthView));
 
- 	cout << "Depth mat tests" << endl;
- 	coutVec4(biasMatrix * depthProjMat * depthView * vec4(0,9,0,1));
- 	coutVec4(biasMatrix * depthProjMat * depthView * vec4(0,6,-6,1));
 
 	do {
 
@@ -235,7 +232,10 @@ int main(int argc, char **argv){
 		shadowTarget -> set();
 		shadow_shader.setModel(value_ptr(testmat));
 		plane.draw(shadow_shader.progID);
-
+		shadow_shader.setModel(sphereMat);
+		sphere.draw(shadow_shader.progID);
+		shadow_shader.setModel(boxMat);
+		cube.draw(shadow_shader.progID);
 
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		glViewport(0, 0, width, height);
@@ -243,8 +243,8 @@ int main(int argc, char **argv){
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glCheckError();
 
-		//terrain_shader.setModel(value_ptr(testmat));
 		terrain_shader.setView(viewptr);
+		terrain_shader.setProj(projptr);
 		terrain_plane.draw(terrain_shader.progID);
 
 		plane_shader.setModel(value_ptr(testmat));

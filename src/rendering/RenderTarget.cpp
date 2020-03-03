@@ -44,7 +44,7 @@ void bindShadowbuffer(GLuint& framebufferID, GLuint& texID, int rows, int cols){
 	
 
 	glDrawBuffer(GL_NONE); 
-	glReadBuffer(GL_NONE);
+	//glReadBuffer(GL_NONE);
 
 	// Always check that our framebuffer is ok
 	if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE){

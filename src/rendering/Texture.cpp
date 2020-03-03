@@ -79,7 +79,7 @@ GLuint bindTexture(int color, int rows, int cols, void *data){
     cout << "Bound new texture at " << tex << endl;
 
     //interp method
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glCheckError();
 
@@ -119,9 +119,9 @@ Texture::Texture(string filepath, int cubemap, std::string extension){
     if (!cubemap){
         
         cv::Mat img = imread(filepath, cv::IMREAD_COLOR);
-        cv::resize(img, img, cv::Size(512,512), 0, 0, cv::INTER_LINEAR);
+        cv::resize(img, img, cv::Size(1024,1024), 0, 0, cv::INTER_LINEAR);
 
-        rows = 512, cols = 512;
+        rows = 1024, cols = rows;
 
         data = malloc(3 * rows * cols);
 
