@@ -16,8 +16,8 @@ void main(){
 	vec3 lightDir = normalize(vec3(0.0,-1.0,-1.0));
 	float mult = 0.0 - clamp(dot(normal,lightDir), -1.0, 0.0);
 	
-	if ( texture( shadowTex, shadowCoord.xy ).r  <  1.0){
-    	mult = 0.2;
+	if ( texture(shadowTex, shadowCoord.xy).r < shadowCoord.z){
+    	mult = 0.3;
 	}
 
     outColor = vec4(mult * texture(imageTex, texCoordsOut).bgr, 1.0);

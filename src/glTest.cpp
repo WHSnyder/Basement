@@ -22,10 +22,14 @@ using namespace std;
 
 void coutMat(float *mat){
 
-	cout << "{" << mat[0] << ", " << mat[1] << ", " << mat[2] << ", " << mat[3] << "}" << endl;
+	cout << "{" << mat[0] << ", " << mat[1] << ", " << mat[2] << ", " << mat[3] << "," << endl;
 	cout << " " << mat[4] << ", " << mat[5] << ", " << mat[6] << ", " << mat[7] << "," << endl;
 	cout << " " << mat[8] << ", " << mat[9] << ", " << mat[10] << ", " << mat[11] << "," << endl;
 	cout << " " << mat[12] << ", " << mat[13] << ", " << mat[14] << ", " << mat[15] << "}" << endl;
+}
+
+void coutVec4(vec4 v){
+	cout << "{" << v[0] << ", " << v[1] << ", " << v[2] << ", " << v[3] << "}" << endl;
 }
 
 float *generate_terrain(int dim, double freq, float height_mult, int32_t *physx_samples){
@@ -121,7 +125,7 @@ int main(int argc, char **argv){
 	Mesh terrain_plane = Mesh(string("/Users/will/projects/cpprtx/assets/meshes/terrain_plane.obj"));
 	Mesh plane = gen_plane();
 
-	RenderTarget *shadowTarget = new RenderTarget(512,512,1);
+	RenderTarget *shadowTarget = new RenderTarget(1024,1024,1);
 
 	//Perlin noise params
 	int dim = 64;
@@ -168,7 +172,7 @@ int main(int argc, char **argv){
 	vec3 lookDir = vec3(0,9,0) - lightPos;
 
 	mat4 depthOrtho = proj;// ortho<float>(-10,10,-10,10,0,20);
- 	mat4 depthView = lookAt(lookDir, lightPos, normalize( cross(vec3(1,0,0),lookDir) ));
+ 	mat4 depthView = lookAt(lightPos, vec3(0,9,0), normalize( cross(vec3(1,0,0),lookDir) ));
 
 	mat4 biasMatrix(
 	0.5, 0.0, 0.0, 0.0,
@@ -177,7 +181,7 @@ int main(int argc, char **argv){
 	0.5, 0.5, 0.5, 1.0
 	);
 
-	mat4 depthProjMat = glm::ortho<float>(-30,30,-30,30,0,30);
+	mat4 depthProjMat = glm::ortho<float>(-10,10,-10,10,0,30);
 
 	vec3 tm = terrain_mult;
 
@@ -212,7 +216,9 @@ int main(int argc, char **argv){
  	shadow_shader.setProj(value_ptr(depthProjMat));
  	shadow_shader.setView(value_ptr(depthView));
 
- 	//cout << ""
+ 	cout << "Depth mat tests" << endl;
+ 	coutVec4(biasMatrix * depthProjMat * depthView * vec4(0,9,0,1));
+ 	coutVec4(biasMatrix * depthProjMat * depthView * vec4(0,6,-6,1));
 
 	do {
 
