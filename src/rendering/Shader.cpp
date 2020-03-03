@@ -105,9 +105,9 @@ int Shader::setShadowTexture(GLuint tID){
 
 	glUseProgram(progID); 
 
-	glUniform1i(shadow_texture, 2);
+	glUniform1i(shadow_texture, 10);
 
-    glActiveTexture(GL_TEXTURE0 + 2);
+    glActiveTexture(GL_TEXTURE0 + 10);
 	glBindTexture(GL_TEXTURE_2D, tID);
 
     glCheckError();
