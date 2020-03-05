@@ -24,7 +24,7 @@ class Texture {
 	public:
 
 		Texture(float *data, int width, int height, int color);
-		Texture(std::string filepath, int cubemap, std::string extension = std::string(".jpg"));
+		Texture(std::string filepath, int cubemap, std::string extension = std::string(".png"));
 
 		inline GLuint getID(){
     		return texID;

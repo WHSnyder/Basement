@@ -34,7 +34,7 @@ void coutVec4(vec4 v){
 
 float *generate_terrain(int dim, double freq, float height_mult, int32_t *physx_samples){
 
-	const siv::PerlinNoise perlin(9042);
+	const siv::PerlinNoise perlin(61881);
 	
 	float *result = (float *) calloc(dim * dim, sizeof(float));
 
@@ -56,6 +56,16 @@ float *generate_terrain(int dim, double freq, float height_mult, int32_t *physx_
 	}
 	return result;
 }
+//Python 3.7 root
+///usr/local/opt/python/Frameworks/Python.framework/Versions/
+
+//B2 executable
+//Users/will/projects/cpprtx/libs/boost/b2install/bin/b2
+
+
+
+//installation path
+//Users/will/projects/cpprtx/libs/boost
 
 
 Mesh gen_plane(){
@@ -75,6 +85,29 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
         glfwSetWindowShouldClose(window, GL_TRUE);
 }
+/*
+void showFPS(GLFWwindow *pWindow){
+
+	// Measure speed
+	double currentTime = glfwGetTime();
+	double delta = currentTime - lastTime;
+	nbFrames++;
+	
+	if ( delta >= 1.0 ){ // If last cout was more than 1 sec ago
+		cout << 1000.0/double(nbFrames) << endl;
+
+		double fps = double(nbFrames) / delta;
+
+		std::stringstream ss;
+		ss << GAME_NAME << " " << VERSION << " [" << fps << " FPS]";
+
+		glfwSetWindowTitle(pWindow, ss.str().c_str());
+
+		nbFrames = 0;
+		lastTime = currentTime;
+	}
+}
+*/
 
 
 GLFWwindow* window;
@@ -137,8 +170,8 @@ int main(int argc, char **argv){
     float *img_data = generate_terrain(dim, freq, terrain_mult.y, px_samples);
     Texture noise_tex = Texture(img_data, dim, dim, 0);
     Texture grass_tex = Texture(string("assets/images/grass.jpg"), 0);
-    Texture skybox = Texture(string("assets/images/yellowcloud"), 1);
-    //Texture skybox = Texture(string("/Users/will/projects/TombVoyage/Assets/SpaceSkiesFree/Skybox_2/Textures/1K_Resolution/1K_TEX"), 1);
+    //Texture skybox = Texture(string("assets/images/yellowcloud"), 1);
+    Texture skybox = Texture(string("/Users/will/projects/TombVoyage/Assets/SpaceSkiesFree/Skybox_2/Textures/1K_Resolution/1K_TEX"), 1);
 
     Shader shadow_shader = Shader("src/rendering/shaders/shadow");
 	Shader plane_shader = Shader("src/rendering/shaders/plane");	
@@ -253,12 +286,12 @@ int main(int argc, char **argv){
 
 
 		basic_shader.setView(viewptr);
-		basic_shader.setColor(vec3(1.0,1.0,1.0));
-
 		basic_shader.setModel(sphereMat);
+		basic_shader.setColor(vec3(1.0,0.0,0.0));
 		sphere.draw(basic_shader.progID);
 
 		basic_shader.setModel(boxMat);
+		basic_shader.setColor(vec3(.0,0.0,1.0));
 		cube.draw(basic_shader.progID);
 
 
