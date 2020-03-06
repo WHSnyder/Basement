@@ -340,7 +340,6 @@ void run_game(){
 }
 
 
-
 PYBIND11_MODULE(gltest, m) {
     m.doc() = "God help us";
     m.def("run_game", &run_game, "Run EVERYTHING");
