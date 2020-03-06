@@ -3,13 +3,13 @@ CC = clang++
 ifdef LINUX
 	BASEPATH = /home/will/projects/cpprtx/
 	GLFLAGS = -Ilibs/glfw/include -L/usr/lib/x86_64-linux-gnu/ -lGL -lGLEW -static -L$(BASEPATH)libs/glfw/build/src -lglfw3
-	CFLAGS = -fPIC -lpthread -Ilibs/glm -Ilibs/glm/glm -Isrc -std=c++17 -Wno-everything -Llibs/glm/build/glm -lglm_static
+	CFLAGS = -fPIC -lpthread -Ilibs/glm -Ilibs/glm/glm -Isrc -std=c++11 -Wno-everything -Llibs/glm/build/glm -lglm_static
 	LDFLAGS = 
 
 else
 	BASEPATH = /Users/will/projects/cpprtx/
 	GLFLAGS = -Ilibs/glfw/include -L$(BASEPATH)libs/glfw/build/src -lglfw.3 -L/System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries/ -lGL -lGLEW
-	CFLAGS = -Os -O2 -fPIC -lpthread -Ilibs/ -Ilibs/glm -Ilibs/glm/glm -Isrc -std=c++17 -Wno-everything -Llibs/glm/build/ -lglm_static
+	CFLAGS = -fPIC -lpthread -Ilibs/ -Ilibs/glm -Ilibs/glm/glm -Isrc -std=c++17 -Wno-everything -Llibs/glm/build/ -lglm_static
 	LDFLAGS= "-Wl,-rpath,$(BASEPATH)libs/glfw/build/src"
 	ASSIMP = -I/Users/will/projects/cpprtx/libs/assimp/include/ -I/Users/will/projects/cpprtx/libs/assimp/build/include/ -lz -L/Users/will/projects/cpprtx/libs/assimp/build/lib/ -lIrrXML -lassimp
 	PHYSX = -I/Users/will/projects/cpprtx/libs/physx/PxShared/include -I/Users/will/projects/cpprtx/libs/physx/PhysX_3.4/Include  /Users/will/projects/cpprtx/libs/physx/PxShared/lib/osx64/lib*CHECKED.a /Users/will/projects/cpprtx/libs/physx/PhysX_3.4/Lib/osx64/lib*CHECKED.a
@@ -20,46 +20,19 @@ OPENCV = `pkg-config --cflags --libs opencv4`
 OPENCV_LIBS = $(OPENCV)
 
 
-ifndef GLTEST
- 
-all: bin/obj.o bin/csg.o bin/scene.o bin/main.o bin/out
-
-clean: 
-	rm ./bin/*
-
-bin/obj.o: src/primitives/Obj.cpp src/primitives/Obj.h src/Ray.h src/Scene.h
-	$(CC) $(CFLAGS) -c src/primitives/Obj.cpp -o bin/obj.o
-
-bin/csg.o: src/CSG.h src/CSG.cpp src/primitives/Obj.h
-	$(CC) $(CFLAGS) -c src/CSG.cpp -o bin/csg.o
-
-bin/scene.o: src/Scene.cpp src/Scene.h src/CSG.h src/Ray.h
-	$(CC) $(CFLAGS) -c src/Scene.cpp -o bin/scene.o
+ifdef PY
+	PY_INCLUDES = -I/Users/will/projects/py_scripting/pybind11/build/mock_install/include -O3 -I/usr/local/Cellar/python/3.7.7/Frameworks/Python.framework/Versions/3.7/include/python3.7m -I/usr/local/Cellar/python/3.7.7/Frameworks/Python.framework/Versions/3.7/include/python3.7m
+	PY_FLAGS = -shared -undefined dynamic_lookup $(PY_INCLUDES)
+	FINAL_COMMAND = $(CC) $(PY_FLAGS) $(OPENCV_LIBS) $(CFLAGS) $(GLFLAGS) $(ASSIMP) $(LDFLAGS) $(PHYSX) src/rendering/RenderTarget.cpp src/utils/controls.cpp src/rendering/Shader.cpp src/rendering/Texture.cpp bin/Physics.o bin/ShaderUtils.o bin/glTest.o bin/Mesh.o -o gltest.cpython-37m-darwin.so
 
 
+else
+	
+	FINAL_COMMAND = $(CC) $(OPENCV_LIBS) $(CFLAGS) $(GLFLAGS) $(ASSIMP) $(LDFLAGS) $(PHYSX) src/rendering/RenderTarget.cpp src/utils/controls.cpp src/rendering/Shader.cpp src/rendering/Texture.cpp bin/Physics.o bin/ShaderUtils.o bin/glTest.o bin/Mesh.o -o bin/gltst
 
-ifndef CUDA 
-
-bin/main.o: src/Main.cpp src/Scene.h
-	$(CC) $(OPENCV_LIBS) $(CFLAGS) -c src/Main.cpp -o bin/main.o
-
-bin/out: bin/main.o bin/scene.o bin/csg.o bin/obj.o
-	$(CC) $(OPENCV_LIBS) $(CFLAGS) bin/main.o bin/scene.o bin/csg.o bin/obj.o -o bin/out
-
-
-else 
-
-bin/main.o: src/TestCuda.cu src/Scene.h
-	nvcc $(OPENCV_LIBS) --expt-relaxed-constexpr -lpthread -Ilibs/glm/glm -Isrc -std=c++11 -c src/TestCuda.cu -o bin/main.o
-
-bin/out: bin/main.o bin/scene.o bin/csg.o bin/obj.o
-	nvcc $(OPENCV_LIBS) --expt-relaxed-constexpr -lpthread -Ilibs/glm/glm -Isrc -std=c++11 bin/main.o bin/scene.o bin/csg.o bin/obj.o -o bin/out
 
 endif
 
-
-#Compile basic OpenGL engine
-else 
 
 
 all: bin/ShaderUtils.o bin/Mesh.o bin/glTest.o bin/Physics.o bin/gltst
@@ -73,13 +46,13 @@ bin/Mesh.o: src/mesh/Mesh.h src/mesh/Mesh.cpp
 bin/Physics.o: src/phys/Physics.h src/phys/Physics.cpp
 	$(CC) $(CFLAGS) $(PHYSX) -c -o bin/Physics.o src/phys/Physics.cpp
 
-bin/glTest.o: src/glTest.cpp
-	$(CC) $(CFLAGS) $(GLFLAGS) -I/Users/will/projects/cpprtx/libs/physx/PxShared/include -I/Users/will/projects/cpprtx/libs/physx/PhysX_3.4/Include -c src/glTest.cpp -o bin/glTest.o
+bin/glTest.o: src/pyTest.cpp
+	$(CC) $(PY_INCLUDES) $(CFLAGS) $(GLFLAGS) -I/Users/will/projects/cpprtx/libs/physx/PxShared/include -I/Users/will/projects/cpprtx/libs/physx/PhysX_3.4/Include -c src/pyTest.cpp -o bin/glTest.o
 
 bin/gltst: bin/glTest.o bin/Mesh.o bin/Physics.o
-	$(CC) $(OPENCV_LIBS) $(CFLAGS) $(GLFLAGS) $(ASSIMP) $(LDFLAGS) $(PHYSX) src/rendering/RenderTarget.cpp src/utils/controls.cpp src/rendering/Shader.cpp src/rendering/Texture.cpp bin/Physics.o bin/ShaderUtils.o bin/glTest.o bin/Mesh.o -o bin/gltst
+	$(FINAL_COMMAND)
+
 
 clean: 
-	rm bin/*
-
-endif
+	rm bin/*.o 
+	rm gltest.cpython-37m-darwin.so
