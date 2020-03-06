@@ -10,11 +10,11 @@ using namespace std;
 
 void run_basic() {
 
-	string filepath = string("/Users/will/projects/cpprtx/assets/images/grass.jpg");
+	string filepath = string("../assets/images/grass.jpg");
 	cv::Mat img = imread(filepath, cv::IMREAD_COLOR);
 	cv::resize(img, img, cv::Size(1024,1024), 0, 0, cv::INTER_LINEAR);
 
-	cout << "Yolo" << endl;
+	cout << img.cols << endl;
 
 	return;
 }

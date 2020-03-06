@@ -173,18 +173,18 @@ void run_game(){
     Texture noise_tex = Texture(img_data, dim, dim, 0);
 
     cout << "Reading grass tex" << endl;
-    Texture grass_tex = Texture(string("assets/images/grass.jpg"), 0);
+    Texture grass_tex = Texture(string("/Users/will/projects/cpprtx/assets/images/grass.jpg"), 0);
     
     cout << "Reading skybox tex" << endl;
-    Texture skybox = Texture(string("assets/images/yellowcloud"), 1);
+    Texture skybox = Texture(string("/Users/will/projects/cpprtx/assets/images/yellowcloud"), 1);
     
     //Texture skybox = Texture(string("/Users/will/projects/TombVoyage/Assets/SpaceSkiesFree/Skybox_2/Textures/1K_Resolution/1K_TEX"), 1);
 
-    Shader shadow_shader = Shader("src/rendering/shaders/shadow");
-	Shader plane_shader = Shader("src/rendering/shaders/plane");	
-	Shader terrain_shader = Shader("src/rendering/shaders/noise_test");
-	Shader basic_shader = Shader("src/rendering/shaders/basic");
-	Shader skybox_shader = Shader("src/rendering/shaders/cubemap");
+    Shader shadow_shader = Shader("/Users/will/projects/cpprtx/src/rendering/shaders/shadow");
+	Shader plane_shader = Shader("/Users/will/projects/cpprtx/src/rendering/shaders/plane");	
+	Shader terrain_shader = Shader("/Users/will/projects/cpprtx/src/rendering/shaders/noise_test");
+	Shader basic_shader = Shader("/Users/will/projects/cpprtx/src/rendering/shaders/basic");
+	Shader skybox_shader = Shader("/Users/will/projects/cpprtx/src/rendering/shaders/cubemap");
 	glCheckError();
 
     float ratio;
