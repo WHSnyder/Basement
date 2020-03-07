@@ -9,6 +9,7 @@
 
 #include <iostream>
 #include <vector>
+#include <unistd.h>
 
 #include "rendering/Texture.h"
 #include <mesh/Mesh.h>
@@ -112,10 +113,21 @@ void showFPS(GLFWwindow *pWindow){
 */
 
 
+string get_current_dir() {
+
+   char buff[FILENAME_MAX];
+   getcwd( buff, FILENAME_MAX );
+   string current_working_dir(buff);
+   return current_working_dir;
+}
+
+
 GLFWwindow* window;
 
 
 void run_game(){
+
+	cout << "Current working dir: " << get_current_dir() << endl;
 	
 	Simu mainSimu;
 
