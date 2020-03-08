@@ -2,7 +2,7 @@
 cmake_minimum_required(VERSION 3.1)
 
 project(Phys)
-add_library(phys OBJECT Physics.cpp)
+add_library(phys STATIC Physics.cpp)
 
 set(CMAKE_CXX_STANDARD 11)
 set(USINGMAC "yolo")

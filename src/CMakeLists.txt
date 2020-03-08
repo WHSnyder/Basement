@@ -19,15 +19,23 @@ if (DEFINED PYBIND)
 	else ()
 		message(STATUS "Found pybind11")
 	endif()
+
 endif()
 
 
-include_directories(src)
+include_directories("src")
+include_directories("libs")
+include_directories("libs/glm")
 
 add_subdirectory(rendering)
 add_subdirectory(mesh)
 add_subdirectory(utils)
 add_subdirectory(phys)
 
+
 add_executable(gltest, glTest.cpp)
-target_link_libaries(gltest PRIVATE phys)
+target_link_libraries(gltest PRIVATE phys)
+target_link_libraries(gltest PRIVATE rendering)
+target_link_libraries(gltest PRIVATE utils)
+target_link_libraries(gltest PRIVATE mesh)
+target_link_libraries(gltest PRIVATE -undefined dynamic_lookup)

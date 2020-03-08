@@ -9,6 +9,9 @@ file(GLOB RENDER_SOURCES "*cpp")
 message(STATUS "Files captured: ${RENDER_SOURCES}")
 
 
+add_library(rendering STATIC RENDER_SOURCES)
+
+
 
 
 #[[
