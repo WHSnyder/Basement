@@ -59,16 +59,8 @@ float *generate_terrain(int dim, double freq, float height_mult, int32_t *physx_
 	}
 	return result;
 }
-//Python 3.7 root
+
 ///usr/local/opt/python/Frameworks/Python.framework/Versions/
-
-//B2 executable
-//Users/will/projects/cpprtx/libs/boost/b2install/bin/b2
-
-
-
-//installation path
-//Users/will/projects/cpprtx/libs/boost
 
 
 Mesh gen_plane(){
@@ -352,7 +344,18 @@ void run_game(){
 }
 
 
-PYBIND11_MODULE(gltest, m) {
-    m.doc() = "God help us";
-    m.def("run_game", &run_game, "Run EVERYTHING");
+#ifndef PYBIND 
+
+int main(int argc, char **argv){
+	run_game();
+	return 1;
 }
+
+#else
+
+PYBIND11_MODULE(gltest, m) {
+    m.doc() = "Full game loop";
+    m.def("run_game", &run_game, "Run everything.");
+}
+
+#endif

@@ -1,4 +1,6 @@
 import unittest
+import numpy as np
+
 
 class MyTestCase(unittest.TestCase):
 
@@ -13,14 +15,28 @@ class MyTestCase(unittest.TestCase):
         
         assertFalse(status, "Basic import test failed")
 
+        if not status:
 
-    def test_opencv_so_run(self):
+	    	try:
+	    		test_OPENCV.run_basic()
+	    	except:
+	        	status = true
+        
+        	assertFalse(status, "Basic load image test failed")
 
-    	status = false
+
+    def test_numpy_vec(self):
+
+    	status = false 
 
     	try:
-    		test_OPENCV.run_basic
+    		import test_NUMPY
     	except:
-        	status = true
-        
-        assertFalse(status, "Basic load image test failed")
+    		status = true;
+
+    	assertFalse(status, "Test numpy import failed")
+
+    	if not status:
+
+    		try:
+    			

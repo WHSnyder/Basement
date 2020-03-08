@@ -1,4 +1,7 @@
-//#include <pybind11/pybind11.h>
+#ifdef PYBIND
+#include <pybind11/pybind11.h>
+#endif
+
 #include "rendering/Texture.h"
 
 #include <iostream>
@@ -138,9 +141,9 @@ Texture::Texture(string filepath, int cubemap, std::string extension){
     }
 }
 
-/*
+#ifdef PYBIND
 PYBIND11_MODULE(Texture, m) {
     m.doc() = "God help us";
     m.def("run_game", &run_game, "Run EVERYTHING");
 }
-*/
+#endif

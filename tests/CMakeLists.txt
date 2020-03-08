@@ -14,36 +14,27 @@ endif()
 
 find_package(Python3 COMPONENTS Interpreter Development)
 
-set(PYBIND11_FLAGS_CMD_ -m pybind11 --include)
+set(PYBIND11_FLAGS_CMD -m pybind11 --include)
 
-execute_process(COMMAND ${Python3_EXECUTABLE} ${PYBIND11_FLAGS_CMD_}
-				OUTPUT_VARIABLE PYBIND11_FLAGS_
+execute_process(COMMAND ${Python3_EXECUTABLE} ${PYBIND11_FLAGS_CMD}
+				OUTPUT_VARIABLE PYBIND11_INCLUDE_DIRS
 				WORKING_DIRECTORY ${PYBIND11_INCS} )
 
-string(REPLACE "-I" "" PYBIND11_FLAGS_ ${PYBIND11_FLAGS_})
-string(REPLACE "\n" "" PYBIND11_FLAGS_ ${PYBIND11_FLAGS_})
+string(REGEX REPLACE "-I|\n" "" PYBIND11_INCLUDE_DIRS ${PYBIND11_INCLUDE_DIRS})
 
-separate_arguments(PYBIND11_FLAGS_)
-message(STATUS "Pybind11 include directories: ${PYBIND11_FLAGS_}")
 
-set(PYBIND11_FLAGS "/Users/will/projects/py_scripting/pybind11/include")
-set(PYBIND11_MDIR "/usr/local/Cellar/python/3.7.7/Frameworks/Python.framework/Versions/3.7/include/python3.7m")
-
+separate_arguments(PYBIND11_INCLUDE_DIRS)
+message(STATUS "Pybind11 include directories: ${PYBIND11_INCLUDE_DIRS}")
 
 set( CMAKE_CXX_STANDARD 11 )
 set( CMAKE_CXX_FLAGS "-O3" )
 
+
 find_package( OpenCV REQUIRED )
 include_directories( ${OpenCV_INCLUDE_DIRS} )
 
-
-#target_compile_options( test_OPENCV PUBLIC ${PYBIND11_FLAGS_} )
-
 target_include_directories( test_OPENCV PUBLIC ${Python3_INCLUDE_DIRS} )
-
-target_include_directories( test_OPENCV PUBLIC ${PYBIND11_FLAGS_} )
-#target_include_directories( test_OPENCV PUBLIC ${PYBIND11_FLAGS} )
-#target_include_directories( test_OPENCV PUBLIC ${PYBIND11_MDIR} )
+target_include_directories( test_OPENCV PUBLIC ${PYBIND11_INCLUDE_DIRS} )
 
 target_link_libraries( test_OPENCV ${OpenCV_LIBS} )
 target_link_options( test_OPENCV PUBLIC -undefined dynamic_lookup )
