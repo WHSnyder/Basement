@@ -1,10 +1,7 @@
 # Project definition
 cmake_minimum_required(VERSION 3.1)
 
-#file(GLOB RENDER_SOURCES "^(?!Renderer).*cpp")
-
-file(GLOB RENDER_SOURCES "*cpp") 
-	#RELATIVE ".")
+add_library()
 
 message(STATUS "Files captured: ${RENDER_SOURCES}")
 

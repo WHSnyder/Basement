@@ -2,6 +2,12 @@
 #include <pybind11/pybind11.h>
 #endif
 
+//#ifdef GUI
+#include "imgui.h"
+#include "bindings/imgui_impl_glfw.h"
+#include "bindings/imgui_impl_opengl3.h"
+//#endif
+
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
@@ -23,6 +29,9 @@
 
 
 using namespace std;
+
+const char *glsl_version = "#version 410";
+
 
 void coutMat(float *mat){
 
@@ -62,14 +71,6 @@ float *generate_terrain(int dim, double freq, float height_mult, int32_t *physx_
 }
 //Python 3.7 root
 ///usr/local/opt/python/Frameworks/Python.framework/Versions/
-
-//B2 executable
-//Users/will/projects/cpprtx/libs/boost/b2install/bin/b2
-
-
-
-//installation path
-//Users/will/projects/cpprtx/libs/boost
 
 
 Mesh gen_plane(){
@@ -174,14 +175,14 @@ int run_game(){
     float *img_data = generate_terrain(dim, freq, terrain_mult.y, px_samples);
     Texture noise_tex = Texture(img_data, dim, dim, 0);
     Texture grass_tex = Texture(string("assets/images/grass.jpg"), 0);
-    //Texture skybox = Texture(string("assets/images/yellowcloud"), 1);
-    Texture skybox = Texture(string("/Users/will/projects/TombVoyage/Assets/SpaceSkiesFree/Skybox_2/Textures/1K_Resolution/1K_TEX"), 1);
+    Texture skybox = Texture(string("assets/images/yellowcloud"), 1);
+    //Texture skybox = Texture(string("/Users/will/projects/TombVoyage/Assets/SpaceSkiesFree/Skybox_2/Textures/1K_Resolution/1K_TEX"), 1);
 
-    Shader shadow_shader = Shader("src/rendering/shaders/shadow");
-	Shader plane_shader = Shader("src/rendering/shaders/plane");	
-	Shader terrain_shader = Shader("src/rendering/shaders/noise_test");
-	Shader basic_shader = Shader("src/rendering/shaders/basic");
-	Shader skybox_shader = Shader("src/rendering/shaders/cubemap");
+    Shader shadow_shader = Shader("assets/shaders/shadow");
+	Shader plane_shader = Shader("assets/shaders/plane");	
+	Shader terrain_shader = Shader("assets/shaders/noise_test");
+	Shader basic_shader = Shader("assets/shaders/basic");
+	Shader skybox_shader = Shader("assets/shaders/cubemap");
 	glCheckError();
 
     float ratio;
@@ -254,7 +255,30 @@ int run_game(){
  	shadow_shader.setView(value_ptr(depthView));
 
 
+
+ 	IMGUI_CHECKVERSION();
+	ImGui::CreateContext();
+	ImGuiIO &io = ImGui::GetIO();
+	// Setup Platform/Renderer bindings
+	ImGui_ImplGlfw_InitForOpenGL(window, true);
+	ImGui_ImplOpenGL3_Init(glsl_version);
+	// Setup Dear ImGui style
+	ImGui::StyleColorsDark();
+
+
 	do {
+
+		ImGui_ImplOpenGL3_NewFrame();
+		ImGui_ImplGlfw_NewFrame();
+		ImGui::NewFrame();
+
+		ImGui::Begin("Triangle Position/Color");
+		static float rotation = 0.0;
+		ImGui::SliderFloat("rotation", &rotation, 0, 2 * 3);
+		ImGui::End();
+
+
+
 
 		t_now = std::chrono::high_resolution_clock::now();
 		time = std::chrono::duration_cast<std::chrono::duration<float>>(t_now - t_start).count();
@@ -323,6 +347,8 @@ int run_game(){
 		playerViewMat = computeMatricesFromInputs();
 		viewptr = value_ptr(playerViewMat);	
 
+		ImGui::Render();
+		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
@@ -330,11 +356,15 @@ int run_game(){
 
 	while( glfwGetKey(window, GLFW_KEY_ESCAPE ) != GLFW_PRESS && glfwWindowShouldClose(window) == 0 );
 
+	ImGui_ImplOpenGL3_Shutdown();
+	ImGui_ImplGlfw_Shutdown();
+	ImGui::DestroyContext();
+
+	glfwDestroyWindow(window);
 	glfwTerminate();
 
 	delete shadowTarget;
 	delete px_samples;
-
 
 	return 0;
 }

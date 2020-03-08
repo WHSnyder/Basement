@@ -9,15 +9,17 @@ ifdef LINUX
 else
 	BASEPATH = /Users/will/projects/cpprtx/
 	GLFLAGS = -Ilibs/glfw/include -L$(BASEPATH)libs/glfw/build/src -lglfw.3 -L/System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries/ -lGL -lGLEW
-	CFLAGS = -fPIC -lpthread -Ilibs/ -Ilibs/glm -Ilibs/glm/glm -Isrc -std=c++17 -Wno-everything -Llibs/glm/build/ -lglm_static
+	CFLAGS = -fPIC -lpthread -Ilibs/imgui -Ilibs/ -Ilibs/glm -Ilibs/glm/glm -Isrc -std=c++17 -Wno-everything -Llibs/glm/build/ -lglm_static
 	LDFLAGS= "-Wl,-rpath,$(BASEPATH)libs/glfw/build/src"
 	ASSIMP = -I/Users/will/projects/cpprtx/libs/assimp/include/ -I/Users/will/projects/cpprtx/libs/assimp/build/include/ -lz -L/Users/will/projects/cpprtx/libs/assimp/build/lib/ -lIrrXML -lassimp
 	PHYSX = -I/Users/will/projects/cpprtx/libs/physx/PxShared/include -I/Users/will/projects/cpprtx/libs/physx/PhysX_3.4/Include  /Users/will/projects/cpprtx/libs/physx/PxShared/lib/osx64/lib*CHECKED.a /Users/will/projects/cpprtx/libs/physx/PhysX_3.4/Lib/osx64/lib*CHECKED.a
+	IMGUISOURCES = libs/imgui/bindings/imgui_impl_glfw.cpp libs/imgui/bindings/imgui_impl_opengl3.cpp libs/imgui/imgui.cpp libs/imgui/imgui_draw.cpp libs/imgui/imgui_widgets.cpp
 endif
 
 
 OPENCV = `pkg-config --cflags --libs opencv4`
 OPENCV_LIBS = $(OPENCV)
+
 
 
 ifdef PY
@@ -28,7 +30,7 @@ ifdef PY
 
 else
 	
-	FINAL_COMMAND = $(CC) $(OPENCV_LIBS) $(CFLAGS) $(GLFLAGS) $(ASSIMP) $(LDFLAGS) $(PHYSX) src/rendering/RenderTarget.cpp src/utils/controls.cpp src/rendering/Shader.cpp src/rendering/Texture.cpp bin/Physics.o bin/ShaderUtils.o bin/glTest.o bin/Mesh.o -o bin/gltst
+	FINAL_COMMAND = $(CC) $(OPENCV_LIBS) $(CFLAGS) $(GLFLAGS) $(ASSIMP) $(LDFLAGS) $(PHYSX) $(IMGUISOURCES) src/rendering/RenderTarget.cpp src/utils/controls.cpp src/rendering/Shader.cpp src/rendering/Texture.cpp bin/Physics.o bin/ShaderUtils.o bin/glTest.o bin/Mesh.o -o bin/gltst
 
 
 endif
@@ -46,8 +48,8 @@ bin/Mesh.o: src/mesh/Mesh.h src/mesh/Mesh.cpp
 bin/Physics.o: src/phys/Physics.h src/phys/Physics.cpp
 	$(CC) $(CFLAGS) $(PHYSX) -c -o bin/Physics.o src/phys/Physics.cpp
 
-bin/glTest.o: src/pyTest.cpp
-	$(CC) $(PY_INCLUDES) $(CFLAGS) $(GLFLAGS) -I/Users/will/projects/cpprtx/libs/physx/PxShared/include -I/Users/will/projects/cpprtx/libs/physx/PhysX_3.4/Include -c src/pyTest.cpp -o bin/glTest.o
+bin/glTest.o: src/glTest.cpp
+	$(CC) $(PY_INCLUDES) $(CFLAGS) $(GLFLAGS) -I/Users/will/projects/cpprtx/libs/physx/PxShared/include -I/Users/will/projects/cpprtx/libs/physx/PhysX_3.4/Include -c src/glTest.cpp -o bin/glTest.o
 
 bin/gltst: bin/glTest.o bin/Mesh.o bin/Physics.o
 	$(FINAL_COMMAND)
