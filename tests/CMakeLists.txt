@@ -29,10 +29,9 @@ message(STATUS "Pybind11 include directories: ${PYBIND11_INCLUDE_DIRS}")
 set( CMAKE_CXX_STANDARD 11 )
 set( CMAKE_CXX_FLAGS "-O3" )
 
-
 find_package( OpenCV REQUIRED )
-include_directories( ${OpenCV_INCLUDE_DIRS} )
 
+target_include_directories( test_OPENCV PUBLIC ${OpenCV_INCLUDE_DIRS} )
 target_include_directories( test_OPENCV PUBLIC ${Python3_INCLUDE_DIRS} )
 target_include_directories( test_OPENCV PUBLIC ${PYBIND11_INCLUDE_DIRS} )
 

@@ -1,3 +1,7 @@
+#ifdef PYBIND
+#include <pybind11/pybind11.h>
+#endif
+
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
@@ -113,7 +117,7 @@ void showFPS(GLFWwindow *pWindow){
 GLFWwindow* window;
 
 
-int main(int argc, char **argv){
+int run_game(){
 	
 	Simu mainSimu;
 
@@ -334,3 +338,22 @@ int main(int argc, char **argv){
 
 	return 0;
 }
+
+
+
+
+#ifndef PYBIND 
+
+int main(int argc, char **argv){
+	run_game();
+	return 1;
+}
+
+#else
+
+PYBIND11_MODULE(gltest, m) {
+    m.doc() = "Full game loop";
+    m.def("run_game", &run_game, "Run everything.");
+}
+
+#endif
