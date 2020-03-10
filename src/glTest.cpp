@@ -277,9 +277,6 @@ int run_game(){
 		ImGui::SliderFloat("rotation", &rotation, 0, 2 * 3);
 		ImGui::End();
 
-
-
-
 		t_now = std::chrono::high_resolution_clock::now();
 		time = std::chrono::duration_cast<std::chrono::duration<float>>(t_now - t_start).count();
 		t_start = t_now;
