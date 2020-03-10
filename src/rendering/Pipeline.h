@@ -9,15 +9,40 @@
 #include <vector>
 
 
+class Node {
 
-class Renderer {
+
+};
+
+
+class ShaderNode : Node {
+
+public:
+	Shader shader;
+	ShaderNode(Shader shader_pbj);
+};
+
+
+class FBONode : Node {
+
+public:
+	RenderTarget targ;
+	FBONode(RenderTarget rend_targ);
+};
+
+
+
+
+class Pipeline {
 
 	public:
 
 		Material *mat;
 		Mesh *mesh;
 
-	
+		
+
+		Pipeline();
 
 }
 

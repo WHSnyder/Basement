@@ -2,17 +2,22 @@
 cmake_minimum_required(VERSION 3.1)
 
 project(test_opencv)
+
 add_library( test_OPENCV SHARED test_OPENCV.cpp )
 
 
-if (NOT DEFINED PYBIND11_INCS OR NOT EXISTS ${PYBIND11_INCS})
-	message(FATAL_ERROR "Set a valid path for PYBIND11_INCS")
-else ()
+if (NOT DEFINED PYBIND11_INCS)
+	set(PYBIND11_INCS /Users/will/projects/py_scripting/pybind11)
+endif()
+
+if {NOT EXISTS ${PYBIND11_INCS})
+	message(FATAL_ERROR "Set a valid path for PYBIND11_INCS, ${PYBIND11_INCS} is invalid.")
+else()
 	message(STATUS "Found pybind11")
 endif()
 
 
-find_package(Python3 COMPONENTS Interpreter Development)
+find_package(Python3 3.7 EXACT COMPONENTS Interpreter Development)
 
 set(PYBIND11_FLAGS_CMD -m pybind11 --include)
 
