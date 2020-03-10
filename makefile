@@ -5,7 +5,6 @@ ifdef LINUX
 	GLFLAGS = -Ilibs/glfw/include -L/usr/lib/x86_64-linux-gnu/ -lGL -lGLEW -static -L$(BASEPATH)libs/glfw/build/src -lglfw3
 	CFLAGS = -fPIC -lpthread -Ilibs/glm -Ilibs/glm/glm -Isrc -std=c++11 -Wno-everything -Llibs/glm/build/glm -lglm_static
 	LDFLAGS = 
-
 else
 	BASEPATH = /Users/will/projects/cpprtx/
 	GLFLAGS = -Ilibs/glfw/include -L$(BASEPATH)libs/glfw/build/src -lglfw.3 -L/System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries/ -lGL -lGLEW
@@ -16,25 +15,16 @@ else
 	IMGUISOURCES = libs/imgui/bindings/imgui_impl_glfw.cpp libs/imgui/bindings/imgui_impl_opengl3.cpp libs/imgui/imgui.cpp libs/imgui/imgui_draw.cpp libs/imgui/imgui_widgets.cpp
 endif
 
-
 OPENCV = `pkg-config --cflags --libs opencv4`
 OPENCV_LIBS = $(OPENCV)
-
-
 
 ifdef PY
 	PY_INCLUDES = -I/Users/will/projects/py_scripting/pybind11/build/mock_install/include -O3 -I/usr/local/Cellar/python/3.7.7/Frameworks/Python.framework/Versions/3.7/include/python3.7m -I/usr/local/Cellar/python/3.7.7/Frameworks/Python.framework/Versions/3.7/include/python3.7m
 	PY_FLAGS = -shared -undefined dynamic_lookup $(PY_INCLUDES)
 	FINAL_COMMAND = $(CC) $(PY_FLAGS) $(OPENCV_LIBS) $(CFLAGS) $(GLFLAGS) $(ASSIMP) $(LDFLAGS) $(PHYSX) src/rendering/RenderTarget.cpp src/utils/controls.cpp src/rendering/Shader.cpp src/rendering/Texture.cpp bin/Physics.o bin/ShaderUtils.o bin/glTest.o bin/Mesh.o -o gltest.cpython-37m-darwin.so
-
-
 else
-	
 	FINAL_COMMAND = $(CC) $(OPENCV_LIBS) $(CFLAGS) $(GLFLAGS) $(ASSIMP) $(LDFLAGS) $(PHYSX) $(IMGUISOURCES) src/rendering/RenderTarget.cpp src/utils/controls.cpp src/rendering/Shader.cpp src/rendering/Texture.cpp bin/Physics.o bin/ShaderUtils.o bin/glTest.o bin/Mesh.o -o bin/gltst
-
-
 endif
-
 
 
 all: bin/ShaderUtils.o bin/Mesh.o bin/glTest.o bin/Physics.o bin/gltst
@@ -53,7 +43,6 @@ bin/glTest.o: src/glTest.cpp
 
 bin/gltst: bin/glTest.o bin/Mesh.o bin/Physics.o
 	$(FINAL_COMMAND)
-
 
 clean: 
 	rm bin/*.o 
