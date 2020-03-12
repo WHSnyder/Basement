@@ -42,7 +42,7 @@ class Shader {
 		int setShadowTexture(GLuint tID);
 
 		void printUniforms();
-		void getUniforms(vector<string>& names, vector<GLenum>& types);
+		void getUniforms(vector<string>& names, vector<GLenum>& types, int filter=1);
 
 		~Shader(){
 			glDeleteProgram(progID);

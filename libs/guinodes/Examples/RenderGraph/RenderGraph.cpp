@@ -31,7 +31,7 @@ int shaderCount = 0;
 bool showImg = false;
 int texture_cnt = 0;
 
-ImTextureID my_image_texture = Application_LoadTexture("Data/grass.jpg");
+ImTextureID my_image_texture; 
 
 
 static inline ImRect ImGui_GetItemRect(){ return ImRect(ImGui::GetItemRectMin(), ImGui::GetItemRectMax()); }
@@ -418,12 +418,13 @@ void Application_Initialize(){
     s_HeaderBackground = Application_LoadTexture("Data/BlueprintBackground.png");
     s_SaveIcon = Application_LoadTexture("Data/ic_save_white_24dp.png");
     s_RestoreIcon = Application_LoadTexture("Data/ic_restore_white_24dp.png");
+    my_image_texture = Application_LoadTexture("Data/ic_save_white_24dp.png");
 }
 
 
 void Application_Finalize(){
 
-    printNodePairs();
+    //printNodePairs();
 
     auto releaseTexture = [](ImTextureID& id) {
         if (id){
@@ -732,7 +733,6 @@ void Application_Frame(){
                 }
 
                 static char str0[30] = "Path to texture";
-                auto drawList = ImGui::GetWindowDrawList();
 
                 builder.Middle();
                 ImGui::PushItemWidth(100.0f);
@@ -742,15 +742,13 @@ void Application_Frame(){
 
                         showImg = true;
 
-                        //auto drawList = ImGui::GetWindowDrawList();
-                        //ImGui::SetCursorScreenPos(iconPanelPos);
-                        
-                        //IM_ASSERT(ret);
-                        //ImDrawList::AddImage(my_image_texture, ImGui::GetItemRectMin(), ImGui::GetItemRectMax(), ImVec2(0, 0), ImVec2(1, 1), IM_COL32(255, 255, 255, 30));
+                        ImGui::BeginChild("img", ImVec2(200, 200), true);
 
-
-                        ImGui::Image((void*)(intptr_t)&my_image_texture, ImVec2(150, 150));
-
+                        ImVec2 pos = ax::NodeEditor::GetNodePosition(node.ID);
+                        ImGui::SetCursorScreenPos(pos);
+                        //ImGui::Image((void*)(intptr_t)s_SaveIcon, ImVec2(200, 200));
+                        ImGui::GetWindowDrawList() -> AddImage(s_SaveIcon, pos, pos + ImVec2(200,200), ImVec2(0, 0), ImVec2(1, 1), IM_COL32(255, 255, 255, 150));
+                        ImGui::EndChild();
                     }
                 }
 

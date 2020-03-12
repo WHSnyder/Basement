@@ -5,7 +5,6 @@
 
 class Node;
 
-
 class RenderTarget {
 	
 	private:

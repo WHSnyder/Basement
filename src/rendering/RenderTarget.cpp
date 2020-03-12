@@ -9,7 +9,6 @@ using namespace std;
 
 
 void RenderTarget::set(){
-
 	glBindFramebuffer(GL_FRAMEBUFFER, framebufferID);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glCheckError();
@@ -21,14 +20,9 @@ void bindShadowbuffer(GLuint& framebufferID, GLuint& texID, int rows, int cols){
 
 	glGenFramebuffers(1, &framebufferID);
 	glBindFramebuffer(GL_FRAMEBUFFER, framebufferID);
-	glCheckError();
 
-	// Depth texture. Slower than a depth buffer, but you can sample it later in your shader
-	glGenTextures(1, &texID); //bug here and below....
+	glGenTextures(1, &texID); 
 	glBindTexture(GL_TEXTURE_2D, texID);
-	glCheckError();
-
-	cout << "Bound new texture at " << texID << endl;
 	
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT16, cols, rows, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -40,21 +34,15 @@ void bindShadowbuffer(GLuint& framebufferID, GLuint& texID, int rows, int cols){
 	glCheckError();
 
 	glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, texID, 0);
-	glCheckError();
 	
-
 	glDrawBuffer(GL_NONE); 
-	//glReadBuffer(GL_NONE);
 
-	// Always check that our framebuffer is ok
 	if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE){
 		cout << "framebuffer incomplete" << endl;
 		glCheckError();
 	}
-	//glGenerateMipmap(GL_TEXTURE_2D);
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glClear(GL_DEPTH_BUFFER_BIT);
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
