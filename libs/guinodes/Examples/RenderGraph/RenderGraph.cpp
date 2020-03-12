@@ -13,6 +13,8 @@
 #include <imgui_internal.h>
 //#include "rendering/Shader.h"
 
+
+
 //cmake -H. -Bbuild -G "Xcode"
 //xcodebuild -project ImGuiNodeEditor.xcodeproj -alltargets -configuration Release
 //install_name_tool -add_rpath /Users/will/projects/cpprtx/libs/glfw/build/src/ RenderGraph
@@ -27,7 +29,9 @@ using namespace std;
 }*/
 
 int shaderCount = 0;
+bool showImg = false;
 
+ImTextureID my_image_texture = Application_LoadTexture("Data/grass.png");
 
 
 static inline ImRect ImGui_GetItemRect(){ return ImRect(ImGui::GetItemRectMin(), ImGui::GetItemRectMax()); }
@@ -725,12 +729,22 @@ void Application_Frame(){
                 }
 
                 static char str0[30] = "Path to texture";
+                auto drawList = ImGui::GetWindowDrawList();
 
                 builder.Middle();
                 ImGui::PushItemWidth(100.0f);
                 if (node.Type == NodeType::Texture){
                     ImGui::InputText("##edit", str0, IM_ARRAYSIZE(str0));
-                    ImGui::Button("Hello");
+                    if (ImGui::Button("Read file") || showImg){
+
+                        showImg = true;
+                        //IM_ASSERT(ret);
+                        //drawList->AddImage(my_image_texture, ImGui::GetItemRectMin(), ImGui::GetItemRectMax(), ImVec2(0, 0), ImVec2(1, 1), IM_COL32(255, 255, 255, 30));
+
+
+                        ImGui::Image((void*)(intptr_t)&my_image_texture, ImVec2(150, 150));
+
+                    }
                 }
 
 
@@ -1158,12 +1172,3 @@ void Application_Frame(){
             }
             ed::EndGroupHint();
         }*/
-
-
-
-
-
-
-
-
-
