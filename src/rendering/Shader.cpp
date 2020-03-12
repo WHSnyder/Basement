@@ -1,5 +1,7 @@
 #include "rendering/Shader.h"
 #include "utils/ShaderUtils.h"
+#include "rendering/Texture.h"
+
 
 extern GLenum glCheckError_(const char *file, int line);
 #define glCheckError() glCheckError_(__FILE__, __LINE__) 

@@ -8,9 +8,6 @@
 #include <iostream>
 #include <vector>
 
-#include "utils/ShaderUtils.h"
-#include "rendering/Texture.h"
-
 #include <glm.hpp>
 #include <ext.hpp>
 
