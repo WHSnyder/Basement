@@ -2,6 +2,10 @@
 #include "utils/ShaderUtils.h"
 #include "rendering/Texture.h"
 
+#include <iostream>
+#include <vector>
+
+using namespace std;
 
 extern GLenum glCheckError_(const char *file, int line);
 #define glCheckError() glCheckError_(__FILE__, __LINE__) 
@@ -156,7 +160,6 @@ void Shader::setVec3(string name, glm::vec3 v){
 	glUniform3fv(tempID, 1, glm::value_ptr(v));	
 }
 
-
 void Shader::setMat4(string name, glm::mat4 m){
 
 	GLuint tempID;
@@ -166,16 +169,14 @@ void Shader::setMat4(string name, glm::mat4 m){
 	glUniformMatrix4fv(tempID, 1, GL_FALSE, glm::value_ptr(m));	
 }
 
-
 void Shader::setColor(glm::vec3 v){
 
 	glUseProgram(progID); 
 	glUniform3fv(col_loc, 1, glm::value_ptr(v));	
 }
 
+void Shader::getUniforms(vector<string>& names, vector<GLenum>& types, int filter = 1){
 
-void Shader::printUniforms(){
-	
 	GLint i, count, size;
 	GLenum type; // type of the variable (float, vec3 or mat4, etc)
 
@@ -183,14 +184,37 @@ void Shader::printUniforms(){
 	GLchar name[bufSize]; // variable name in GLSL
 	GLsizei length;
 
+	string model_str = string("m"), view_str = string("v"), proj_str = string("p");
+
 	glUseProgram(progID);
 	glGetProgramiv(progID, GL_ACTIVE_UNIFORMS, &count);
 	
-	printf("Active Uniforms: %d\n", count);
-
 	for (i = 0; i < count; i++){
 	    
 	    glGetActiveUniform(progID, (GLuint) i, bufSize, &length, &size, &type, name);
-	    printf("Uniform #%d Type: %u Name: %s\n", i, type, name);
+
+	    if (filter && (model_str.compare(name) || 
+	    	view_str.compare(name) || 
+	    	proj_str.compare(name))){
+
+	    	continue;
+	    }
+
+	   	names.push_back(string(name))
+	    types.push_back(type)
+	}
+}
+
+void Shader::printUniforms(){
+	
+	vector<GLenum> types;
+	vector<string> names;
+
+	getUniforms(names, types, 0);
+	
+	printf("Active Uniforms: %d\n", names.size());
+
+	for (i = 0; i < names.size(); i++){
+	    printf("Uniform #%d Type: %u Name: %s\n", i, types[i], names[i]);
 	}
 }

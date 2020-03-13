@@ -3,10 +3,6 @@
 
 #include <stdlib.h>
 #include <string>
-#include <chrono>
-
-#include <iostream>
-#include <vector>
 
 #include <glm.hpp>
 #include <ext.hpp>
@@ -46,6 +42,7 @@ class Shader {
 		int setShadowTexture(GLuint tID);
 
 		void printUniforms();
+		void getUniforms(vector<string>& names, vector<GLenum>& types);
 
 		~Shader(){
 			glDeleteProgram(progID);
