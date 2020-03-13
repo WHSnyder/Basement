@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <utility>
 #include <imgui_node_editor.h>
+#include "render_graph.h"
 #include <ax/Math2D.h>
 #include <ax/Builders.h>
 #include <ax/Widgets.h>
@@ -12,8 +13,6 @@
 #define IMGUI_DEFINE_MATH_OPERATORS
 #include <imgui_internal.h>
 //#include "rendering/Shader.h"
-
-
 
 //cmake -H. -Bbuild -G "Xcode"
 //xcodebuild -project ImGuiNodeEditor.xcodeproj -alltargets -configuration Release
@@ -30,8 +29,9 @@ using namespace std;
 
 int shaderCount = 0;
 bool showImg = false;
+int texture_cnt = 0;
 
-ImTextureID my_image_texture = Application_LoadTexture("Data/grass.png");
+ImTextureID my_image_texture = Application_LoadTexture("Data/grass.jpg");
 
 
 static inline ImRect ImGui_GetItemRect(){ return ImRect(ImGui::GetItemRectMin(), ImGui::GetItemRectMax()); }
@@ -72,12 +72,13 @@ struct Node {
     std::string Name;
     std::vector<Pin> Inputs, Outputs;
     void *objptr;
+    int num;
     ImColor Color;
     NodeType Type;
     ImVec2 Size;
     std::string State, SavedState;
     Node(int id, const char* name, ImColor color = ImColor(255, 255, 255), NodeType type = NodeType::Blueprint):
-        ID(id), Name(name), Color(color), Type(type), Size(0, 0)
+        ID(id), Name(name), Color(color), Type(type), Size(0, 0), num(type == NodeType::Texture ? ++texture_cnt : 0)
     {}
 };
 struct Link{
@@ -178,9 +179,11 @@ static Node* SpawnShaderNode(){
 
     s_Nodes.back().Inputs.emplace_back(GetNextId(), "1", PinType::Int);
     s_Nodes.back().Inputs.emplace_back(GetNextId(), "2", PinType::Int);
-    s_Nodes.back().Inputs.emplace_back(GetNextId(), "3", PinType::Bool);
-    s_Nodes.back().Inputs.emplace_back(GetNextId(), "4", PinType::Bool);
-    s_Nodes.back().Inputs.emplace_back(GetNextId(), "5", PinType::Bool);
+    s_Nodes.back().Inputs.emplace_back(GetNextId(), "3", PinType::Int);
+    s_Nodes.back().Inputs.emplace_back(GetNextId(), "4", PinType::Float);
+    s_Nodes.back().Inputs.emplace_back(GetNextId(), "Texture 1", PinType::Buffer);
+    s_Nodes.back().Inputs.emplace_back(GetNextId(), "Texture 2", PinType::Buffer);
+
 
     BuildNode(&s_Nodes.back());
 
@@ -738,8 +741,12 @@ void Application_Frame(){
                     if (ImGui::Button("Read file") || showImg){
 
                         showImg = true;
+
+                        //auto drawList = ImGui::GetWindowDrawList();
+                        //ImGui::SetCursorScreenPos(iconPanelPos);
+                        
                         //IM_ASSERT(ret);
-                        //drawList->AddImage(my_image_texture, ImGui::GetItemRectMin(), ImGui::GetItemRectMax(), ImVec2(0, 0), ImVec2(1, 1), IM_COL32(255, 255, 255, 30));
+                        //ImDrawList::AddImage(my_image_texture, ImGui::GetItemRectMin(), ImGui::GetItemRectMax(), ImVec2(0, 0), ImVec2(1, 1), IM_COL32(255, 255, 255, 30));
 
 
                         ImGui::Image((void*)(intptr_t)&my_image_texture, ImVec2(150, 150));

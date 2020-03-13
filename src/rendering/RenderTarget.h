@@ -3,6 +3,8 @@
 
 #include <stdlib.h>
 
+class Node;
+
 
 class RenderTarget {
 	
@@ -15,6 +17,7 @@ class RenderTarget {
 	public:
 
 		RenderTarget(int rows_, int cols_, int shadow);
+		RenderTarget(Node node);
 		
 		void set();
 
