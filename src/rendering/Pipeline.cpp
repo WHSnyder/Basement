@@ -1,36 +1,9 @@
 #include <stack>
+#include "RenderGraphNodeDefs.h"
 
 //Implementation for the OpenGL backend of the nodes system.
 
 using namespace std;
-
-
-struct Pin{
-    ed::PinId   ID;
-    ::Node*     Node;
-    std::string Name;
-    PinType     Type;
-    PinKind     Kind;
-    Pin(int id, const char* name, PinType type):
-        ID(id), Node(nullptr), Name(name), Type(type), Kind(PinKind::Input)
-    {}
-};
-
-
-struct Node {
-    ed::NodeId ID;
-    std::string Name;
-    std::vector<Pin> Inputs, Outputs;
-    int num;
-    ImColor Color;
-    NodeType Type;
-    ImVec2 Size;
-    int static_flag;
-    std::string State, SavedState;
-    Node(int id, const char* name, ImColor color = ImColor(255, 255, 255), NodeType type = NodeType::Blueprint):
-        ID(id), Name(name), Color(color), Type(type), Size(0, 0), num(type == NodeType::Texture ? ++texture_cnt : 0)
-    {}
-};
 
 
 class Pool {

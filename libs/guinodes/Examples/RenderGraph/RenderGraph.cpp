@@ -5,7 +5,7 @@
 #include <algorithm>
 #include <utility>
 #include <imgui_node_editor.h>
-#include "render_graph.h"
+#include "RenderGraphNodeDefs.h"
 #include <ax/Math2D.h>
 #include <ax/Builders.h>
 #include <ax/Widgets.h>
@@ -28,12 +28,13 @@ using namespace std;
     //vector<Shader> shaders; 
 */
 
-int shaderCount = 0;
+std::vector<Shader *> shaders;
+std::vector<Texture *> textures;
+
+int shaderCount = 0, textureCount = 0;
 bool showImg = false;
-int texture_cnt = 0;
 
 ImTextureID my_image_texture; 
-
 
 static inline ImRect ImGui_GetItemRect(){ return ImRect(ImGui::GetItemRectMin(), ImGui::GetItemRectMax()); }
 static inline ImRect ImRect_Expanded(const ImRect& rect, float x, float y){
@@ -56,7 +57,7 @@ static ed::EditorContext* m_Editor = nullptr;
 
 enum class PinType{ Flow, Bool, Int, Float, Function, Delegate, Shader, Object, Buffer, String };
 enum class PinKind{ Output, Input };
-enum class NodeType{ Blueprint, Simple, Tree, Comment, Texture, Shader, Pool,  };
+enum class NodeType{ Blueprint, Simple, Tree, Comment, Texture, Shader, Pool };
 struct Node;
 struct Pin{
     ed::PinId   ID;
@@ -74,34 +75,65 @@ struct Node {
     ed::NodeId ID;
     std::string Name;
     std::vector<Pin> Inputs, Outputs;
-    int num, visited, static_flag;
+    int visited, static_flag;
     ImColor Color;
     NodeType Type;
     ImVec2 Size;
     std::string State, SavedState;
     virtual void process()=0;
     Node(int id, const char* name, ImColor color = ImColor(255, 255, 255), NodeType type = NodeType::Blueprint):
-        ID(id), Name(name), Color(color), Type(type), Size(0, 0), num(type == NodeType::Texture ? ++texture_cnt : 0)
+        ID(id), Name(name), Color(color), Type(type), Size(0, 0)
     {}
-};
 
+    virtual ~Node()=0;
+};
 
 struct ShaderNode : Node {
 
     Shader *shaderObj;
-
+    int shaderID;
 
     //defined in backend file!
     void process();
 
-
-
-    ShaderNode(int id, ){
-
+    ShaderNode(int id, const char* name, ImColor color = ImColor(255, 255, 255), NodeType type = NodeType::Shader) : 
+    Node(id, name, color, type)
+    {
+        shaderID = shaderCount++;
+        shaderObj = shaders[shaderID];
     }
-
 }
 
+struct TextureNode : Node {
+
+    Texture *textureObj;
+    int textureID;
+
+    //defined in backend file!
+    void process();
+
+    TextureNode(int id, const char* name, ImColor color = ImColor(255, 255, 255), NodeType type = NodeType::Texture) : 
+    Node(id, name, color, type)
+    {
+        textureID = textureCount++;
+        textureObj = textures[textureID];
+    }
+}
+
+struct FBONode : Node {
+
+    RenderTarget *target;
+
+    //defined in backend file!
+    void process();
+
+    FBONode(int id, const char* name, ImColor color = ImColor(255, 255, 255), NodeType type = NodeType::F) : 
+    Node(id, name, color, type)
+    {
+        textureID = textureCount++;
+        textureObj = textures[textureID];
+    }
+}
 
 
 
@@ -114,12 +146,12 @@ struct Link{
     {}
 };
 
-static const int            s_PinIconSize = 24;
-static std::vector<Node>    s_Nodes;
-static std::vector<Link>    s_Links;
-static ImTextureID          s_HeaderBackground = nullptr;           
-static ImTextureID          s_SaveIcon = nullptr;
-static ImTextureID          s_RestoreIcon = nullptr;
+static const int s_PinIconSize = 24;
+static std::vector<Node> s_Nodes;
+static std::vector<Link> s_Links;
+static ImTextureID s_HeaderBackground = nullptr;           
+static ImTextureID s_SaveIcon = nullptr;
+static ImTextureID s_RestoreIcon = nullptr;
 
 struct NodeIdLess{
     bool operator()(const ed::NodeId& lhs, const ed::NodeId& rhs) const {
@@ -198,6 +230,8 @@ static void BuildNode(Node* node){
 
 static Node* SpawnShaderNode(){
 
+    Node newNode = ShaderNode(GetNextId(), "Shader", ImColor(255, 128, 128);
+
     s_Nodes.emplace_back(GetNextId(), "Shader", ImColor(255, 128, 128));
     s_Nodes.back().Outputs.emplace_back(GetNextId(), "ShaderOut", PinType::Shader);
 
@@ -261,115 +295,7 @@ static Node* SpawnTextureNode(){
     return &s_Nodes.back();
 }
 
-/*
-static Node* SpawnMessageNode()
-{
-    s_Nodes.emplace_back(GetNextId(), "", ImColor(128, 195, 248));
-    s_Nodes.back().Type = NodeType::Simple;
-    s_Nodes.back().Outputs.emplace_back(GetNextId(), "Message", PinType::String);
-
-    BuildNode(&s_Nodes.back());
-
-    return &s_Nodes.back();
-}
-
-static Node* SpawnSetTimerNode()
-{
-    s_Nodes.emplace_back(GetNextId(), "Set Timer", ImColor(128, 195, 248));
-    s_Nodes.back().Inputs.emplace_back(GetNextId(), "", PinType::Flow);
-    s_Nodes.back().Inputs.emplace_back(GetNextId(), "Object", PinType::Object);
-    s_Nodes.back().Inputs.emplace_back(GetNextId(), "Function Name", PinType::Function);
-    s_Nodes.back().Inputs.emplace_back(GetNextId(), "Time", PinType::Float);
-    s_Nodes.back().Inputs.emplace_back(GetNextId(), "Looping", PinType::Bool);
-    s_Nodes.back().Outputs.emplace_back(GetNextId(), "", PinType::Flow);
-
-    BuildNode(&s_Nodes.back());
-
-    return &s_Nodes.back();
-}
-
-static Node* SpawnLessNode()
-{
-    s_Nodes.emplace_back(GetNextId(), "<", ImColor(128, 195, 248));
-    s_Nodes.back().Type = NodeType::Simple;
-    s_Nodes.back().Inputs.emplace_back(GetNextId(), "", PinType::Float);
-    s_Nodes.back().Inputs.emplace_back(GetNextId(), "", PinType::Float);
-    s_Nodes.back().Outputs.emplace_back(GetNextId(), "", PinType::Float);
-
-    BuildNode(&s_Nodes.back());
-
-    return &s_Nodes.back();
-}
-
-static Node* SpawnWeirdNode()
-{
-    s_Nodes.emplace_back(GetNextId(), "o.O", ImColor(128, 195, 248));
-    s_Nodes.back().Type = NodeType::Simple;
-    s_Nodes.back().Inputs.emplace_back(GetNextId(), "", PinType::Float);
-    s_Nodes.back().Outputs.emplace_back(GetNextId(), "", PinType::Float);
-    s_Nodes.back().Outputs.emplace_back(GetNextId(), "", PinType::Float);
-
-    BuildNode(&s_Nodes.back());
-
-    return &s_Nodes.back();
-}
-
-static Node* SpawnTraceByChannelNode()
-{
-    s_Nodes.emplace_back(GetNextId(), "Single Line Trace by Channel", ImColor(255, 128, 64));
-    s_Nodes.back().Inputs.emplace_back(GetNextId(), "", PinType::Flow);
-    s_Nodes.back().Inputs.emplace_back(GetNextId(), "Start", PinType::Flow);
-    s_Nodes.back().Inputs.emplace_back(GetNextId(), "End", PinType::Int);
-    s_Nodes.back().Inputs.emplace_back(GetNextId(), "Trace Channel", PinType::Float);
-    s_Nodes.back().Inputs.emplace_back(GetNextId(), "Trace Complex", PinType::Bool);
-    s_Nodes.back().Inputs.emplace_back(GetNextId(), "Actors to Ignore", PinType::Int);
-    s_Nodes.back().Inputs.emplace_back(GetNextId(), "Draw Debug Type", PinType::Bool);
-    s_Nodes.back().Inputs.emplace_back(GetNextId(), "Ignore Self", PinType::Bool);
-    s_Nodes.back().Outputs.emplace_back(GetNextId(), "", PinType::Flow);
-    s_Nodes.back().Outputs.emplace_back(GetNextId(), "Out Hit", PinType::Float);
-    s_Nodes.back().Outputs.emplace_back(GetNextId(), "Return Value", PinType::Bool);
-
-    BuildNode(&s_Nodes.back());
-
-    return &s_Nodes.back();
-}
-
-static Node* SpawnTreeSequenceNode()
-{
-    s_Nodes.emplace_back(GetNextId(), "Sequence");
-    s_Nodes.back().Type = NodeType::Tree;
-    s_Nodes.back().Inputs.emplace_back(GetNextId(), "", PinType::Flow);
-    s_Nodes.back().Outputs.emplace_back(GetNextId(), "", PinType::Flow);
-
-    BuildNode(&s_Nodes.back());
-
-    return &s_Nodes.back();
-}
-
-static Node* SpawnTreeTaskNode()
-{
-    s_Nodes.emplace_back(GetNextId(), "Move To");
-    s_Nodes.back().Type = NodeType::Tree;
-    s_Nodes.back().Inputs.emplace_back(GetNextId(), "", PinType::Flow);
-
-    BuildNode(&s_Nodes.back());
-
-    return &s_Nodes.back();
-}
-
-static Node* SpawnTreeTask2Node()
-{
-    s_Nodes.emplace_back(GetNextId(), "Random Wait");
-    s_Nodes.back().Type = NodeType::Tree;
-    s_Nodes.back().Inputs.emplace_back(GetNextId(), "", PinType::Flow);
-
-    BuildNode(&s_Nodes.back());
-
-    return &s_Nodes.back();
-}*/
-
-static Node* SpawnComment()
-{
+static Node* SpawnComment(){
     s_Nodes.emplace_back(GetNextId(), "Test Comment");
     s_Nodes.back().Type = NodeType::Comment;
     s_Nodes.back().Size = ImVec2(300, 200);
@@ -377,14 +303,12 @@ static Node* SpawnComment()
     return &s_Nodes.back();
 }
 
-//
 void BuildNodes(){
     for (auto& node : s_Nodes)
         BuildNode(&node);
 }
 
 const char* Application_GetName(){ return "RenderGraph"; }
-
 
 void Application_Initialize(){
     ed::Config config;
@@ -416,24 +340,14 @@ void Application_Initialize(){
     ed::SetCurrentEditor(m_Editor);
 
     Node* node;
-    node = SpawnShaderNode();      ed::SetNodePosition(node->ID, ImVec2(-252, 220));
-    node = SpawnPoolNode();           ed::SetNodePosition(node->ID, ImVec2(-300, 351));
-    node = SpawnFBONode();              ed::SetNodePosition(node->ID, ImVec2(-238, 504));
-
-    /*node = SpawnFinalBufferNode();     ed::SetNodePosition(node->ID, ImVec2(71, 80));
-    node = SpawnSetTimerNode();         ed::SetNodePosition(node->ID, ImVec2(168, 316));
-
-    node = SpawnTreeSequenceNode();     ed::SetNodePosition(node->ID, ImVec2(1028, 329));
-    node = SpawnTreeTaskNode();         ed::SetNodePosition(node->ID, ImVec2(1204, 458));
-    node = SpawnTreeTask2Node();        ed::SetNodePosition(node->ID, ImVec2(868, 538));
-
-    node = SpawnComment();              ed::SetNodePosition(node->ID, ImVec2(112, 576));
-    node = SpawnComment();              ed::SetNodePosition(node->ID, ImVec2(800, 224));
-
-    node = SpawnLessNode();             ed::SetNodePosition(node->ID, ImVec2(366, 652));
-    node = SpawnWeirdNode();            ed::SetNodePosition(node->ID, ImVec2(144, 652));
-    node = SpawnMessageNode();          ed::SetNodePosition(node->ID, ImVec2(-348, 698));*/
-    node = SpawnTextureNode();      ed::SetNodePosition(node->ID, ImVec2(-69, 652));
+    node = SpawnShaderNode();      
+    ed::SetNodePosition(node->ID, ImVec2(-252, 220));
+    node = SpawnPoolNode();           
+    ed::SetNodePosition(node->ID, ImVec2(-300, 351));
+    node = SpawnFBONode();              
+    ed::SetNodePosition(node->ID, ImVec2(-238, 504));
+    node = SpawnTextureNode();      
+    ed::SetNodePosition(node->ID, ImVec2(-69, 652));
 
     ed::NavigateToContent();
 
@@ -447,8 +361,6 @@ void Application_Initialize(){
 
 
 void Application_Finalize(){
-
-    //printNodePairs();
 
     auto releaseTexture = [](ImTextureID& id) {
         if (id){
@@ -510,7 +422,6 @@ void DrawPinIcon(const Pin& pin, bool connected, int alpha){
     }
     ax::Widgets::Icon(ImVec2(s_PinIconSize, s_PinIconSize), iconType, connected, color, ImColor(32, 32, 32, alpha));
 };
-
 
 
 void ShowLeftPane(float paneWidth){
