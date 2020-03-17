@@ -60,11 +60,12 @@ enum class PinKind{ Output, Input };
 enum class NodeType{ Blueprint, Simple, Tree, Comment, Texture, Shader, Pool };
 struct Node;
 struct Pin{
-    ed::PinId   ID;
-    ::Node*     Node;
+    ed::PinId ID;
+    ::Node* Node;
     std::string Name;
-    PinType     Type;
-    PinKind     Kind;
+    PinType Type;
+    PinKind Kind;
+    Link *link = nullptr;
     Pin(int id, const char* name, PinType type):
         ID(id), Node(nullptr), Name(name), Type(type), Kind(PinKind::Input)
     {}
@@ -81,11 +82,10 @@ struct Node {
     ImVec2 Size;
     std::string State, SavedState;
     virtual void process()=0;
-    Node(int id, const char* name, ImColor color = ImColor(255, 255, 255), NodeType type = NodeType::Blueprint):
+    virtual void init()=0;
+    Node(int id, const char* name, ImColor color = ImColor(255, 255, 255), NodeType type = NodeType::Blueprint) :
         ID(id), Name(name), Color(color), Type(type), Size(0, 0)
     {}
-
-    virtual ~Node()=0;
 };
 
 struct ShaderNode : Node {
@@ -95,6 +95,7 @@ struct ShaderNode : Node {
 
     //defined in backend file!
     void process();
+    void init();
 
     ShaderNode(int id, const char* name, ImColor color = ImColor(255, 255, 255), NodeType type = NodeType::Shader) : 
     Node(id, name, color, type)
@@ -111,6 +112,7 @@ struct TextureNode : Node {
 
     //defined in backend file!
     void process();
+    void init();
 
     TextureNode(int id, const char* name, ImColor color = ImColor(255, 255, 255), NodeType type = NodeType::Texture) : 
     Node(id, name, color, type)
@@ -122,22 +124,18 @@ struct TextureNode : Node {
 
 struct FBONode : Node {
 
-    RenderTarget *target;
+    RenderTarget *target = nullptr;
 
     //defined in backend file!
     void process();
+    void init();
 
-    FBONode(int id, const char* name, ImColor color = ImColor(255, 255, 255), NodeType type = NodeType::F) : 
+    FBONode(int id, const char* name, ImColor color = ImColor(255, 255, 255), NodeType type = NodeType::Buffer) : 
     Node(id, name, color, type)
-    {
-        textureID = textureCount++;
-        textureObj = textures[textureID];
-    }
+    {}
 }
 
-
-
-struct Link{
+struct Link {
     ed::LinkId ID;
     ed::PinId StartPinID, EndPinID;
     ImColor Color;
@@ -230,9 +228,10 @@ static void BuildNode(Node* node){
 
 static Node* SpawnShaderNode(){
 
-    Node newNode = ShaderNode(GetNextId(), "Shader", ImColor(255, 128, 128);
+    Node newNode = ShaderNode(GetNextId(), "Shader", ImColor(255, 128, 128));
 
-    s_Nodes.emplace_back(GetNextId(), "Shader", ImColor(255, 128, 128));
+    //s_Nodes.emplace_back(GetNextId(), "Shader", ImColor(255, 128, 128));
+    s_Nodes.push_back(newNode);
     s_Nodes.back().Outputs.emplace_back(GetNextId(), "ShaderOut", PinType::Shader);
 
     s_Nodes.back().Inputs.emplace_back(GetNextId(), "1", PinType::Int);
@@ -241,7 +240,6 @@ static Node* SpawnShaderNode(){
     s_Nodes.back().Inputs.emplace_back(GetNextId(), "4", PinType::Float);
     s_Nodes.back().Inputs.emplace_back(GetNextId(), "Texture 1", PinType::Buffer);
     s_Nodes.back().Inputs.emplace_back(GetNextId(), "Texture 2", PinType::Buffer);
-
 
     BuildNode(&s_Nodes.back());
 
@@ -666,7 +664,8 @@ void Application_Frame(){
                     ImGui::PopStyleVar();
                     builder.EndInput();
                 }
-
+                
+                //Draw the actual contents of the node (textures, info, etc)
                 static char str0[30] = "Path to texture";
 
                 builder.Middle();
@@ -729,6 +728,7 @@ void Application_Frame(){
         for (auto& link : s_Links)
             ed::Link(link.ID, link.StartPinID, link.EndPinID, link.Color, 2.0f);
 
+        //
         if (!createNewNode){
             if (ed::BeginCreate(ImColor(255, 255, 255), 2.0f)){
                 auto showLabel = [](const char* label, ImColor color){
@@ -774,6 +774,7 @@ void Application_Frame(){
                             if (ed::AcceptNewItem(ImColor(128, 255, 128), 4.0f)){
                                 s_Links.emplace_back(Link(GetNextId(), startPinId, endPinId));
                                 s_Links.back().Color = GetIconColor(startPin->Type);
+
                             }
                         }
                     }
@@ -803,7 +804,10 @@ void Application_Frame(){
                 while (ed::QueryDeletedLink(&linkId)){
                     if (ed::AcceptDeletedItem()){
                         auto id = std::find_if(s_Links.begin(), s_Links.end(), [linkId](auto& link) { return link.ID == linkId; });
-                        if (id != s_Links.end()) s_Links.erase(id);
+                        if (id != s_Links.end()){ 
+                            
+                            s_Links.erase(id);
+                        }
                     }
                 }
                 ed::NodeId nodeId = 0;

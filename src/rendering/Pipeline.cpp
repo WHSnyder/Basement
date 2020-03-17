@@ -1,5 +1,7 @@
 #include <stack>
 #include "RenderGraphNodeDefs.h"
+#include <GL/gl3w.h>    
+//#include <GLFW/glfw3.h>
 
 //Implementation for the OpenGL backend of the nodes system.
 
@@ -45,6 +47,11 @@ void FBONode::process(){
 	visited = 1;
 }
 
+void FBONode::init(){
+
+	if (outputs[0] -> node -> Type == NodeType::	)
+}
+
 void ShaderNode::process(){
 
 	//For now, we simply render to all FBOs the shader outputs to, so we dont have to revisit the shader later 
@@ -71,9 +78,9 @@ void ShaderNode::process(){
 
 		for (auto &&poolPin : inputs){
 
-			Node *curNodePool = pin -> node;
+			Node *curNodePool = poolPin -> node;
 
-			if (curNodePool -> Type != NodeType::Buffer) continue;
+			if (curNodePool -> Type != NodeType::Pool) continue;
 
 			PoolNode *poolNode = reinterpret_cast<PoolNode *> curNodePool; //Slow but good for now
 			Pool *curPool = poolNode -> pool;
@@ -90,6 +97,23 @@ void ShaderNode::process(){
 	//Shader has read its inputs and written to all targets.
 	visited = 1;
 }
+
+void ShaderNode::init(){
+
+	for (auto &&pin : inputs){
+
+		Node *curNode = pin -> node;
+		NodeType type = curNode -> Type;
+
+		if (type == NodeType::Pool) continue;
+
+		if (type == NodeType:: )
+
+
+	}	
+}
+
+
 
 //Handles all static bindings, runs at beginning of game.
 //Binds textures to shaders, for now uses global active tex IDs, will have to change.
