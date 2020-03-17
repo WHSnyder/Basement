@@ -5,8 +5,8 @@
 #include "PxPhysicsAPI.h"
 
 
-#include <glm.hpp>
-#include <ext.hpp>
+#include "glm/glm.hpp"
+#include "glm/ext.hpp"
 
 using namespace physx;
 

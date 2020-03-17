@@ -1,6 +1,10 @@
 # Project definition
 cmake_minimum_required(VERSION 3.1)
 
-add_library(utils)
+set(UTILS_SOURCES ShaderUtils.cpp controls.cpp)
 
-message(STATUS "Files captured: ${RENDER_SOURCES}")
+if (PYBINDING)
+	add_library(utils SHARED ${UTILS_SOURCES})
+else ()
+	target_sources(glTest PRIVATE ${UTILS_SOURCES})
+endif()

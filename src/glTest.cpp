@@ -19,10 +19,10 @@
 #include <vector>
 
 #include "rendering/Texture.h"
-#include <mesh/Mesh.h>
-#include <phys/Physics.h>
-#include <gtx/transform.hpp>
-#include <perlin/PerlinNoise.hpp>
+#include "mesh/Mesh.h"
+#include "phys/Physics.h"
+#include "glm/gtx/transform.hpp"
+#include "perlin/PerlinNoise.hpp"
 #include "rendering/Shader.h"
 #include "utils/controls.hpp"
 #include "rendering/RenderTarget.h"
@@ -365,7 +365,6 @@ int run_game(){
 
 	return 0;
 }
-
 
 
 

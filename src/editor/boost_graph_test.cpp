@@ -46,6 +46,39 @@ typedef adjacency_list<vecS, vecS, bidirectionalS, property<vertex_color_t, defa
 typedef graph_traits<Graph>::vertex_descriptor Vertex;
 
 
+
+//Calculate all distances from final buffer in graph
+//For each dep in DefaultFBO, prepare
+
+
+
+
+//prepare()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 int main(int argc, char **argv){
 
 	yolo t = yolo();
@@ -66,3 +99,4 @@ int main(int argc, char **argv){
 
 	return 1;
 }
+

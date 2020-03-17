@@ -17,7 +17,8 @@
 //cmake -H. -Bbuild -G "Xcode"
 //xcodebuild -project ImGuiNodeEditor.xcodeproj -alltargets -configuration Release
 //install_name_tool -add_rpath /Users/will/projects/cpprtx/libs/glfw/build/src/ RenderGraph
-/*{
+
+/*
 using namespace std;
 
     string shader_path = string("Users/home/projects/cpprtx/assets/shaders");
@@ -25,7 +26,7 @@ using namespace std;
     string vertExt = string("_v.glsl");
     string fragExt = string("_f.glsl");
     //vector<Shader> shaders; 
-}*/
+*/
 
 int shaderCount = 0;
 bool showImg = false;
@@ -55,7 +56,7 @@ static ed::EditorContext* m_Editor = nullptr;
 
 enum class PinType{ Flow, Bool, Int, Float, Function, Delegate, Shader, Object, Buffer, String };
 enum class PinKind{ Output, Input };
-enum class NodeType{ Blueprint, Simple, Tree, Comment, Texture, Shader };
+enum class NodeType{ Blueprint, Simple, Tree, Comment, Texture, Shader, Pool,  };
 struct Node;
 struct Pin{
     ed::PinId   ID;
@@ -76,11 +77,34 @@ struct Node {
     ImColor Color;
     NodeType Type;
     ImVec2 Size;
+    int static_flag;
     std::string State, SavedState;
+    virtual void process()=0;
     Node(int id, const char* name, ImColor color = ImColor(255, 255, 255), NodeType type = NodeType::Blueprint):
         ID(id), Name(name), Color(color), Type(type), Size(0, 0), num(type == NodeType::Texture ? ++texture_cnt : 0)
     {}
 };
+
+
+struct ShaderNode : Node {
+
+    Shader *shaderObj;
+    
+
+    //defined in backend file!
+    void process();
+
+
+
+    ShaderNode(int id, ){
+
+    }
+
+}
+
+
+
+
 struct Link{
     ed::LinkId ID;
     ed::PinId StartPinID, EndPinID;
@@ -751,7 +775,6 @@ void Application_Frame(){
                         ImGui::EndChild();
                     }
                 }
-
 
                 for (auto& output : node.Outputs){
                     if (!isSimple && output.Type == PinType::Delegate) continue;
