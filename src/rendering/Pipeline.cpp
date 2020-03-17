@@ -1,5 +1,7 @@
 #include <stack>
 
+//Implementation for the OpenGL backend of the nodes system.
+
 using namespace std;
 
 
@@ -35,9 +37,20 @@ struct Node {
 
 class Pool {
 
+	vector<Mesh *> meshes;
+	vector<mat4> modelMats;
 
+	void addMat(mat4 modelMat){
+		modelMats.push_back(modelMat);
+	}
 
+	void addMesh(Mesh *mesh){
+		meshes.push_back(mesh);
+	}
 
+	int getSize(){
+		return modelMats.size();
+	}
 }
 
 
@@ -45,17 +58,61 @@ class Pool {
 
 
 void ShaderNode::process(){
+
+	//For now, we simply render to all FBOs the shader outputs to, so we dont have to revisit the shader later 
+	if (visited) return;
+
+	//Since FBOs are dynamic, we must loop through them and fill them before proceeding
+	for (auto &&pin : inputs){
+
+		Node *curNode = pin -> node;
+
+		//Will return instantly if node is static (textures, pools, NOT FBOs)
+		curNode -> process();
+	}
 	
 	//set current program
+	glUseProgram(shaderObj -> progID);
 		
 	//for each output fbo
 		//for each pool
 			//bind vaos, uniforms
 			//render
 
-	glUseProgram(shaderObj -> progID);
+	//For now, render to all FBOs connected.  Is not in the spirit of intuitive DFS, perhaps per FBO approach is better?
+	//This is simpler so will be used for MVP
+	for (auto &&pin : outputs){
+
+		Node *curNode = pin -> node;
+		FBONode *fboOutput = reinterpret_cast<FBONode *> curNode;
+
+		fboOutput -> target -> set();
+
+		for (auto &&poolPin : inputs){
+
+			Node *curNodePool = pin -> node;
+
+			if (curNodePool -> Type != NodeType::Buffer) continue;
+
+			PoolNode *poolNode = reinterpret_cast<PoolNode *> curNodePool; //Slow but good for now
+			Pool *curPool = poolNode -> pool;
+
+			for (int i=0; i < curPool -> getSize(); i++){
+
+				shaderObj -> setModel(value_ptr(curPool -> modelMats[i]));
+				
+
+			}
+
+		}	
+
+		
+	}	
 
 
+
+
+	visited = 1;
 }
 
 

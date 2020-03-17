@@ -56,23 +56,29 @@ float *generate_terrain(int dim, double freq, float height_mult, int32_t *physx_
 	for (int i = 0; i < dim; i++){
 		for (int j = 0; j < dim; j++){
 
+			//This lib will be replaced by shader implementation (readback of course for baking)
 			float per = (float) perlin.accumulatedOctaveNoise2D_0_1(j * mult, i * mult, 8);
 
-			if (i == 0 || i == dim - 1) per = 0.0;
+			if (i == 0 || i == dim - 1) per = 0.0; 
 			if (j == 0 || j == dim - 1) per = 0.0;
 			
-			result[j * dim + i] = per; //has to be flipped due opengl flipping textures.... I think?
+			//Texture be flipped for opengl <-> physx correspondence
+			result[j * dim + i] = per; 
 
-			int32_t cur = (int32_t) 3000.0 * height_mult * per;
-			physx_samples[i * dim + j] = cur << 16;
+			//Increase range of samples, then set scale factor in HF constructor to compensate for 16 bit limitation
+			int32_t cur = (int32_t) 3000.0 * height_mult * per; 
+
+			//Shift the data left to fit physx HF sample format
+			physx_samples[i * dim + j] = cur << 16; 
 		}
 	}
 	return result;
 }
+
 //Python 3.7 root
 ///usr/local/opt/python/Frameworks/Python.framework/Versions/
 
-
+//Not for generating full screen quad!
 Mesh gen_plane(){
 
     vec3 verts[] = {vec3(-1,1,0), vec3(1,1,0), vec3(-1,-1,0), vec3(1,-1,0)};
@@ -117,7 +123,7 @@ void showFPS(GLFWwindow *pWindow){
 
 GLFWwindow* window;
 
-
+//Run main game loop
 int run_game(){
 	
 	Simu mainSimu;

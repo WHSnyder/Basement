@@ -73,7 +73,7 @@ struct Node {
     std::string Name;
     std::vector<Pin> Inputs, Outputs;
     void *objptr;
-    int num;
+    int num, visited;
     ImColor Color;
     NodeType Type;
     ImVec2 Size;
@@ -89,7 +89,7 @@ struct Node {
 struct ShaderNode : Node {
 
     Shader *shaderObj;
-    
+
 
     //defined in backend file!
     void process();
