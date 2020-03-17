@@ -68,16 +68,16 @@ struct Pin{
         ID(id), Node(nullptr), Name(name), Type(type), Kind(PinKind::Input)
     {}
 };
+
 struct Node {
+
     ed::NodeId ID;
     std::string Name;
     std::vector<Pin> Inputs, Outputs;
-    void *objptr;
-    int num, visited;
+    int num, visited, static_flag;
     ImColor Color;
     NodeType Type;
     ImVec2 Size;
-    int static_flag;
     std::string State, SavedState;
     virtual void process()=0;
     Node(int id, const char* name, ImColor color = ImColor(255, 255, 255), NodeType type = NodeType::Blueprint):

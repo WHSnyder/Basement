@@ -15,16 +15,16 @@ struct Pin{
         ID(id), Node(nullptr), Name(name), Type(type), Kind(PinKind::Input)
     {}
 };
+
+
 struct Node {
     ed::NodeId ID;
     std::string Name;
     std::vector<Pin> Inputs, Outputs;
-    void *objptr;
     int num;
     ImColor Color;
     NodeType Type;
     ImVec2 Size;
-    void *data;
     int static_flag;
     std::string State, SavedState;
     Node(int id, const char* name, ImColor color = ImColor(255, 255, 255), NodeType type = NodeType::Blueprint):
@@ -33,12 +33,16 @@ struct Node {
 };
 
 
-
-
 class Pool {
 
 	vector<Mesh *> meshes;
 	vector<mat4> modelMats;
+	static int poolCounter = 0;
+	int poolID;
+
+	Pool(){
+		poolID = poolCounter++;
+	}
 
 	void addMat(mat4 modelMat){
 		modelMats.push_back(modelMat);
@@ -53,9 +57,20 @@ class Pool {
 	}
 }
 
+//For now, pools and textures have no inputs, thus process returns immediately.
+void PoolNode::process(){ return; }
+void TextureNode::process(){ return; }
 
+void FBONode::process(){
 
+	if (visited) return;
 
+	//Process all inputs 	
+	for (auto &&pin : inputs)
+		pin -> node -> process();
+
+	visited = 1;
+}
 
 void ShaderNode::process(){
 
@@ -63,17 +78,9 @@ void ShaderNode::process(){
 	if (visited) return;
 
 	//Since FBOs are dynamic, we must loop through them and fill them before proceeding
-	for (auto &&pin : inputs){
-
-		Node *curNode = pin -> node;
-
-		//Will return instantly if node is static (textures, pools, NOT FBOs)
-		curNode -> process();
-	}
+	for (auto &&pin : inputs)
+		pin -> node -> process();
 	
-	//set current program
-	glUseProgram(shaderObj -> progID);
-		
 	//for each output fbo
 		//for each pool
 			//bind vaos, uniforms
@@ -81,6 +88,7 @@ void ShaderNode::process(){
 
 	//For now, render to all FBOs connected.  Is not in the spirit of intuitive DFS, perhaps per FBO approach is better?
 	//This is simpler so will be used for MVP
+	//Still need to handle post processes
 	for (auto &&pin : outputs){
 
 		Node *curNode = pin -> node;
@@ -99,74 +107,30 @@ void ShaderNode::process(){
 
 			for (int i=0; i < curPool -> getSize(); i++){
 
+				//A ton of redundant GL calls here, will reorg interface soon. 
 				shaderObj -> setModel(value_ptr(curPool -> modelMats[i]));
-				
-
+				curPool -> meshes[i] -> draw(shaderObj -> progID);
 			}
-
 		}	
-
-		
 	}	
 
-
-
-
+	//Shader has read its inputs and written to all targets.
 	visited = 1;
 }
 
-
-
-
-
-void bindAllNodes(){
+//Handles all static bindings, runs at beginning of game.
+//Binds textures to shaders, for now uses global active tex IDs, will have to change.
+/*
+void bindStaticsAwake(vector<Node *> nodes){
 	
-	//find finalfbo
+	for (auto Node&& node : nodes){
 
-	//for all inputs of finalfbo
-		//
-}
+		if (!node -> static_flag) node -> visited = 0;
 
-
-void initialize(Node& newNode){
-
-	if (newNode.type == NodeType::Shader){
 
 
 	}
 
-}
-
-
-
-
-
-
-Pipeline::render_run(Node cur_node){
-
-		
-		//for all neighbors, add to priority queue with distance as priority
-
+	//for all inputs of finalfbo
 		//
-
-		for (auto input in cur_node -> inputs){
-
-			render_run(input -> node);
-		}
-
-		
-
-
-
-
-
-
-		if (curr.type == pool){
-
-
-		}	
-
-
-	
-	
-}
+}*/
