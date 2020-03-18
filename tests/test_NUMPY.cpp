@@ -3,38 +3,37 @@
 #include <iostream>
 #include <vector>
 #include <string>
-#include <opencv2/opencv.hpp> 
 
+#include "glm/glm.hpp"
+#include "glm/ext.hpp"
 
 using namespace std;
+using namespace glm;
+
+vec3 testVec = vec3(1,0,0);
 
 
-int num_images = 0;
 
-int vec3[3] = {1,0,0};
+void dotTest(py::array_t<int, py::array::c_style | py::array::forcecast> array){
+
+}
+
+py::array vecNPGet(){
 
 
-class MyVec {
-
-public:
-
-	int x,y,z;
-
-	MyVec(int x_,int y_, int z_){
-		x = x_;
-		y = y_;
-		z = z_;
-	}
-
-	int dot(MyVec other){
-		return x*other.x + y*other.y + z*other.z;
-	}
 }
 
 
 
 
+
+
+
+
+
+
 PYBIND11_MODULE(test_NUMPY, m) {
-    m.doc() = "Testing basic load cv mat";
-    m.def("run_basic", &run_basic, "Run load image test");
+    m.doc() = "Basic glm numpy ops/conversions";
+    m.def("Dot test", &dotTest, "Dont numpy array with glm vec");
+    m.def("Vec -> NP getter", &vecNPGet, "Convert glm vec to np array and return");
 }

@@ -65,7 +65,6 @@ struct Pin{
     std::string Name;
     PinType Type;
     PinKind Kind;
-    Link *link = nullptr;
     Pin(int id, const char* name, PinType type):
         ID(id), Node(nullptr), Name(name), Type(type), Kind(PinKind::Input)
     {}
@@ -76,6 +75,7 @@ struct Node {
     ed::NodeId ID;
     std::string Name;
     std::vector<Pin> Inputs, Outputs;
+    std::vector<Link *> input_links, output_links;
     int visited, static_flag;
     ImColor Color;
     NodeType Type;
