@@ -1,5 +1,7 @@
 #version 410 core
 
+uniform vec4 lightpos;
+
 layout (location = 0) in vec3 inPosition;
 
 out vec4 vertOutColor;
