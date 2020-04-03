@@ -47,25 +47,6 @@ struct Material {
 
 class Sphere;
 
-int read_obj_file(string filename, vector<vec3>& verts, vector<vec3>& normals, vector<TriPrim>& tris);
-
-class Mesh {
-
-	public:
-
-		vector<TriPrim> tris;
-		vector<vec3> verts, normals;
-
-		Mesh(vector<TriPrim> triangles, vector<vec3> vertices, vector<vec3> normz){
-			tris = triangles;
-			verts = vertices;
-			normals = normz;
-		}
-
-		Mesh(string filename){
-			read_obj_file(filename, verts, normals, tris);
-		}
-};
 
 
 class Obj {
