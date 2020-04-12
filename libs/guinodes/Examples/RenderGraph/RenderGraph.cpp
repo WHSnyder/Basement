@@ -58,8 +58,11 @@ static ed::EditorContext* m_Editor = nullptr;
 enum class PinType{ Flow, Bool, Int, Float, Function, Delegate, Shader, Object, Buffer, String };
 enum class PinKind{ Output, Input };
 enum class NodeType{ Blueprint, Simple, Tree, Comment, Texture, Shader, Pool };
+
 struct Node;
-struct Pin{
+struct Link;
+struct Pin {
+    std::vector<Link *> input_links;
     ed::PinId ID;
     ::Node* Node;
     std::string Name;
@@ -69,13 +72,11 @@ struct Pin{
         ID(id), Node(nullptr), Name(name), Type(type), Kind(PinKind::Input)
     {}
 };
-
 struct Node {
 
     ed::NodeId ID;
     std::string Name;
     std::vector<Pin> Inputs, Outputs;
-    std::vector<Link *> input_links, output_links;
     int visited, static_flag;
     ImColor Color;
     NodeType Type;
@@ -143,6 +144,7 @@ struct Link {
         ID(id), StartPinID(startPinId), EndPinID(endPinId), Color(255, 255, 255)
     {}
 };
+
 
 static const int s_PinIconSize = 24;
 static std::vector<Node> s_Nodes;

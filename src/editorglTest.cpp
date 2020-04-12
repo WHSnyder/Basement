@@ -230,7 +230,6 @@ void Game_Finalize(){
 //Run main game loop
 int run_game(){
 	
-	
 	//Perlin noise params
     Texture grass_tex = Texture(string("assets/images/grass.jpg"), 0);
     Texture skybox = Texture(string("assets/images/yellowcloud"), 1);
@@ -240,8 +239,6 @@ int run_game(){
 	Shader terrain_shader = Shader("assets/shaders/noise_test");
 	Shader basic_shader = Shader("assets/shaders/basic");
 	Shader skybox_shader = Shader("assets/shaders/cubemap");
-
-
 
     float ratio;
     int width, height;

@@ -164,9 +164,9 @@ int run_game(){
         exit(EXIT_FAILURE);
     glfwSetKeyCallback(window, key_callback);
 
-	Mesh cube = Mesh(string("/Users/will/projects/cpprtx/assets/meshes/cube.obj"));
-	Mesh sphere = Mesh(string("/Users/will/projects/cpprtx/assets/meshes/ball.obj"));
-	Mesh terrain_plane = Mesh(string("/Users/will/projects/cpprtx/assets/meshes/terrain_plane.obj"));
+	Mesh cube = Mesh(string("assets/meshes/cube.obj"));
+	Mesh sphere = Mesh(string("assets/meshes/ball.obj"));
+	Mesh terrain_plane = Mesh(string("assets/meshes/terrain_plane.obj"));
 	Mesh plane = gen_plane();
 
 	RenderTarget *shadowTarget = new RenderTarget(1024,1024,1);
@@ -206,16 +206,12 @@ int run_game(){
 
 	mat4 playerViewMat = lookAt(vec3(18,18,18),vec3(0,0,-10),vec3(0,1.0,0));
 	mat4 proj = infinitePerspective(glm::radians(45.0f), 1.0f, 1.0f);
-	//mat4 proj = perspective(glm::radians(45.0f), 1.0f, 0.01f, 30.0f);
-	mat4 rot = mat4(1.0),testmat;
-	mat4 iden = mat4(1.0);
-	mat4 trans = translate(vec3(0,9,0));
-	mat4 lighttrans = translate(vec3(0,18,18));
+	mat4 rot = mat4(1.0), testmat, iden = mat4(1.0), trans = translate(vec3(0,9,0)), lighttrans = translate(vec3(0,18,18));
 
 	vec3 lightPos = vec3(0,18,18);
 	vec3 lookDir = vec3(0,9,0) - lightPos;
 
-	mat4 depthOrtho = proj;// ortho<float>(-10,10,-10,10,0,20);
+	mat4 depthOrtho = proj;
  	mat4 depthView = lookAt(lightPos, vec3(0,9,0), normalize( cross(vec3(1,0,0),lookDir) ));
 
 	mat4 biasMatrix(

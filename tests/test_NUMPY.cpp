@@ -20,7 +20,7 @@ void dotTest(py::array_t<int, py::array::c_style | py::array::forcecast> array){
 
 py::array vecNPGet(){
 
-
+	return 
 }
 
 
