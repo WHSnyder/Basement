@@ -218,3 +218,16 @@ void Shader::printUniforms(){
 	    printf("Uniform #%d Type: %u Name: %s\n", i, types[i], names[i]);
 	}
 }
+
+
+#ifdef PYBIND
+#include <pybind11/pybind11.h>
+
+namespace py = pybind11;
+
+PYBIND11_MODULE(Shader, m) {
+    py::class_<Shader>(m, "Shader")
+        .def(py::init<std::string &>())
+        .def("printUniforms", &Shader::printUniforms);
+}
+#endif

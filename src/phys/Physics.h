@@ -27,7 +27,7 @@ private:
 
 	PxMaterial *gMaterial = nullptr;
 
-	PxRigidDynamic *body1,*body2;
+	PxRigidDynamic *body1, *body2;
 
 public:
 

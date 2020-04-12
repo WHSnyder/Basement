@@ -132,23 +132,6 @@ void Simu::getModelMats(){
 
 		memcpy(modelmat, matTemp->front(), 16 * sizeof(float));
 		delete(matTemp);//will be changed for eff's sake
-
-		/*int id = (int)(size_t) activeTransforms[i].userData;
-		
-		if (id == 1){
-
-			//sphere
-			matTemp = new PxMat44(activeTransforms[i].actor2World);
-			memcpy(sphereMat, matTemp->front(),16 * sizeof(float));
-			delete(matTemp);
-		}
-		else if (id == 2){
-			
-			//box
-			matTemp = new PxMat44(activeTransforms[i].actor2World);
-			memcpy(boxMat,matTemp->front(),16 * sizeof(float));
-			delete(matTemp);
-		}*/
 	}
 }
 
@@ -232,3 +215,16 @@ void Simu::cleanupSimu(){
 	
 	std::cout << "Simu done" << std::endl;
 }
+
+
+#ifdef PYBIND
+#include <pybind11/pybind11.h>
+
+namespace py = pybind11;
+
+PYBIND11_MODULE(Simu, m) {
+    py::class_<Simu>(m, "Simulation")
+        .def(py::init())
+        .def("stepSimu", &Simu::stepSimu);
+}
+#endif

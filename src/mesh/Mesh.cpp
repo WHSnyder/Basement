@@ -69,8 +69,6 @@ void Mesh::read_obj_file(string filename){
         return -1;
     }
 
-    //cout << "Beginning Assimp load" << endl;
-
     for (unsigned int i = 0; i < scene->mNumMeshes; ++i){
 
         aiMesh* mesh = scene -> mMeshes[i];
@@ -103,14 +101,7 @@ void Mesh::read_obj_file(string filename){
             for (unsigned int k = 0; k < face.mNumIndices; ++k) {indices.push_back(face.mIndices[k]);}
         }
     }
-
-   // delete scene;
 }
-
-
-
-
-
 
 
 
