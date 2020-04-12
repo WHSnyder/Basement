@@ -175,7 +175,7 @@ void Shader::setColor(glm::vec3 v){
 	glUniform3fv(col_loc, 1, glm::value_ptr(v));	
 }
 
-void Shader::getUniforms(vector<string>& names, vector<GLenum>& types, int filter = 1){
+void Shader::getUniforms(vector<string>& names, vector<GLenum>& types, int filter){
 
 	GLint i, count, size;
 	GLenum type; // type of the variable (float, vec3 or mat4, etc)
@@ -200,8 +200,8 @@ void Shader::getUniforms(vector<string>& names, vector<GLenum>& types, int filte
 	    	continue;
 	    }
 
-	   	names.push_back(string(name))
-	    types.push_back(type)
+	   	names.push_back(string(name));
+	    types.push_back(type);
 	}
 }
 
@@ -214,7 +214,7 @@ void Shader::printUniforms(){
 	
 	printf("Active Uniforms: %d\n", names.size());
 
-	for (i = 0; i < names.size(); i++){
+	for (int i = 0; i < names.size(); i++){
 	    printf("Uniform #%d Type: %u Name: %s\n", i, types[i], names[i]);
 	}
 }

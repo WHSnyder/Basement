@@ -116,21 +116,30 @@ void Simu::addTerrain(int32_t *data, int rows, int cols, int scale){
 
 
 //Simple transform update for testing purposes
-void Simu::getModelMats(float *sphereMat, float *boxMat){
+void Simu::getModelMats(){
 
 	PxU32 nbActiveTransforms;
 	const PxActiveTransform* activeTransforms = gScene -> getActiveTransforms(nbActiveTransforms);
+	PxActiveTransform cur_transform;
 	PxMat44 *matTemp;
 
 	for (PxU32 i=0; i < nbActiveTransforms; i++){
 
-		int id = (int)(size_t) activeTransforms[i].userData;
+		cur_transform = activeTransforms[i];
+
+		glm::mat4 *modelmat = reinterpret_cast<glm::mat4 *>(cur_transform.userData); 
+		matTemp = new PxMat44(cur_transform.actor2World);
+
+		memcpy(modelmat, matTemp->front(), 16 * sizeof(float));
+		delete(matTemp);//will be changed for eff's sake
+
+		/*int id = (int)(size_t) activeTransforms[i].userData;
 		
 		if (id == 1){
 
 			//sphere
 			matTemp = new PxMat44(activeTransforms[i].actor2World);
-			memcpy(sphereMat,matTemp->front(),16 * sizeof(float));
+			memcpy(sphereMat, matTemp->front(),16 * sizeof(float));
 			delete(matTemp);
 		}
 		else if (id == 2){
@@ -139,12 +148,12 @@ void Simu::getModelMats(float *sphereMat, float *boxMat){
 			matTemp = new PxMat44(activeTransforms[i].actor2World);
 			memcpy(boxMat,matTemp->front(),16 * sizeof(float));
 			delete(matTemp);
-		}
+		}*/
 	}
 }
 
 //Simple collider insertion for testing
-void Simu::addSphere(glm::vec3 center, float extent, int tag){
+void Simu::addSphere(glm::vec3 center, float extent, int tag, void *objptr){
 
 	PxShape* sphere = gPhysics->createShape(PxSphereGeometry(extent), *gMaterial);
 
@@ -153,13 +162,15 @@ void Simu::addSphere(glm::vec3 center, float extent, int tag){
 	body -> attachShape(*sphere);
 	body -> userData = (void *) tag;
 	body -> setMass(4.0f);
-	gScene -> addActor(*body);
 
+	body -> userData = objptr;
+
+	gScene -> addActor(*body);
 	sphere -> release();
 }
 
 //Simple collider insertion for testing
-void Simu::addCube(glm::vec3 center, float extent, int tag){
+void Simu::addCube(glm::vec3 center, float extent, int tag, void *objptr){
 
 	PxShape* box = gPhysics->createShape(PxBoxGeometry(extent, extent, extent), *gMaterial);
 
@@ -168,8 +179,10 @@ void Simu::addCube(glm::vec3 center, float extent, int tag){
 	body -> attachShape(*box);
 	body -> userData = (void *) tag;
 	body -> setMass(4.0f);
-	gScene -> addActor(*body);
 
+	body -> userData = objptr;
+	
+	gScene -> addActor(*body);
 	box -> release();
 }
 

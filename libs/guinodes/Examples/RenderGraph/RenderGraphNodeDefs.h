@@ -13,7 +13,9 @@ enum class PinType{ Flow, Bool, Int, Float, Function, Delegate, Shader, Object, 
 enum class PinKind{ Output, Input };
 enum class NodeType{ Blueprint, Simple, Tree, Comment, Texture, Shader, Pool,  };
 struct Node;
+struct Link;
 struct Pin{
+	std::vector<Link *> links;
     ed::PinId   ID;
     ::Node*     Node;
     std::string Name;

@@ -96,7 +96,10 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
         glfwSetWindowShouldClose(window, GL_TRUE);
 }
-/*
+
+double lastTime; 
+int nbFrames = 0;
+
 void showFPS(GLFWwindow *pWindow){
 
 	// Measure speed
@@ -105,12 +108,11 @@ void showFPS(GLFWwindow *pWindow){
 	nbFrames++;
 	
 	if ( delta >= 1.0 ){ // If last cout was more than 1 sec ago
-		cout << 1000.0/double(nbFrames) << endl;
 
 		double fps = double(nbFrames) / delta;
 
 		std::stringstream ss;
-		ss << GAME_NAME << " " << VERSION << " [" << fps << " FPS]";
+		ss << "GLTest" << " [" << fps << " FPS]";
 
 		glfwSetWindowTitle(pWindow, ss.str().c_str());
 
@@ -118,7 +120,6 @@ void showFPS(GLFWwindow *pWindow){
 		lastTime = currentTime;
 	}
 }
-*/
 
 
 GLFWwindow* window;
@@ -232,8 +233,8 @@ int run_game(){
 	float *viewptr = value_ptr(playerViewMat), *projptr = value_ptr(proj);
 	
 	mainSimu.addTerrain(px_samples, dim, terrain_mult);
-	mainSimu.addSphere(vec3(-9,13,-9), 1.0f, 1);
-	mainSimu.addCube(vec3(6,15,6), 1.0f, 2);
+	mainSimu.addSphere(vec3(-9,13,-9), 1.0f, 1, reinterpret_cast<void *>(sphereMat));
+	mainSimu.addCube(vec3(6,15,6), 1.0f, 2, reinterpret_cast<void *>(boxMat));
 
 	basic_shader.setProj(projptr);
 
@@ -267,6 +268,8 @@ int run_game(){
 	// Setup Dear ImGui style
 	ImGui::StyleColorsDark();
 
+	lastTime = glfwGetTime();
+
 
 	do {
 
@@ -284,7 +287,7 @@ int run_game(){
 		t_start = t_now;
 
 		mainSimu.stepSimu(time);
-		mainSimu.getModelMats(sphereMat, boxMat);
+		mainSimu.getModelMats();
 
 		rot = rotate(rot, time * glm::radians(20.0f), vec3(0.0f,1.0f,0.0f));
 		testmat = trans * rot;
@@ -321,7 +324,6 @@ int run_game(){
 		basic_shader.setColor(vec3(.0,0.0,1.0));
 		cube.draw(basic_shader.progID);
 
-
 		basic_shader.setModel(t1p);
 		basic_shader.setColor(2.0f*vec3(1.0,0.0,0.0));
 		sphere.draw(basic_shader.progID);
@@ -348,6 +350,8 @@ int run_game(){
 
 		ImGui::Render();
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+		showFPS(window);
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();

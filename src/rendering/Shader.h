@@ -26,15 +26,15 @@ class Shader {
 
 		GLuint progID;
 
-		Shader(string shaderpath);
+		Shader(std::string shaderpath);
 
 		void setModel(float *model);
 		void setView(float *view);
 		void setProj(float *proj);
 
-		void setFloat(string name, float f);
-		void setVec3(string name, glm::vec3 v);
-		void setMat4(string name, glm::mat4 m);
+		void setFloat(std::string name, float f);
+		void setVec3(std::string name, glm::vec3 v);
+		void setMat4(std::string name, glm::mat4 m);
 		void setColor(glm::vec3 v);
 
 		int setDataTexture(GLuint tID, GLuint slot);
@@ -42,7 +42,7 @@ class Shader {
 		int setShadowTexture(GLuint tID);
 
 		void printUniforms();
-		void getUniforms(vector<string>& names, vector<GLenum>& types, int filter=1);
+		void getUniforms(std::vector<std::string>& names, std::vector<GLenum>& types, int filter=1);
 
 		~Shader(){
 			glDeleteProgram(progID);

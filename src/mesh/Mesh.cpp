@@ -106,3 +106,19 @@ void Mesh::read_obj_file(string filename){
 
    // delete scene;
 }
+
+
+
+
+
+
+
+
+#ifdef PYBIND
+#include <pybind11/pybind11.h>
+
+PYBIND11_MODULE(Mesh, m) {
+    m.doc() = "Mesh module";
+    m.def("Create mesh", &Mesh, "Mesh constructor taking filepath");
+}
+#endif

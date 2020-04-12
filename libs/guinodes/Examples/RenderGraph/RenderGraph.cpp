@@ -62,7 +62,7 @@ enum class NodeType{ Blueprint, Simple, Tree, Comment, Texture, Shader, Pool };
 struct Node;
 struct Link;
 struct Pin {
-    std::vector<Link *> input_links;
+    std::vector<Link *> links;
     ed::PinId ID;
     ::Node* Node;
     std::string Name;
