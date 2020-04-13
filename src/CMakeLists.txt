@@ -1,5 +1,4 @@
-# Project definition
-cmake_minimum_required(VERSION 3.17)
+cmake_minimum_required(VERSION 3.1)
 
 project(Core)
 
@@ -31,7 +30,7 @@ add_subdirectory(mesh)
 add_subdirectory(utils)
 add_subdirectory(phys)
 
-#If were compiling for Python bindings, treat subdirs as sublibs
+
 if (DEFINED PYBIND)
 	target_link_libraries(gltest PRIVATE phys)
 	target_link_libraries(gltest PRIVATE rendering)

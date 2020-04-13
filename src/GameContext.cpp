@@ -128,6 +128,9 @@ void showFPS(GLFWwindow *pWindow){
 	}
 }
 
+auto t_start = std::chrono::high_resolution_clock::now();
+auto t_now = std::chrono::high_resolution_clock::now();
+float time = std::chrono::duration_cast<std::chrono::duration<float>>(t_now - t_start).count();
 
 GLFWwindow* window;
 
@@ -188,68 +191,67 @@ void initialize_window(){
 	ImGui::StyleColorsDark();
 }
 
+Simu *mainSimu;
 
-//Run main game loop
-int run_game(){
+Mesh cube, sphere, terrain_plane, plane;
+RenderTarget *shadowTarget;
+Texture noise_tex, grass_tex, skybox;
+Shader shadow_shader, plane_shader, terrain_shader, basic_shader, skybox_shader;
+
+//Perlin noise params
+int dim = 64;
+double freq = 3.0;
+int32_t *px_samples = (int32_t *) calloc(dim * dim, sizeof(int32_t));
+vec3 terrain_mult = 3.0f * vec3(10.0f, 5.0f, 10.0f);
+
+//Img_data is OpenGL texture data itself
+float *img_data = generate_terrain(dim, freq, terrain_mult.y, px_samples);
+
+float sphereMat[16] = {}, boxMat[16] = {}; 
+
+mat4 playerViewMat = lookAt(vec3(18,18,18),vec3(0,0,-10),vec3(0,1.0,0));
+mat4 proj = infinitePerspective(glm::radians(45.0f), 1.0f, 1.0f);
+mat4 rot = mat4(1.0), testmat, iden = mat4(1.0), trans = translate(vec3(0,9,0)), lighttrans = translate(vec3(0,18,18));
+
+vec3 lightPos = vec3(0,18,18), lookDir = vec3(0,9,0) - lightPos;
+
+mat4 depthOrtho = proj;
+mat4 depthView = lookAt(lightPos, vec3(0,9,0), normalize(cross(vec3(1,0,0),lookDir)));
+mat4 depthProjMat = glm::ortho<float>(-20,20,-10,10,0,30);
+
+vec3 tm = terrain_mult;
+
+mat t1 = translate(vec3(-1,0,-1) * tm), t2 = translate(vec3(1,0,-1) * tm), t3 = translate(vec3(-1,0,1) * tm), t4 = translate(vec3(1,0,1) * tm);
+float *t1p = value_ptr(t1), *t2p = value_ptr(t2), *t3p = value_ptr(t3), *t4p = value_ptr(t4);
+
+float *viewptr = value_ptr(playerViewMat), *projptr = value_ptr(proj);
+
+
+void initialize_game(){
+
+	mainSimu = new Simu();
 	
-	Simu mainSimu;
+	cube = Mesh(string("assets/meshes/cube.obj"));
+	sphere = Mesh(string("assets/meshes/ball.obj"));
+	terrain_plane = Mesh(string("assets/meshes/terrain_plane.obj"));
+	plane = gen_plane();
 
-	Mesh cube = Mesh(string("assets/meshes/cube.obj"));
-	Mesh sphere = Mesh(string("assets/meshes/ball.obj"));
-	Mesh terrain_plane = Mesh(string("assets/meshes/terrain_plane.obj"));
-	Mesh plane = gen_plane();
+	shadowTarget = new RenderTarget(1024,1024,1);
 
-	RenderTarget *shadowTarget = new RenderTarget(1024,1024,1);
-
-	//Perlin noise params
-	int dim = 64;
-	double freq = 3.0;
-	int32_t *px_samples = (int32_t *) calloc(dim * dim, sizeof(int32_t));
-	vec3 terrain_mult = 3.0f * vec3(10.0f, 5.0f, 10.0f);
-
-	//Img_data is OpenGL texture data itself
-    float *img_data = generate_terrain(dim, freq, terrain_mult.y, px_samples);
-    Texture noise_tex = Texture(img_data, dim, dim, 0);
-    Texture grass_tex = Texture(string("assets/images/grass.jpg"), 0);
-    Texture skybox = Texture(string("assets/images/yellowcloud"), 1);
+	noise_tex = Texture(img_data, dim, dim, 0);
+    grass_tex = Texture(string("assets/images/grass.jpg"), 0);
+    skybox = Texture(string("assets/images/yellowcloud"), 1);
     //Texture skybox = Texture(string("/Users/will/projects/TombVoyage/Assets/SpaceSkiesFree/Skybox_2/Textures/1K_Resolution/1K_TEX"), 1);
 
-    Shader shadow_shader = Shader("assets/shaders/shadow");
-	Shader plane_shader = Shader("assets/shaders/plane");	
-	Shader terrain_shader = Shader("assets/shaders/noise_test");
-	Shader basic_shader = Shader("assets/shaders/basic");
-	Shader skybox_shader = Shader("assets/shaders/cubemap");
-	glCheckError();
+    shadow_shader = Shader("assets/shaders/shadow");
+	plane_shader = Shader("assets/shaders/plane");	
+	terrain_shader = Shader("assets/shaders/noise_test");
+	basic_shader = Shader("assets/shaders/basic");
+	skybox_shader = Shader("assets/shaders/cubemap");
 
-    auto t_start = std::chrono::high_resolution_clock::now();
-	auto t_now = std::chrono::high_resolution_clock::now();
-	float time = std::chrono::duration_cast<std::chrono::duration<float>>(t_now - t_start).count();
-
-	mat4 playerViewMat = lookAt(vec3(18,18,18),vec3(0,0,-10),vec3(0,1.0,0));
-	mat4 proj = infinitePerspective(glm::radians(45.0f), 1.0f, 1.0f);
-	mat4 rot = mat4(1.0), testmat, iden = mat4(1.0), trans = translate(vec3(0,9,0)), lighttrans = translate(vec3(0,18,18));
-
-	vec3 lightPos = vec3(0,18,18);
-	vec3 lookDir = vec3(0,9,0) - lightPos;
-
-	mat4 depthOrtho = proj;
- 	mat4 depthView = lookAt(lightPos, vec3(0,9,0), normalize( cross(vec3(1,0,0),lookDir) ));
-
-
-
-	mat4 depthProjMat = glm::ortho<float>(-20,20,-10,10,0,30);
-
-	vec3 tm = terrain_mult;
-
-	mat t1 = translate(vec3(-1,0,-1) * tm), t2 = translate(vec3(1,0,-1) * tm), t3 = translate(vec3(-1,0,1) * tm), t4 = translate(vec3(1,0,1) * tm);
-	float *t1p = value_ptr(t1), *t2p = value_ptr(t2), *t3p = value_ptr(t3), *t4p = value_ptr(t4);
-	
-	float sphereMat[16] = {}, boxMat[16] = {}; 
-	float *viewptr = value_ptr(playerViewMat), *projptr = value_ptr(proj);
-	
-	mainSimu.addTerrain(px_samples, dim, terrain_mult);
-	mainSimu.addSphere(vec3(-9,13,-9), 1.0f, 1, reinterpret_cast<void *>(sphereMat));
-	mainSimu.addCube(vec3(6,15,6), 1.0f, 2, reinterpret_cast<void *>(boxMat));
+	mainSimu -> addTerrain(px_samples, dim, terrain_mult);
+	mainSimu -> addSphere(vec3(-9,13,-9), 1.0f, 1, reinterpret_cast<void *>(sphereMat));
+	mainSimu -> addCube(vec3(6,15,6), 1.0f, 2, reinterpret_cast<void *>(boxMat));
 
 	basic_shader.setProj(projptr);
 
@@ -273,7 +275,15 @@ int run_game(){
  	shadow_shader.setView(value_ptr(depthView));
 
 	lastTime = glfwGetTime();
+}
 
+
+
+
+
+
+//Run main game loop
+int run_game(){
 
 	do {
 
@@ -290,8 +300,8 @@ int run_game(){
 		time = std::chrono::duration_cast<std::chrono::duration<float>>(t_now - t_start).count();
 		t_start = t_now;
 
-		mainSimu.stepSimu(time);
-		mainSimu.getModelMats();
+		mainSimu -> stepSimu(time);
+		mainSimu -> getModelMats();
 
 		rot = rotate(rot, time * glm::radians(20.0f), vec3(0.0f,1.0f,0.0f));
 		testmat = trans * rot;
@@ -350,12 +360,6 @@ int run_game(){
 		playerViewMat = computeMatricesFromInputs();
 		viewptr = value_ptr(playerViewMat);	
 
-		
-		
-
-
-
-
 
 		ImGui::Render();
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
@@ -368,6 +372,12 @@ int run_game(){
 
 	while( glfwGetKey(window, GLFW_KEY_ESCAPE ) != GLFW_PRESS && glfwWindowShouldClose(window) == 0 );
 
+	return 0;
+}
+
+
+void destroy_game(){
+
 	ImGui_ImplOpenGL3_Shutdown();
 	ImGui_ImplGlfw_Shutdown();
 	ImGui::DestroyContext();
@@ -377,10 +387,8 @@ int run_game(){
 
 	delete shadowTarget;
 	delete px_samples;
-
-	return 0;
+	delete mainSimu;
 }
-
 
 
 #ifndef PYBIND 
@@ -396,7 +404,9 @@ int main(int argc, char **argv){
 PYBIND11_MODULE(GameContext, m) {
     m.doc() = "Full game loop";
     m.def("run_game", &run_game, "Run everything");
-    m.def("initialize_window", &initialize_window, "Initialize imgui,windows,etc");
+    m.def("initialize_window", &initialize_window, "Initialize imgui, windows, etc");
+    m.def("initialize_game", &initialize_game, "Initialize game resources, vars");
+    m.def("step_game", &step_game, "Run game iteration")
 }
 
 #endif

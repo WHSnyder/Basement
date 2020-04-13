@@ -15,7 +15,7 @@ class RenderTarget {
 
 	public:
 
-		RenderTarget(int rows_, int cols_, int shadow);
+		RenderTarget(int rows_, int cols_, int shadow=0);
 		RenderTarget(Node node);
 		
 		void set();

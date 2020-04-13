@@ -16,7 +16,7 @@ void RenderTarget::set(){
 }
 
 
-void bindShadowbuffer(GLuint& framebufferID, GLuint& texID, int rows, int cols){
+void bindShadowBuffer(GLuint& framebufferID, GLuint& texID, int rows, int cols){
 
 	glGenFramebuffers(1, &framebufferID);
 	glBindFramebuffer(GL_FRAMEBUFFER, framebufferID);
@@ -87,21 +87,66 @@ void bindTextureFramebuffer(GLuint& framebufferID, GLuint& depthBufferID, GLuint
 }
 
 
-RenderTarget::RenderTarget(int rows_, int cols_, int shadow){
+void bindHDRBuffer(GLuint& framebufferID, GLuint& depthBufferID, GLuint& texID, GLenum *outBuffers, int rows, int cols){
+
+	glGenFramebuffers(1, &framebufferID);
+	glBindFramebuffer(GL_FRAMEBUFFER, framebufferID);
+	
+	//Now we need to create the texture which will contain the RGB output of our shader. This code is very classic :
+	// The texture we're going to render to = texID
+	glGenTextures(1, &texID);
+
+	// "Bind" the newly created texture : all future texture functions will modify this texture
+	glBindTexture(GL_TEXTURE_2D, texID);
+
+	// Give an empty image to OpenGL ( the last "0" )
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, cols, rows, 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+
+	// The depth buffer
+	glGenRenderbuffers(1, &depthBufferID);
+	glBindRenderbuffer(GL_RENDERBUFFER, depthBufferID);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, cols, rows);
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthBufferID);
+
+	glBindFramebuffer(GL_FRAMEBUFFER, framebufferID);
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthBufferID);
+	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, texID, 0);
+
+	outBuffers[0] = GL_COLOR_ATTACHMENT0;
+	glDrawBuffers(1, outBuffers); 
+
+	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE){
+		cout << "Framebuffer incomplete" << endl;
+		glCheckError();
+	}
+
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+
+RenderTarget::RenderTarget(int rows_, int cols_, int type){
 
 	rows = rows_;
 	cols = cols_;
 
 	outBuffers = new GLenum[3]();
 
-	if (shadow){
-		bindShadowbuffer(framebufferID, texID, rows, cols);
-		numOutBuffers = 0;
-	}
-	else {
+	if (type == 0) {
 		bindTextureFramebuffer(framebufferID, depthBufferID, texID, outBuffers, rows, cols);
 		numOutBuffers = 1;
-	}	
+	}
+
+	else if (type == 1){
+		bindShadowBuffer(framebufferID, texID, rows, cols);
+		numOutBuffers = 0;
+	}
+
+	else {
+		bindHDRBuffer(framebufferID, texID, rows, cols);
+		numOutBuffers = 2;
+	}
 }	
 
 
