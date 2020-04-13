@@ -1,15 +1,9 @@
-cmake_minimum_required(VERSION 3.1)
-
+cmake_minimum_required(VERSION 3.2)
 project(Core)
 
-add_executable(glTest glTest.cpp)
-set_property(TARGET glTest PROPERTY CXX_STANDARD 17)
 
-set(USINGMAC "on")
-
-if (NOT DEFINED GLM_LIB_DIR OR NOT DEFINED GLM_INC_DIR)
-	message(FATAL_ERROR "Supply binary and include paths (GLM_LIB_DIR/GLM_INC_DIR) to glm!")
-endif()
+include_directories(${OPENGL_INCLUDE_DIRS} ${GLEW_INCLUDE_DIRS})
+target_sources(basement PUBLIC GameContext.cpp)
 
 
 if (DEFINED PYBIND)
@@ -19,22 +13,10 @@ if (DEFINED PYBIND)
 	else ()
 		message(STATUS "Found pybind11")
 	endif()
-endif()
 
-
-target_link_libraries(libs/glm/build/libglm_static.a)
-
-
-add_subdirectory(rendering)
-add_subdirectory(mesh)
-add_subdirectory(utils)
-add_subdirectory(phys)
-
-
-if (DEFINED PYBIND)
 	target_link_libraries(gltest PRIVATE phys)
 	target_link_libraries(gltest PRIVATE rendering)
 	target_link_libraries(gltest PRIVATE utils)
 	target_link_libraries(gltest PRIVATE mesh)
 	target_link_libraries(gltest PRIVATE -undefined dynamic_lookup)
-else()
+endif()

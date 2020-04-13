@@ -8,7 +8,7 @@ ifdef LINUX
 else
 	BASEPATH = /Users/will/projects/cpprtx/
 	GLFLAGS = -Ilibs/glfw/include -L$(BASEPATH)libs/glfw/build/src -lglfw.3 -L/System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries/ -lGL -lGLEW
-	CFLAGS = -fPIC -lpthread -Ilibs/imgui -Ilibs/ -Ilibs/glm -Ilibs/glm/glm -Iinclude -std=c++17 -Wno-everything -Llibs/glm/build/ -lglm_static
+	CFLAGS = -fPIC -lpthread -Ilibs/imgui -Ilibs/ -Ilibs/glm -Iinclude -std=c++17 -Wno-everything -Llibs/glm/build/glm -lglm_static
 	LDFLAGS= "-Wl,-rpath,$(BASEPATH)libs/glfw/build/src"
 	ASSIMP = -I/Users/will/projects/cpprtx/libs/assimp/include/ -I/Users/will/projects/cpprtx/libs/assimp/build/include/ -lz -L/Users/will/projects/cpprtx/libs/assimp/build/lib/ -lIrrXML -lassimp
 	PHYSX = -I/Users/will/projects/cpprtx/libs/physx/PxShared/include -I/Users/will/projects/cpprtx/libs/physx/PhysX_3.4/Include  /Users/will/projects/cpprtx/libs/physx/PxShared/lib/osx64/lib*CHECKED.a /Users/will/projects/cpprtx/libs/physx/PhysX_3.4/Lib/osx64/lib*CHECKED.a

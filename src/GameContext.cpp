@@ -3,9 +3,9 @@
 #endif
 
 //#ifdef GUI
-#include "imgui.h"
-#include "bindings/imgui_impl_glfw.h"
-#include "bindings/imgui_impl_opengl3.h"
+#include "imgui/imgui.h"
+#include "imgui/bindings/imgui_impl_glfw.h"
+#include "imgui/bindings/imgui_impl_opengl3.h"
 //#endif
 
 #include <GL/glew.h>
@@ -24,7 +24,7 @@
 #include "glm/gtx/transform.hpp"
 #include "perlin/PerlinNoise.hpp"
 #include "rendering/Shader.h"
-#include "utils/controls.hpp"
+#include "utils/Controls.hpp"
 #include "rendering/RenderTarget.h"
 
 
