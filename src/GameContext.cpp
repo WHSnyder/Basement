@@ -350,10 +350,17 @@ int run_game(){
 		playerViewMat = computeMatricesFromInputs();
 		viewptr = value_ptr(playerViewMat);	
 
+		
+		
+
+
+
+
+
 		ImGui::Render();
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
-		showFPS(window);
+		//showFPS(window);
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();

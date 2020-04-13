@@ -142,8 +142,13 @@ Texture::Texture(string filepath, int cubemap, std::string extension){
 }
 
 #ifdef PYBIND
+#include <pybind11/pybind11.h>
+
+namespace py = pybind11;
+
 PYBIND11_MODULE(Texture, m) {
-    m.doc() = "God help us";
-    m.def("run_game", &run_game, "Run EVERYTHING");
+    py::class_<Texture>(m, "Texture")
+        .def(py::init<float *, int, int, int>())
+        .def(py::init<std::string &, int, std::string>());
 }
 #endif

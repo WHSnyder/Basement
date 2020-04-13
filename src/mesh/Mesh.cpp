@@ -104,12 +104,14 @@ void Mesh::read_obj_file(string filename){
 }
 
 
-
 #ifdef PYBIND
 #include <pybind11/pybind11.h>
 
+namespace py = pybind11;
+
 PYBIND11_MODULE(Mesh, m) {
-    m.doc() = "Mesh module";
-    m.def("Create mesh", &Mesh, "Mesh constructor taking filepath");
+    py::class_<Texture>(m, "Texture")
+        .def(py::init<std::string>())
+        .def("draw", &Mesh::draw);
 }
 #endif

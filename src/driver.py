@@ -12,15 +12,15 @@ terrain_shader =
 
 
 
-def run_game():
-	
+def run_simulation():
 
 
 
+def run_logic():
 
 
 
-def render_pipeline():
+def run_render():
 
 	#render all marked for shadows
 	#render all 

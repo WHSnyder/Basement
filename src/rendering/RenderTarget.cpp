@@ -103,3 +103,16 @@ RenderTarget::RenderTarget(int rows_, int cols_, int shadow){
 		numOutBuffers = 1;
 	}	
 }	
+
+
+#ifdef PYBIND
+#include <pybind11/pybind11.h>
+
+namespace py = pybind11;
+
+PYBIND11_MODULE(RenderTarget, m) {
+    py::class_<RenderTarget>(m, "RenderTarget")
+        .def(py::init<int, int, int>())
+        .def("set", &RenderTarget::set);
+}
+#endif
