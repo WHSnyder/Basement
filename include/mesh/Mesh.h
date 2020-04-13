@@ -5,8 +5,8 @@
 #include <sstream>
 #include <iostream>
 
-#include <glm.hpp>
-#include <ext.hpp>
+#include <glm/glm.hpp>
+#include <glm/ext.hpp>
 
 #include <GL/glew.h>
 

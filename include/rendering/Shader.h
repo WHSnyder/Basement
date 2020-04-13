@@ -4,8 +4,8 @@
 #include <stdlib.h>
 #include <string>
 
-#include <glm.hpp>
-#include <ext.hpp>
+#include <glm/glm.hpp>
+#include <glm/ext.hpp>
 
 
 /*

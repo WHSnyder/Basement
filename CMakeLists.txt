@@ -14,9 +14,20 @@ include_directories(basement PRIVATE libs/glfw/include)
 
 target_link_libraries(basement PRIVATE libs/glm/build/glm/libglm_static.a)
 
+#FindOpenGL()
+set(GLEW_USE_STATIC_LIBS ON)
+#FindGLEW()
 find_package(OpenGL REQUIRED)
 find_package(GLEW REQUIRED)
 find_package(OpenCV REQUIRED)
+
+include_directories(${OPENGL_INCLUDE_DIRS} ${GLEW_INCLUDE_DIRS})
+
+#message(STATUS "GLEW includes: ${GLEW_INCLUDE_DIRS}")
+#message(STATUS "OPENGL includes: ${OPENGL_INCLUDE_DIRS}")
+
+
+
 
 set(USINGMAC ON)
 if (USINGMAC)

@@ -5,7 +5,7 @@ extern GLFWwindow* window;
 #include <glm/gtc/matrix_transform.hpp>
 using namespace glm;
 
-#include "controls.hpp"
+#include "utils/Controls.hpp"
 
 mat4 ViewMatrix;
 mat4 ProjectionMatrix;

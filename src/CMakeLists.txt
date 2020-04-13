@@ -3,7 +3,7 @@ project(Core)
 
 
 include_directories(${OPENGL_INCLUDE_DIRS} ${GLEW_INCLUDE_DIRS})
-target_sources(basement PUBLIC GameContext.cpp)
+target_sources(basement PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/GameContext.cpp")
 
 
 if (DEFINED PYBIND)

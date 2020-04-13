@@ -86,7 +86,7 @@ void bindTextureFramebuffer(GLuint& framebufferID, GLuint& depthBufferID, GLuint
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-
+/*
 void bindHDRBuffer(GLuint& framebufferID, GLuint& depthBufferID, GLuint& texID, GLenum *outBuffers, int rows, int cols){
 
 	glGenFramebuffers(1, &framebufferID);
@@ -124,7 +124,7 @@ void bindHDRBuffer(GLuint& framebufferID, GLuint& depthBufferID, GLuint& texID, 
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
-
+*/
 
 RenderTarget::RenderTarget(int rows_, int cols_, int type){
 
@@ -138,15 +138,16 @@ RenderTarget::RenderTarget(int rows_, int cols_, int type){
 		numOutBuffers = 1;
 	}
 
-	else if (type == 1){
+	else {
 		bindShadowBuffer(framebufferID, texID, rows, cols);
 		numOutBuffers = 0;
 	}
-
+	/*
 	else {
 		bindHDRBuffer(framebufferID, texID, rows, cols);
 		numOutBuffers = 2;
 	}
+	*/
 }	
 
 

@@ -3,9 +3,9 @@
 #endif
 
 //#ifdef GUI
-#include "imgui/imgui.h"
-#include "imgui/bindings/imgui_impl_glfw.h"
-#include "imgui/bindings/imgui_impl_opengl3.h"
+#include "imgui.h"
+#include "bindings/imgui_impl_glfw.h"
+#include "bindings/imgui_impl_opengl3.h"
 //#endif
 
 #include <GL/glew.h>
@@ -86,13 +86,13 @@ float *generate_terrain(int dim, double freq, float height_mult, int32_t *physx_
 ///usr/local/opt/python/Frameworks/Python.framework/Versions/
 
 //Not for generating full screen quad!
-Mesh gen_plane(){
+Mesh *gen_plane(){
 
     vec3 verts[] = {vec3(-1,1,0), vec3(1,1,0), vec3(-1,-1,0), vec3(1,-1,0)};
     vec3 norms[] = {vec3(0,0,1), vec3(0,0,1), vec3(0,0,1), vec3(0,0,1)};
     GLuint inds[] = {0,1,2,1,3,2};
 
-    return Mesh(vector<vec3>(verts,verts+4), vector<vec3>(norms,norms+4), vector<GLuint>(inds,inds+6));
+    return new Mesh(vector<vec3>(verts,verts+4), vector<vec3>(norms,norms+4), vector<GLuint>(inds,inds+6));
 }
 
 static void error_callback(int error, const char* description){
@@ -130,7 +130,10 @@ void showFPS(GLFWwindow *pWindow){
 
 auto t_start = std::chrono::high_resolution_clock::now();
 auto t_now = std::chrono::high_resolution_clock::now();
-float time = std::chrono::duration_cast<std::chrono::duration<float>>(t_now - t_start).count();
+float curtime = std::chrono::duration_cast<std::chrono::duration<float>>(t_now - t_start).count();
+
+float timeratio;
+int width, height;
 
 GLFWwindow* window;
 
@@ -172,10 +175,8 @@ void initialize_window(){
         exit(EXIT_FAILURE);
     glfwSetKeyCallback(window, key_callback);
 
-    float ratio;
-    int width, height;
     glfwGetFramebufferSize(window, &width, &height);
-    ratio = width / (float) height;
+    timeratio = width / (float) height;
     glViewport(0, 0, width, height);
 
     glEnable(GL_DEPTH_TEST);
@@ -193,10 +194,10 @@ void initialize_window(){
 
 Simu *mainSimu;
 
-Mesh cube, sphere, terrain_plane, plane;
+Mesh *cube, *sphere, *terrain_plane, *plane;
 RenderTarget *shadowTarget;
-Texture noise_tex, grass_tex, skybox;
-Shader shadow_shader, plane_shader, terrain_shader, basic_shader, skybox_shader;
+Texture *noise_tex, *grass_tex, *skybox;
+Shader *shadow_shader, *terrain_shader, *basic_shader, *skybox_shader, *plane_shader;
 
 //Perlin noise params
 int dim = 64;
@@ -204,7 +205,7 @@ double freq = 3.0;
 int32_t *px_samples = (int32_t *) calloc(dim * dim, sizeof(int32_t));
 vec3 terrain_mult = 3.0f * vec3(10.0f, 5.0f, 10.0f);
 
-//Img_data is OpenGL texture data itself
+//Texture data
 float *img_data = generate_terrain(dim, freq, terrain_mult.y, px_samples);
 
 float sphereMat[16] = {}, boxMat[16] = {}; 
@@ -231,55 +232,55 @@ void initialize_game(){
 
 	mainSimu = new Simu();
 	
-	cube = Mesh(string("assets/meshes/cube.obj"));
-	sphere = Mesh(string("assets/meshes/ball.obj"));
-	terrain_plane = Mesh(string("assets/meshes/terrain_plane.obj"));
+	cube = new Mesh(string("assets/meshes/cube.obj"));
+	sphere = new Mesh(string("assets/meshes/ball.obj"));
+	glCheckError();
+
+	terrain_plane = new Mesh(string("assets/meshes/terrain_plane.obj"));
+	glCheckError();
 	plane = gen_plane();
 
 	shadowTarget = new RenderTarget(1024,1024,1);
 
-	noise_tex = Texture(img_data, dim, dim, 0);
-    grass_tex = Texture(string("assets/images/grass.jpg"), 0);
-    skybox = Texture(string("assets/images/yellowcloud"), 1);
+	noise_tex = new Texture(img_data, dim, dim, 0);
+    grass_tex = new Texture(string("assets/images/grass.jpg"), 0);
+    skybox = new Texture(string("assets/images/yellowcloud"), 1);
     //Texture skybox = Texture(string("/Users/will/projects/TombVoyage/Assets/SpaceSkiesFree/Skybox_2/Textures/1K_Resolution/1K_TEX"), 1);
 
-    shadow_shader = Shader("assets/shaders/shadow");
-	plane_shader = Shader("assets/shaders/plane");	
-	terrain_shader = Shader("assets/shaders/noise_test");
-	basic_shader = Shader("assets/shaders/basic");
-	skybox_shader = Shader("assets/shaders/cubemap");
+    shadow_shader = new Shader("assets/shaders/shadow"); 
+	plane_shader = new Shader("assets/shaders/plane");
+	terrain_shader = new Shader("assets/shaders/noise_test");
+	basic_shader = new Shader("assets/shaders/basic");
+	skybox_shader = new Shader("assets/shaders/cubemap");
 
 	mainSimu -> addTerrain(px_samples, dim, terrain_mult);
-	mainSimu -> addSphere(vec3(-9,13,-9), 1.0f, 1, reinterpret_cast<void *>(sphereMat));
-	mainSimu -> addCube(vec3(6,15,6), 1.0f, 2, reinterpret_cast<void *>(boxMat));
+	mainSimu -> addSphere(vec3(-8,43,-8), 1.0f, 1, reinterpret_cast<void *>(sphereMat));
+	mainSimu -> addCube(vec3(-8,55,-8.5), 1.0f, 2, reinterpret_cast<void *>(boxMat));
 
-	basic_shader.setProj(projptr);
+	basic_shader -> setProj(projptr);
+	glCheckError();
 
-	terrain_shader.setProj(projptr);
-	terrain_shader.setDataTexture(noise_tex.getID(), 6);
-	terrain_shader.setImageTexture(grass_tex.getID(), 0, 8);
-	terrain_shader.setFloat(string("dim"), dim);
-	terrain_shader.setVec3(string("mult"), terrain_mult);
-	terrain_shader.setMat4(string("shadowBias"), biasMatrix);
-	terrain_shader.setMat4(string("shadowView"), depthView);
- 	terrain_shader.setMat4(string("shadowProj"), depthProjMat);
-    terrain_shader.setShadowTexture(shadowTarget -> getTexture());
+	terrain_shader -> setProj(projptr);
+	terrain_shader -> setDataTexture(noise_tex -> getID(), 6);
+	terrain_shader -> setImageTexture(grass_tex -> getID(), 0, 8);
+	terrain_shader -> setFloat(string("dim"), dim);
+	terrain_shader -> setVec3(string("mult"), terrain_mult);
+	terrain_shader -> setMat4(string("shadowBias"), biasMatrix);
+	terrain_shader -> setMat4(string("shadowView"), depthView);
+ 	terrain_shader -> setMat4(string("shadowProj"), depthProjMat);
+    terrain_shader -> setShadowTexture(shadowTarget -> getTexture());
 
-	plane_shader.setImageTexture(shadowTarget -> getTexture(), 0, 4);
-	plane_shader.setProj(projptr);
+	plane_shader -> setImageTexture(shadowTarget -> getTexture(), 0, 4);
+	plane_shader -> setProj(projptr);
 
-	skybox_shader.setProj(projptr);
-	skybox_shader.setImageTexture(skybox.getID(), 1, 9);
+	skybox_shader -> setProj(projptr);
+	skybox_shader -> setImageTexture(skybox -> getID(), 1, 9);
 
- 	shadow_shader.setProj(value_ptr(depthProjMat));
- 	shadow_shader.setView(value_ptr(depthView));
+ 	shadow_shader -> setProj(value_ptr(depthProjMat));
+ 	shadow_shader -> setView(value_ptr(depthView));
 
 	lastTime = glfwGetTime();
 }
-
-
-
-
 
 
 //Run main game loop
@@ -297,22 +298,22 @@ int run_game(){
 		ImGui::End();
 
 		t_now = std::chrono::high_resolution_clock::now();
-		time = std::chrono::duration_cast<std::chrono::duration<float>>(t_now - t_start).count();
+		curtime = std::chrono::duration_cast<std::chrono::duration<float>>(t_now - t_start).count();
 		t_start = t_now;
 
-		mainSimu -> stepSimu(time);
+		mainSimu -> stepSimu(curtime);
 		mainSimu -> getModelMats();
 
-		rot = rotate(rot, time * glm::radians(20.0f), vec3(0.0f,1.0f,0.0f));
+		rot = rotate(rot, curtime * glm::radians(20.0f), vec3(0.0f,1.0f,0.0f));
 		testmat = trans * rot;
 
 		shadowTarget -> set();
-		shadow_shader.setModel(value_ptr(testmat));
-		plane.draw(shadow_shader.progID);
-		shadow_shader.setModel(sphereMat);
-		sphere.draw(shadow_shader.progID);
-		shadow_shader.setModel(boxMat);
-		cube.draw(shadow_shader.progID);
+		shadow_shader -> setModel(value_ptr(testmat));
+		plane -> draw(shadow_shader -> progID);
+		shadow_shader -> setModel(sphereMat);
+		sphere -> draw(shadow_shader -> progID);
+		shadow_shader -> setModel(boxMat);
+		cube -> draw(shadow_shader -> progID);
 
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		glViewport(0, 0, width, height);
@@ -320,51 +321,50 @@ int run_game(){
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glCheckError();
 
-		terrain_shader.setView(viewptr);
-		terrain_shader.setProj(projptr);
-		terrain_plane.draw(terrain_shader.progID);
+		terrain_shader -> setView(viewptr);
+		terrain_shader -> setProj(projptr);
+		terrain_plane -> draw(terrain_shader -> progID);
 
-		plane_shader.setModel(value_ptr(testmat));
-		plane_shader.setView(viewptr);
-		plane.draw(plane_shader.progID);
+		plane_shader -> setModel(value_ptr(testmat));
+		plane_shader -> setView(viewptr);
+		plane -> draw(plane_shader -> progID);
 
-		basic_shader.setView(viewptr);
-		basic_shader.setModel(sphereMat);
-		basic_shader.setColor(vec3(1.0,0.0,0.0));
-		sphere.draw(basic_shader.progID);
+		basic_shader -> setView(viewptr);
+		basic_shader -> setModel(sphereMat);
+		basic_shader -> setColor(vec3(1.0,0.0,0.0));
+		sphere -> draw(basic_shader -> progID);
 
-		basic_shader.setModel(boxMat);
-		basic_shader.setColor(vec3(.0,0.0,1.0));
-		cube.draw(basic_shader.progID);
+		basic_shader -> setModel(boxMat);
+		basic_shader -> setColor(vec3(.0,0.0,1.0));
+		cube -> draw(basic_shader -> progID);
 
-		basic_shader.setModel(t1p);
-		basic_shader.setColor(2.0f*vec3(1.0,0.0,0.0));
-		sphere.draw(basic_shader.progID);
+		basic_shader -> setModel(t1p);
+		basic_shader -> setColor(2.0f*vec3(1.0,0.0,0.0));
+		sphere -> draw(basic_shader -> progID);
 
-		basic_shader.setModel(t2p);
-		basic_shader.setColor(2.0f*vec3(0.0,1.0,0.0));
-		sphere.draw(basic_shader.progID);
+		basic_shader -> setModel(t2p);
+		basic_shader -> setColor(2.0f*vec3(0.0,1.0,0.0));
+		sphere -> draw(basic_shader -> progID);
 
-		basic_shader.setModel(t3p);
-		basic_shader.setColor(2.0f*vec3(0.0,0.0,1.0));
-		sphere.draw(basic_shader.progID);
+		basic_shader -> setModel(t3p);
+		basic_shader -> setColor(2.0f*vec3(0.0,0.0,1.0));
+		sphere -> draw(basic_shader -> progID);
 
-		basic_shader.setModel(value_ptr(lighttrans));
-		basic_shader.setColor(2.0f*vec3(1.0,1.0,0.0));
-		sphere.draw(basic_shader.progID);
+		basic_shader -> setModel(value_ptr(lighttrans));
+		basic_shader -> setColor(2.0f*vec3(1.0,1.0,0.0));
+		sphere -> draw(basic_shader -> progID);
 
-		skybox_shader.setView(viewptr);
-		cube.draw(skybox_shader.progID);
+		skybox_shader -> setView(viewptr);
+		cube -> draw(skybox_shader -> progID);
 		glCheckError();
 
 		playerViewMat = computeMatricesFromInputs();
 		viewptr = value_ptr(playerViewMat);	
 
-
 		ImGui::Render();
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
-		//showFPS(window);
+		showFPS(window);
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
@@ -388,6 +388,22 @@ void destroy_game(){
 	delete shadowTarget;
 	delete px_samples;
 	delete mainSimu;
+
+	delete shadow_shader;
+	delete plane_shader;
+	delete terrain_shader;
+	delete skybox_shader;
+	delete basic_shader;
+
+	delete grass_tex;
+	delete skybox;
+	delete noise_tex;
+
+	delete plane;
+	delete sphere;
+	delete cube;
+	delete terrain_plane;
+
 }
 
 
@@ -395,7 +411,9 @@ void destroy_game(){
 
 int main(int argc, char **argv){
 	initialize_window();
+	initialize_game();
 	run_game();
+	destroy_game();
 	return 1;
 }
 
