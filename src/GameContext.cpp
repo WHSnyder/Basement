@@ -281,102 +281,84 @@ void initialize_game(){
 
 
 //Run main game loop
-int run_game(){
+void step_game(float timestep){
 
-	int first = 1;
+	ImGui_ImplOpenGL3_NewFrame();
+	ImGui_ImplGlfw_NewFrame();
+	ImGui::NewFrame();
 
-	do {
+	ImGui::Begin("Triangle Position/Color");
+	static float rotation = 0.0;
+	ImGui::SliderFloat("rotation", &rotation, 0, 2 * 3);
+	ImGui::End();
 
-		ImGui_ImplOpenGL3_NewFrame();
-		ImGui_ImplGlfw_NewFrame();
-		ImGui::NewFrame();
+	mainSimu -> stepSimu(timestep);
+	mainSimu -> getModelMats();
 
-		ImGui::Begin("Triangle Position/Color");
-		static float rotation = 0.0;
-		ImGui::SliderFloat("rotation", &rotation, 0, 2 * 3);
-		ImGui::End();
+	rot = rotate(rot, curtime * glm::radians(20.0f), vec3(0.0f,1.0f,0.0f));
+	testmat = trans * rot;
 
-		t_now = std::chrono::high_resolution_clock::now();
-		curtime = std::chrono::duration_cast<std::chrono::duration<float>>(t_now - t_start).count();
-		t_start = t_now;
+	shadowTarget -> set();
+	shadow_shader -> setModel(value_ptr(testmat));
+	plane -> draw(shadow_shader -> progID);
+	shadow_shader -> setModel(sphereMat);
+	sphere -> draw(shadow_shader -> progID);
+	shadow_shader -> setModel(boxMat);
+	cube -> draw(shadow_shader -> progID);
 
-		if (first){
-			curtime = 0.001;
-			first = 0;
-		}
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glViewport(0, 0, width, height);
 
-		mainSimu -> stepSimu(curtime);
-		mainSimu -> getModelMats();
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glCheckError();
 
-		rot = rotate(rot, curtime * glm::radians(20.0f), vec3(0.0f,1.0f,0.0f));
-		testmat = trans * rot;
+	terrain_shader -> setView(viewptr);
+	terrain_shader -> setProj(projptr);
+	terrain_plane -> draw(terrain_shader -> progID);
 
-		shadowTarget -> set();
-		shadow_shader -> setModel(value_ptr(testmat));
-		plane -> draw(shadow_shader -> progID);
-		shadow_shader -> setModel(sphereMat);
-		sphere -> draw(shadow_shader -> progID);
-		shadow_shader -> setModel(boxMat);
-		cube -> draw(shadow_shader -> progID);
+	plane_shader -> setModel(value_ptr(testmat));
+	plane_shader -> setView(viewptr);
+	plane -> draw(plane_shader -> progID);
 
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-		glViewport(0, 0, width, height);
+	basic_shader -> setView(viewptr);
+	basic_shader -> setModel(sphereMat);
+	basic_shader -> setColor(vec3(1.0,0.0,0.0));
+	sphere -> draw(basic_shader -> progID);
 
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		glCheckError();
+	basic_shader -> setModel(boxMat);
+	basic_shader -> setColor(vec3(.0,0.0,1.0));
+	cube -> draw(basic_shader -> progID);
 
-		terrain_shader -> setView(viewptr);
-		terrain_shader -> setProj(projptr);
-		terrain_plane -> draw(terrain_shader -> progID);
+	basic_shader -> setModel(t1p);
+	basic_shader -> setColor(2.0f*vec3(1.0,0.0,0.0));
+	sphere -> draw(basic_shader -> progID);
 
-		plane_shader -> setModel(value_ptr(testmat));
-		plane_shader -> setView(viewptr);
-		plane -> draw(plane_shader -> progID);
+	basic_shader -> setModel(t2p);
+	basic_shader -> setColor(2.0f*vec3(0.0,1.0,0.0));
+	sphere -> draw(basic_shader -> progID);
 
-		basic_shader -> setView(viewptr);
-		basic_shader -> setModel(sphereMat);
-		basic_shader -> setColor(vec3(1.0,0.0,0.0));
-		sphere -> draw(basic_shader -> progID);
+	basic_shader -> setModel(t3p);
+	basic_shader -> setColor(2.0f*vec3(0.0,0.0,1.0));
+	sphere -> draw(basic_shader -> progID);
 
-		basic_shader -> setModel(boxMat);
-		basic_shader -> setColor(vec3(.0,0.0,1.0));
-		cube -> draw(basic_shader -> progID);
+	basic_shader -> setModel(value_ptr(lighttrans));
+	basic_shader -> setColor(2.0f*vec3(1.0,1.0,0.0));
+	sphere -> draw(basic_shader -> progID);
 
-		basic_shader -> setModel(t1p);
-		basic_shader -> setColor(2.0f*vec3(1.0,0.0,0.0));
-		sphere -> draw(basic_shader -> progID);
+	skybox_shader -> setView(viewptr);
+	cube -> draw(skybox_shader -> progID);
+	glCheckError();
 
-		basic_shader -> setModel(t2p);
-		basic_shader -> setColor(2.0f*vec3(0.0,1.0,0.0));
-		sphere -> draw(basic_shader -> progID);
+	playerViewMat = computeMatricesFromInputs();
+	viewptr = value_ptr(playerViewMat);	
 
-		basic_shader -> setModel(t3p);
-		basic_shader -> setColor(2.0f*vec3(0.0,0.0,1.0));
-		sphere -> draw(basic_shader -> progID);
+	ImGui::Render();
+	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
-		basic_shader -> setModel(value_ptr(lighttrans));
-		basic_shader -> setColor(2.0f*vec3(1.0,1.0,0.0));
-		sphere -> draw(basic_shader -> progID);
+	showFPS(window);
 
-		skybox_shader -> setView(viewptr);
-		cube -> draw(skybox_shader -> progID);
-		glCheckError();
-
-		playerViewMat = computeMatricesFromInputs();
-		viewptr = value_ptr(playerViewMat);	
-
-		ImGui::Render();
-		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-
-		showFPS(window);
-
-		glfwSwapBuffers(window);
-		glfwPollEvents();
-	} 
-
-	while( glfwGetKey(window, GLFW_KEY_ESCAPE ) != GLFW_PRESS && glfwWindowShouldClose(window) == 0 );
-
-	return 0;
+	glfwSwapBuffers(window);
+	glfwPollEvents();
 }
 
 
@@ -407,25 +389,43 @@ void destroy_game(){
 	delete sphere;
 	delete cube;
 	delete terrain_plane;
-
 }
 
 
-#ifndef PYBIND 
+#ifndef PYBINDMAIN 
 
 int main(int argc, char **argv){
+	
 	initialize_window();
 	initialize_game();
-	run_game();
+
+	t_now = std::chrono::high_resolution_clock::now();
+	curtime = std::chrono::duration_cast<std::chrono::duration<float>>(t_now - t_start).count();
+	t_start = t_now;
+
+	while (1){
+
+		t_now = std::chrono::high_resolution_clock::now();
+		curtime = std::chrono::duration_cast<std::chrono::duration<float>>(t_now - t_start).count();
+		t_start = t_now;
+
+		step_game(curtime);
+
+		if (glfwGetKey(window, GLFW_KEY_ESCAPE ) == GLFW_PRESS || glfwWindowShouldClose(window) != 0)
+			break;
+	}
+
 	destroy_game();
+
 	return 1;
 }
+
 
 #else
 
 PYBIND11_MODULE(GameContext, m) {
     m.doc() = "Full game loop";
-    m.def("run_game", &run_game, "Run everything");
+    m.def("step_game", &run_game, "Run everything");
     m.def("initialize_window", &initialize_window, "Initialize imgui, windows, etc");
     m.def("initialize_game", &initialize_game, "Initialize game resources, vars");
     m.def("step_game", &step_game, "Run game iteration")

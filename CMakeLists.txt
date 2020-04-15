@@ -16,7 +16,6 @@ include_directories(basement PRIVATE libs/glm)
 include_directories(basement PRIVATE libs/glfw/include)
 include_directories(basement PRIVATE /usr/local/include)
 
-
 if (DEFINED GLPATH)
 	target_link_directories(basement PRIVATE ${GLPATH})
 	target_link_libraries(basement PRIVATE GL GLEW)
@@ -31,16 +30,15 @@ find_package(OpenCV REQUIRED)
 #message(STATUS "OPENGL includes: ${OPENGL_INCLUDE_DIRS}")
 
 set(USINGMAC ON)
+set(CD "${CMAKE_CURRENT_SOURCE_DIR}")
 
-set(ASSIMP_LIB_PATH /Users/will/projects/cpprtx/libs/assimp/build/lib/) 
+set(ASSIMP_LIB_PATH ${CD}/libs/assimp/build/lib/) 
 
+set(PHYSX_LIBS_DIR ${CD}/libs/physx/PhysX_3.4/Lib/osx64/)
+set(PHYSX_LIBS_DIR_SHARED ${CD}/libs/physx/PxShared/lib/osx64/)
 
-
-set(PHYSX_LIBS_DIR /Users/will/projects/cpprtx/libs/physx/PhysX_3.4/Lib/osx64/)
-set(PHYSX_LIBS_DIR_SHARED /Users/will/projects/cpprtx/libs/physx/PxShared/lib/osx64/)
-
-set(PHYSX_INC_DIR /Users/will/projects/cpprtx/libs/physx/PhysX_3.4/Include)
-set(PHYSX_INC_DIR_SHARED /Users/will/projects/cpprtx/libs/physx/PxShared/include)
+set(PHYSX_INC_DIR ${CD}/libs/physx/PhysX_3.4/Include)
+set(PHYSX_INC_DIR_SHARED ${CD}/libs/physx/PxShared/include)
 
 
 file(GLOB PHYSX_LIBS "${PHYSX_LIBS_DIR}lib*CHECKED.a")
@@ -63,7 +61,6 @@ target_link_libraries(basement PRIVATE z)
 target_link_libraries(basement PUBLIC ${PHYSX_LIBS})
 target_link_libraries(basement PUBLIC ${PHYSX_LIBS_SHARED})
 target_link_libraries(basement PRIVATE ${OpenCV_LIBS})
-#target_link_libraries(basement PRIVATE ${OPENGL_LIBRARIES} ${GLEW_LIBRARIES})
 target_link_directories(basement PRIVATE libs/glfw/build/src)
 target_link_libraries(basement PRIVATE glfw.3)
 target_link_libraries(basement PRIVATE "${ASSIMP_LIB_PATH}/libIrrXML.a")
