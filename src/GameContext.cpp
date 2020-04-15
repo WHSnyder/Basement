@@ -3,9 +3,9 @@
 #endif
 
 //#ifdef GUI
-#include "imgui.h"
-#include "bindings/imgui_impl_glfw.h"
-#include "bindings/imgui_impl_opengl3.h"
+#include "imgui/imgui.h"
+#include "imgui/bindings/imgui_impl_glfw.h"
+#include "imgui/bindings/imgui_impl_opengl3.h"
 //#endif
 
 #include <GL/glew.h>
@@ -234,10 +234,7 @@ void initialize_game(){
 	
 	cube = new Mesh(string("assets/meshes/cube.obj"));
 	sphere = new Mesh(string("assets/meshes/ball.obj"));
-	glCheckError();
-
 	terrain_plane = new Mesh(string("assets/meshes/terrain_plane.obj"));
-	glCheckError();
 	plane = gen_plane();
 
 	shadowTarget = new RenderTarget(1024,1024,1);
@@ -254,8 +251,8 @@ void initialize_game(){
 	skybox_shader = new Shader("assets/shaders/cubemap");
 
 	mainSimu -> addTerrain(px_samples, dim, terrain_mult);
-	mainSimu -> addSphere(vec3(-8,43,-8), 1.0f, 1, reinterpret_cast<void *>(sphereMat));
-	mainSimu -> addCube(vec3(-8,55,-8.5), 1.0f, 2, reinterpret_cast<void *>(boxMat));
+	mainSimu -> addSphere(vec3(-4,23,-4), 1.0f, 1, reinterpret_cast<void *>(sphereMat));
+	mainSimu -> addCube(vec3(-8,27,-8.5), 1.0f, 2, reinterpret_cast<void *>(boxMat));
 
 	basic_shader -> setProj(projptr);
 	glCheckError();
@@ -286,6 +283,8 @@ void initialize_game(){
 //Run main game loop
 int run_game(){
 
+	int first = 1;
+
 	do {
 
 		ImGui_ImplOpenGL3_NewFrame();
@@ -300,6 +299,11 @@ int run_game(){
 		t_now = std::chrono::high_resolution_clock::now();
 		curtime = std::chrono::duration_cast<std::chrono::duration<float>>(t_now - t_start).count();
 		t_start = t_now;
+
+		if (first){
+			curtime = 0.001;
+			first = 0;
+		}
 
 		mainSimu -> stepSimu(curtime);
 		mainSimu -> getModelMats();

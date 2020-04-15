@@ -4,39 +4,44 @@ project(basement_engine)
 
 option(TESTS "Build basic tests" OFF)
 option(PYBINDINGS "Build with pybind11" OFF)
+option(GLPATH "Search system for OpenGL" OFF)
+option(GLEWPATH "Search system for GLEW" OFF)
 
 add_executable(basement) 
 set_property(TARGET basement PROPERTY CXX_STANDARD 17)
+set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -Wno-everything -fPIC -lpthread")
 include_directories(basement PUBLIC include)
 include_directories(basement PUBLIC libs)
 include_directories(basement PRIVATE libs/glm)
 include_directories(basement PRIVATE libs/glfw/include)
+include_directories(basement PRIVATE /usr/local/include)
 
-target_link_libraries(basement PRIVATE libs/glm/build/glm/libglm_static.a)
 
-#FindOpenGL()
-set(GLEW_USE_STATIC_LIBS ON)
-#FindGLEW()
-find_package(OpenGL REQUIRED)
-find_package(GLEW REQUIRED)
+if (DEFINED GLPATH)
+	target_link_directories(basement PRIVATE ${GLPATH})
+	target_link_libraries(basement PRIVATE GL GLEW)
+else()
+	find_package(OpenGL REQUIRED)
+endif()
+
 find_package(OpenCV REQUIRED)
 
-include_directories(${OPENGL_INCLUDE_DIRS} ${GLEW_INCLUDE_DIRS})
-
+#include_directories(${OPENGL_INCLUDE_DIRS} ${GLEW_INCLUDE_DIRS})
 #message(STATUS "GLEW includes: ${GLEW_INCLUDE_DIRS}")
 #message(STATUS "OPENGL includes: ${OPENGL_INCLUDE_DIRS}")
 
-
-
-
 set(USINGMAC ON)
-if (USINGMAC)
-	set(PHYSX_LIBS_DIR /Users/will/projects/cpprtx/libs/physx/PhysX_3.4/Lib/osx64/)
-	set(PHYSX_LIBS_DIR_SHARED /Users/will/projects/cpprtx/libs/physx/PxShared/lib/osx64/)
 
-	set(PHYSX_INC_DIR /Users/will/projects/cpprtx/libs/physx/PhysX_3.4/Include)
-	set(PHYSX_INC_DIR_SHARED /Users/will/projects/cpprtx/libs/physx/PxShared/include)
-endif()
+set(ASSIMP_LIB_PATH /Users/will/projects/cpprtx/libs/assimp/build/lib/) 
+
+
+
+set(PHYSX_LIBS_DIR /Users/will/projects/cpprtx/libs/physx/PhysX_3.4/Lib/osx64/)
+set(PHYSX_LIBS_DIR_SHARED /Users/will/projects/cpprtx/libs/physx/PxShared/lib/osx64/)
+
+set(PHYSX_INC_DIR /Users/will/projects/cpprtx/libs/physx/PhysX_3.4/Include)
+set(PHYSX_INC_DIR_SHARED /Users/will/projects/cpprtx/libs/physx/PxShared/include)
+
 
 file(GLOB PHYSX_LIBS "${PHYSX_LIBS_DIR}lib*CHECKED.a")
 file(GLOB PHYSX_LIBS_SHARED ${PHYSX_LIBS_DIR_SHARED}lib*CHECKED.a)
@@ -51,12 +56,15 @@ add_subdirectory(src/utils)
 add_subdirectory(src/phys)
 add_subdirectory(libs/imgui)
 
+target_link_directories(basement PRIVATE libs/glm/build/glm)
+target_link_libraries(basement PRIVATE glm_static)
+
 target_link_libraries(basement PRIVATE z)
 target_link_libraries(basement PUBLIC ${PHYSX_LIBS})
 target_link_libraries(basement PUBLIC ${PHYSX_LIBS_SHARED})
 target_link_libraries(basement PRIVATE ${OpenCV_LIBS})
-target_link_libraries(basement PRIVATE ${OPENGL_LIBRARIES} ${GLEW_LIBRARIES})
+#target_link_libraries(basement PRIVATE ${OPENGL_LIBRARIES} ${GLEW_LIBRARIES})
 target_link_directories(basement PRIVATE libs/glfw/build/src)
 target_link_libraries(basement PRIVATE glfw.3)
-target_link_libraries(basement PRIVATE "${ASSIMP_LIB_PATH}libIrrXML.a")
-target_link_libraries(basement PRIVATE "${ASSIMP_LIB_PATH}libassimp.a")
+target_link_libraries(basement PRIVATE "${ASSIMP_LIB_PATH}/libIrrXML.a")
+target_link_libraries(basement PRIVATE "${ASSIMP_LIB_PATH}/libassimp.a")
