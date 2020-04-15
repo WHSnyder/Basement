@@ -1,4 +1,4 @@
-#ifdef PYBIND
+#ifdef PYBINDMAIN
 #include <pybind11/pybind11.h>
 #endif
 
@@ -29,6 +29,9 @@
 
 
 using namespace std;
+
+string basepath("/Users/will/projects/cpprtx/");
+
 
 const char *glsl_version = "#version 410";
 
@@ -424,11 +427,12 @@ int main(int argc, char **argv){
 #else
 
 PYBIND11_MODULE(GameContext, m) {
+    
     m.doc() = "Full game loop";
-    m.def("step_game", &run_game, "Run everything");
-    m.def("initialize_window", &initialize_window, "Initialize imgui, windows, etc");
-    m.def("initialize_game", &initialize_game, "Initialize game resources, vars");
-    m.def("step_game", &step_game, "Run game iteration")
+    m.def("init_window", &initialize_window, "Initialize imgui, windows, etc");
+    m.def("init_game", &initialize_game, "Initialize game resources, vars");
+    m.def("step_game", &step_game, "Run game iteration");
+    m.def("destroy_game", &destroy_game, "Run game iteration");
 }
 
 #endif

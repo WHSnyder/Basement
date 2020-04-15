@@ -10,18 +10,21 @@
 #include <iostream>
 #include <sstream>      // std::stringstream
 
-
-
 using namespace std;
 
+extern string basepath;
 
-string read_shader(string filePath){
+
+
+string read_shader(string filepath){
+
+    filepath.insert(0, basepath);
 
 	std::string content;
-    std::ifstream fileStream(filePath, std::ios::in);
+    std::ifstream fileStream(filepath, std::ios::in);
 
     if(!fileStream.is_open()) {
-        std::cerr << "Could not read file " << filePath << ". File does not exist." << std::endl;
+        std::cerr << "Could not read file " << filepath << ". File does not exist." << std::endl;
         return "";
     }
 

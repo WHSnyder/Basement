@@ -11,6 +11,8 @@
 
 using namespace std;
 
+extern string basepath;
+
 
 GLenum glCheckError_(const char *file, int line){
     GLenum errorCode;
@@ -119,6 +121,8 @@ Texture::Texture(float *_data, int width, int height, int color){
 
 
 Texture::Texture(string filepath, int cubemap, std::string extension){
+
+    filepath.insert(0, basepath);
 
     if (!cubemap){
         

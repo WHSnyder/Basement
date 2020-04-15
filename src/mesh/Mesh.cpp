@@ -10,6 +10,8 @@ using namespace std;
 extern GLenum glCheckError_(const char *file, int line);
 #define glCheckError() glCheckError_(__FILE__, __LINE__) 
 
+extern string basepath;
+
 
 int Mesh::draw(GLuint id){
 
@@ -59,6 +61,8 @@ int Mesh::bindBuffers(){
 void Mesh::read_obj_file(string filename){
 
 	cout << "Loading mesh at " << filename << endl;
+
+    filename.insert(0, basepath);
 
 	Assimp::Importer importer;
     const aiScene *scene = importer.ReadFile(filename, aiProcess_GenNormals | aiProcess_JoinIdenticalVertices);

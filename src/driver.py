@@ -1,40 +1,26 @@
-import glTest
+import time
+import sys
 
+sys.path.append("/Users/will/projects/cpprtx/")
+sys.path.append("/Users/will/projects/cpprtx/build")
 
-#defining gameobject
-def GameObject:
-	#gameobject registers components linked to predefined entt archetype
+from GameContext import *
 
+init_window()
+init_game()
 
-#read files, setup shaders, import assets
-terrain_shader = 
+timelast = time.perf_counter()
+timestart = timelast
 
+while True:
+	
+	timecur = time.perf_counter()
+	timelapsed = timecur - timelast
+	timelast = timecur
 
+	step_game(timelapsed)
 
+	if timecur - timestart > 5:
+		break
 
-def run_simulation():
-
-
-
-def run_logic():
-
-
-
-def run_render():
-
-	#render all marked for shadows
-	#render all 
-
-
-
-#step simulation
-
-#run gameobj logic
-
-#render objects
-
-
-
-#clean game state
-
-
+destroy_game()

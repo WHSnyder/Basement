@@ -7,6 +7,8 @@
 
 using namespace std;
 
+extern string basepath;
+
 extern GLenum glCheckError_(const char *file, int line);
 #define glCheckError() glCheckError_(__FILE__, __LINE__) 
 
@@ -120,7 +122,6 @@ int Shader::setShadowTexture(GLuint tID){
 
     return 0;
 }
-
 
 
 void Shader::setModel(float *model){
