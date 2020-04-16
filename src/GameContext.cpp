@@ -2,11 +2,9 @@
 #include <pybind11/pybind11.h>
 #endif
 
-//#ifdef GUI
 #include "imgui/imgui.h"
 #include "imgui/bindings/imgui_impl_glfw.h"
 #include "imgui/bindings/imgui_impl_opengl3.h"
-//#endif
 
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
@@ -30,7 +28,7 @@
 
 using namespace std;
 
-string basepath("/Users/will/projects/cpprtx/");
+string basepath;
 
 
 const char *glsl_version = "#version 410";
@@ -40,7 +38,7 @@ mat4 biasMatrix(
 	0.0, 0.5, 0.0, 0.0,
 	0.0, 0.0, 0.5, 0.0,
 	0.5, 0.5, 0.5, 1.0
-	);
+);
 
 
 void coutMat(float *mat){
@@ -131,9 +129,6 @@ void showFPS(GLFWwindow *pWindow){
 	}
 }
 
-auto t_start = std::chrono::high_resolution_clock::now();
-auto t_now = std::chrono::high_resolution_clock::now();
-float curtime = std::chrono::duration_cast<std::chrono::duration<float>>(t_now - t_start).count();
 
 float timeratio;
 int width, height;
@@ -195,6 +190,7 @@ void initialize_window(){
 	ImGui::StyleColorsDark();
 }
 
+
 Simu *mainSimu;
 
 Mesh *cube, *sphere, *terrain_plane, *plane;
@@ -231,7 +227,9 @@ float *t1p = value_ptr(t1), *t2p = value_ptr(t2), *t3p = value_ptr(t3), *t4p = v
 float *viewptr = value_ptr(playerViewMat), *projptr = value_ptr(proj);
 
 
-void initialize_game(){
+void initialize_game(string inpath){
+
+	basepath = inpath;
 
 	mainSimu = new Simu();
 	
@@ -258,7 +256,6 @@ void initialize_game(){
 	mainSimu -> addCube(vec3(-8,27,-8.5), 1.0f, 2, reinterpret_cast<void *>(boxMat));
 
 	basic_shader -> setProj(projptr);
-	glCheckError();
 
 	terrain_shader -> setProj(projptr);
 	terrain_shader -> setDataTexture(noise_tex -> getID(), 6);
@@ -278,8 +275,6 @@ void initialize_game(){
 
  	shadow_shader -> setProj(value_ptr(depthProjMat));
  	shadow_shader -> setView(value_ptr(depthView));
-
-	lastTime = glfwGetTime();
 }
 
 
@@ -298,7 +293,7 @@ void step_game(float timestep){
 	mainSimu -> stepSimu(timestep);
 	mainSimu -> getModelMats();
 
-	rot = rotate(rot, curtime * glm::radians(20.0f), vec3(0.0f,1.0f,0.0f));
+	rot = rotate(rot, timestep * glm::radians(20.0f), vec3(0.0f,1.0f,0.0f));
 	testmat = trans * rot;
 
 	shadowTarget -> set();
@@ -398,19 +393,21 @@ void destroy_game(){
 #ifndef PYBINDMAIN 
 
 int main(int argc, char **argv){
+
+	string inpath = "/Users/will/projects/cpprtx/";
 	
 	initialize_window();
-	initialize_game();
+	initialize_game(inpath);
 
-	t_now = std::chrono::high_resolution_clock::now();
-	curtime = std::chrono::duration_cast<std::chrono::duration<float>>(t_now - t_start).count();
-	t_start = t_now;
+	auto t_last = std::chrono::high_resolution_clock::now();
+	auto t_now = t_last;
+	float curtime = std::chrono::duration_cast<std::chrono::duration<float>>(t_now - t_last).count();
 
 	while (1){
 
 		t_now = std::chrono::high_resolution_clock::now();
-		curtime = std::chrono::duration_cast<std::chrono::duration<float>>(t_now - t_start).count();
-		t_start = t_now;
+		curtime = std::chrono::duration_cast<std::chrono::duration<float>>(t_now - t_last).count();
+		t_last = t_now;
 
 		step_game(curtime);
 
