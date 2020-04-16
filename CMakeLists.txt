@@ -19,7 +19,7 @@ else()
 		message(STATUS "Found pybind11")
 	endif()
 
-	add_library(basement SHARED)
+	add_library(pybind_interface INTERFACE)
 
 	find_package(Python3 3.7 EXACT COMPONENTS Interpreter Development)
 
@@ -36,13 +36,16 @@ else()
 
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3")
 
-	target_include_directories( basement PUBLIC ${Python3_INCLUDE_DIRS} )
-	target_include_directories( basement PUBLIC ${PYBIND11_INCLUDE_DIRS} )
+	target_include_directories(pybind_interface INTERFACE ${Python3_INCLUDE_DIRS})
+	target_include_directories(pybind_interface INTERFACE ${PYBIND11_INCLUDE_DIRS})
+	target_link_options(pybind_interface INTERFACE -undefined dynamic_lookup)
+	target_compile_options(pybind_interface INTERFACE -DPYBINDMAIN)
+	#add_definitions(-DPYBINDMAIN)
 
-	target_link_options(basement PUBLIC -undefined dynamic_lookup)
+
+	add_library(basement SHARED)
+	target_link_libraries(basement INTERFACE pybind_interface)
 	set_target_properties(basement PROPERTIES SUFFIX ".cpython-37m-darwin.so" PREFIX "" OUTPUT_NAME "GameContext")
-
-	add_definitions(-DPYBINDMAIN)
 
 endif()
 

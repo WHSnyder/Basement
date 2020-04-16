@@ -1,27 +1,6 @@
 import time, sys
 sys.path.append("/Users/will/projects/cpprtx/build")
 
-import termios, tty, os
-
-
-def getch():
-
-    fd = sys.stdin.fileno()
-    old_settings = termios.tcgetattr(fd)
-
-    try:
-        tty.setraw(sys.stdin.fileno())
-        ch = sys.stdin.read(1)
-
-    finally:
-        termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
-
-    return ch
- 
-button_delay = 0.2
-
-
-
 from GameContext import *
 
 init_window()
@@ -36,10 +15,9 @@ while True:
 	timelapsed = timecur - timelast
 	timelast = timecur
 
-	step_game(timelapsed)
+	inputbreak = step_game(timelapsed)
 
-	if timecur - timestart > 10: #getch() == 'q':
-		print(globals())
+	if timecur - timestart > 10:
 		break
 
 destroy_game()

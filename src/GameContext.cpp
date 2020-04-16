@@ -29,6 +29,7 @@
 using namespace std;
 
 string basepath;
+int inputbreak = 0;
 
 
 const char *glsl_version = "#version 410";
@@ -103,6 +104,8 @@ static void error_callback(int error, const char* description){
 static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods){
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
         glfwSetWindowShouldClose(window, GL_TRUE);
+   	if (key == GLFW_KEY_Q)
+   		inputbreak = 1;
 }
 
 double lastTime; 
@@ -279,11 +282,15 @@ void initialize_game(string inpath){
 
 
 //Run main game loop
-void step_game(float timestep){
+int step_game(float timestep){
+
+	//cout << "Beginning new frame" << endl;
 
 	ImGui_ImplOpenGL3_NewFrame();
 	ImGui_ImplGlfw_NewFrame();
 	ImGui::NewFrame();
+
+	//cout << "Got new imgui frame" << endl;
 
 	ImGui::Begin("Triangle Position/Color");
 	static float rotation = 0.0;
@@ -347,7 +354,12 @@ void step_game(float timestep){
 	cube -> draw(skybox_shader -> progID);
 	glCheckError();
 
+	//cout << "Drew stuff" << endl;
+
 	playerViewMat = computeMatricesFromInputs();
+
+	//cout << "Got player controls" << endl;
+
 	viewptr = value_ptr(playerViewMat);	
 
 	ImGui::Render();
@@ -356,7 +368,17 @@ void step_game(float timestep){
 	showFPS(window);
 
 	glfwSwapBuffers(window);
+
+	//cout << "Swapped" << endl;
+
 	glfwPollEvents();
+
+	if (inputbreak)
+		inputbreak = 0;
+		return 1;
+	return 0;
+
+	//cout << "Polled" << endl;
 }
 
 
