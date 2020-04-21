@@ -12,9 +12,11 @@
 #include <stdlib.h>
 #include <string>
 #include <chrono>
-
 #include <iostream>
 #include <vector>
+
+#include <sys/types.h>
+#include <unistd.h>
 
 #include "rendering/Texture.h"
 #include "mesh/Mesh.h"
@@ -191,6 +193,8 @@ void initialize_window(){
 	ImGui_ImplOpenGL3_Init(glsl_version);
 
 	ImGui::StyleColorsDark();
+
+	cout << "C++ PID = " << getpid() << endl;
 }
 
 
@@ -278,6 +282,11 @@ void initialize_game(string inpath){
 
  	shadow_shader -> setProj(value_ptr(depthProjMat));
  	shadow_shader -> setView(value_ptr(depthView));
+
+ 	GLint maxBuffs = 0;
+ 	glGetIntegerv(GL_MAX_DRAW_BUFFERS, &maxBuffs);
+
+ 	cout << "Max buffs = " << maxBuffs << endl;
 }
 
 
