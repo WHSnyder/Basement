@@ -3,7 +3,18 @@
 #Testing basic save-full load-lite capabilities.  Will next be tested with 
 #macos metal delegates compiled from source... 
 
+
+import os, time, sys
+sys.path.append("/Users/will/projects/cpprtx/build")
+
+#from GameContext import *
+
 import tensorflow as tf
+
+
+#init_window()
+
+print("HERE\n")
 
 # Construct a basic model.
 '''
@@ -26,5 +37,21 @@ print(tflite_model)
 '''
 #import tflite_runtime.interpreter as tflite
 
-interpreter = tf.lite.Interpreter("/Users/will/projects/cpprtx/libs/tf_models/test_tfconv.tflite")
+
+#deleg = tf.lite.experimental.load_delegate("/Users/will/projects/cpprtx/libs/tf_gl/bazel-bin/tensorflow/lite/delegates/gpu/libtensorflowlite_gpu_delegate.so")
+deleg = tf.lite.experimental.load_delegate("/Users/will/projects/cpprtx/libs/tf_gl/bazel-bin/tensorflow/lite/delegates/gpu/tensorflow_lite_gpu_dylib.dylib")
+
+print("deleg loaded\n")
+
+interpreter = tf.lite.Interpreter("/Users/will/projects/cpprtx/libs/tf_models/test_tfconv.tflite", experimental_delegates=[deleg])
 interpreter.allocate_tensors()
+
+print("tensors alloced\n")
+
+inp = interpreter.tensor(interpreter.get_input_details()[0]["index"])
+output = interpreter.tensor(interpreter.get_output_details()[0]["index"])
+
+for i in range(10):
+	inp().fill(i)
+	interpreter.invoke()
+	print("Inference %s" % output())

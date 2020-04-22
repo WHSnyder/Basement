@@ -3,26 +3,29 @@ cmake_minimum_required(VERSION 3.2)
 project(basement_engine)
 
 option(TESTS "Build basic tests" OFF)
-option(PYBINDPATH "Build with pybind11" OFF)
+option(BINDPY "Build with pybind11" OFF)
 option(GLPATH "Search system for OpenGL" OFF)
 option(GLEWPATH "Search system for GLEW" OFF)
 
-if (NOT PYBINDPATH)
+if (NOT BINDPY)
 
 	add_executable(basement) 
 
 else()
 	
+	#[[
 	if (NOT EXISTS ${PYBINDPATH})
 		message(FATAL_ERROR "Set a valid path for PYBINDPATH, ${PYBINDPATH} is invalid.")
 	else()
 		message(STATUS "Found pybind11")
 	endif()
+	]]
 
 	add_library(basement SHARED)
 
 	find_package(Python3 3.7 EXACT COMPONENTS Interpreter Development)
 
+	#[[
 	set(PYBIND11_FLAGS_CMD -m pybind11 --include)
 
 	execute_process(COMMAND ${Python3_EXECUTABLE} ${PYBIND11_FLAGS_CMD}
@@ -33,11 +36,13 @@ else()
 
 	separate_arguments(PYBIND11_INCLUDE_DIRS)
 	message(STATUS "Pybind11 include directories: ${PYBIND11_INCLUDE_DIRS}")
+	target_include_directories( basement PUBLIC ${PYBIND11_INCLUDE_DIRS} )
+	]]
 
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3")
 
 	target_include_directories( basement PUBLIC ${Python3_INCLUDE_DIRS} )
-	target_include_directories( basement PUBLIC ${PYBIND11_INCLUDE_DIRS} )
+	
 
 	target_link_options(basement PUBLIC -undefined dynamic_lookup)
 	set_target_properties(basement PROPERTIES SUFFIX ".cpython-37m-darwin.so" PREFIX "" OUTPUT_NAME "GameContext")
@@ -48,7 +53,7 @@ endif()
 
 
 set_property(TARGET basement PROPERTY CXX_STANDARD 17)
-set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -Wno-everything -fPIC -lpthread")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-everything -fPIC")
 include_directories(basement PUBLIC include)
 include_directories(basement PUBLIC libs)
 include_directories(basement PRIVATE libs/glm)
@@ -96,6 +101,7 @@ add_subdirectory(libs/imgui)
 target_link_directories(basement PRIVATE libs/glm/build/glm)
 target_link_libraries(basement PRIVATE glm_static)
 
+target_link_libraries(basement PRIVATE pthread)
 target_link_libraries(basement PRIVATE z)
 target_link_libraries(basement PUBLIC ${PHYSX_LIBS})
 target_link_libraries(basement PUBLIC ${PHYSX_LIBS_SHARED})

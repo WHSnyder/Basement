@@ -193,8 +193,6 @@ void initialize_window(){
 	ImGui_ImplOpenGL3_Init(glsl_version);
 
 	ImGui::StyleColorsDark();
-
-	cout << "C++ PID = " << getpid() << endl;
 }
 
 

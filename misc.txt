@@ -1,0 +1,7 @@
+RANDOM USEFUL NOTES
+
+bazel build --config "macos" -c opt --copt "-Os" --copt "-DMAC_OPENGL" --copt "-DTFLITE_GPU_BINARY_RELEASE" --verbose_failures :libtensorflowlite_gpu_delegate.so --apple_platform_type=macos
+
+rm -rf /private/var/tmp/_bazel_will/*
+
+cmake .. -DGLPATH="/System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries/" -DBINDPY=ON
