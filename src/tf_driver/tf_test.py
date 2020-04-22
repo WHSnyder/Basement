@@ -6,6 +6,7 @@
 import tensorflow as tf
 
 # Construct a basic model.
+'''
 root = tf.train.Checkpoint()
 root.v1 = tf.Variable(3.)
 root.v2 = tf.Variable(2.)
@@ -22,3 +23,8 @@ converter = tf.lite.TFLiteConverter.from_saved_model(export_dir)
 tflite_model = converter.convert()
 
 print(tflite_model)
+'''
+#import tflite_runtime.interpreter as tflite
+
+interpreter = tf.lite.Interpreter("/Users/will/projects/cpprtx/libs/tf_models/test_tfconv.tflite")
+interpreter.allocate_tensors()
