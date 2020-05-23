@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 3.2)
 project(basement_engine)
 
 option(TESTS "Build basic tests" OFF)
+option(MACOS "Build for Mac" ON)
 option(BINDPY "Build with pybind11" OFF)
 option(GLPATH "Search system for OpenGL" OFF)
 option(GLEWPATH "Search system for GLEW" OFF)
@@ -48,8 +49,11 @@ else()
 	set_target_properties(basement PROPERTIES SUFFIX ".cpython-37m-darwin.so" PREFIX "" OUTPUT_NAME "GameContext")
 
 	add_definitions(-DPYBINDMAIN)
+	add_definitions(-DMACOS)
 
 endif()
+
+add_definitions(-DMACOS)
 
 
 set_property(TARGET basement PROPERTY CXX_STANDARD 17)

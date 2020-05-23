@@ -28,21 +28,15 @@
 
 
 #ifdef MACOS
-//#include "rendering/GLMetalInteropTex.h"
+#include "rendering/GLMetalInteropTex.h"
 #define GLFW_EXPOSE_NATIVE_NSGL
 #endif
 
 #include <GLFW/glfw3.h>
-#include <GLFW/glfw3native.h>
-
-#define SP(mytype) std::shared_ptr()
 
 
 
 using namespace std;
-
-
-
 
 string basepath;
 int inputbreak = 0;
@@ -163,7 +157,7 @@ void initialize_window(){
 		return -1;
 	}
 
-	glfwWindowHint(GLFW_SAMPLES, 8);
+	glfwWindowHint(GLFW_SAMPLES, 4);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE); // To make MacOS happy; should not be needed
@@ -201,11 +195,6 @@ void initialize_window(){
 
     glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LESS); 
-
-
-
-	cout << "ID val = " << reinterpret_cast<void *>(glfwGetNSGLContext(window)) << endl;
-
 
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
