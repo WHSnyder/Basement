@@ -1,19 +1,20 @@
-CC = clang++
+CC = gcc
 
 ifdef LINUX
-	BASEPATH = /home/will/projects/cpprtx/
-	GLFLAGS = -Ilibs/glfw/include -L/usr/lib/x86_64-linux-gnu/ -lGL -lGLEW -static -L$(BASEPATH)libs/glfw/build/src -lglfw3
-	CFLAGS = -fPIC -lpthread -Ilibs/glm -Ilibs/glm/glm -Isrc -std=c++17 -Wno-everything -Llibs/glm/build/glm -lglm_static
-	LDFLAGS = 
+	BP = /home/will/projects/cpprtx/
+	GLFLAGS = -Ilibs/glfw/include -L/usr/lib/x86_64-linux-gnu/
+	CFLAGS =  -lpthread -Ilibs/glm -Ilibs/glm/glm -Isrc -std=c++17 -Wno-everything -Llibs/glm/build/glm -lglm_static
+	LDFLAGS = -shared -L/usr/lib/x86_64-linux-gnu/ -lGL -lGLEW
+	PHYSX = 
+	ASSIMP = -I$(BP)libs/assimp/include/ -I$(BP)libs/assimp/build/include/ -lz -L$(BP)libs/assimp/build/lib/ -lIrrXML -lassimp
 
->>>>>>> 48b35bf5bf9ea67de32358b7ba89b3ffafea38e0
 else
-	BASEPATH = /Users/will/projects/cpprtx/
-	GLFLAGS = -Ilibs/glfw/include -L$(BASEPATH)libs/glfw/build/src -lglfw.3 -L/System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries/ -lGL -lGLEW
+	BP = /Users/will/projects/cpprtx/
+	GLFLAGS = -Ilibs/glfw/include -L$(BP)libs/glfw/build/src -lglfw.3 -L/System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries/ -lGL -lGLEW
 	CFLAGS = -Os -O2 -fPIC -lpthread -Ilibs/glm -Ilibs/glm/glm -Isrc -std=c++17 -Wno-everything -Llibs/glm/build/ -lglm_static
-	LDFLAGS= "-Wl,-rpath,$(BASEPATH)libs/glfw/build/src"
-	ASSIMP = -I/Users/will/projects/cpprtx/libs/assimp/include/ -I/Users/will/projects/cpprtx/libs/assimp/build/include/ -lz -L/Users/will/projects/cpprtx/libs/assimp/build/lib/ -lIrrXML -lassimp
-	PHYSX = -I/Users/will/projects/cpprtx/libs/physx/PxShared/include -I/Users/will/projects/cpprtx/libs/physx/PhysX_3.4/Include  /Users/will/projects/cpprtx/libs/physx/PxShared/lib/osx64/lib*CHECKED.a /Users/will/projects/cpprtx/libs/physx/PhysX_3.4/Lib/osx64/lib*CHECKED.a
+	LDFLAGS= "-Wl,-rpath,$(BP)libs/glfw/build/src"
+	ASSIMP = -I$(BP)libs/assimp/include/ -I$(BP)libs/assimp/build/include/ -lz -L$(BP)libs/assimp/build/lib/ -lIrrXML -lassimp
+	PHYSX = -I$(BP)libs/physx/PxShared/include -I$(BP)libs/physx/PhysX_3.4/Include  $(BP)libs/physx/PxShared/lib/osx64/lib*CHECKED.a $(BP)libs/physx/PhysX_3.4/Lib/osx64/lib*CHECKED.a
 endif
 
 
@@ -63,7 +64,7 @@ endif
 else 
 
 
-all: bin/ShaderUtils.o bin/Mesh.o bin/glTest.o bin/Physics.o bin/gltst
+all: bin/ShaderUtils.o bin/Mesh.o bin/glTest.o bin/gltst
 
 bin/ShaderUtils.o: src/utils/ShaderUtils.cpp src/utils/ShaderUtils.h
 	$(CC) $(CFLAGS) $(GLFLAGS) -c src/utils/ShaderUtils.cpp -o bin/ShaderUtils.o
@@ -71,16 +72,19 @@ bin/ShaderUtils.o: src/utils/ShaderUtils.cpp src/utils/ShaderUtils.h
 bin/Mesh.o: src/mesh/Mesh.h src/mesh/Mesh.cpp
 	$(CC) $(CFLAGS) $(GLFLAGS) $(ASSIMP) -c src/mesh/Mesh.cpp -o bin/Mesh.o
 
-bin/Physics.o: src/phys/Physics.h src/phys/Physics.cpp
-	$(CC) $(CFLAGS) $(PHYSX) -c -o bin/Physics.o src/phys/Physics.cpp
+#bin/Physics.o: src/phys/Physics.h src/phys/Physics.cpp
+#	$(CC) $(CFLAGS) $(PHYSX) -c -o bin/Physics.o src/phys/Physics.cpp
 
 bin/glTest.o: src/glTest.cpp
-	$(CC) $(CFLAGS) $(GLFLAGS) -I/Users/will/projects/cpprtx/libs/physx/PxShared/include -I/Users/will/projects/cpprtx/libs/physx/PhysX_3.4/Include -c src/glTest.cpp -o bin/glTest.o
+	$(CC) $(CFLAGS) $(GLFLAGS) -c src/glTest.cpp -o bin/glTest.o
+#-I/Users/will/projects/cpprtx/libs/physx/PxShared/include -I/Users/will/projects/cpprtx/libs/physx/PhysX_3.4/Include
 
-bin/gltst: bin/glTest.o bin/Mesh.o bin/Physics.o
-	$(CC) $(CFLAGS) $(GLFLAGS) $(ASSIMP) $(LDFLAGS) $(PHYSX) bin/Physics.o bin/ShaderUtils.o bin/glTest.o bin/Mesh.o -o bin/gltst
+bin/gltst: bin/glTest.o bin/Mesh.o
+	ld -v bin/Mesh.o bin/ShaderUtils.o bin/glTest.o  -o bin/gltst -lpthread -Llibs/glm/build/glm -lglm_static -lz -lGL -lGLEW -L$(BP)libs/assimp/build/lib/ -lIrrXML -L$(BP)libs/assimp/build/bin/ -lassimp  -L/usr/local/lib -lglfw3 -ldl -lrt -lXrandr -lXxf86vm -lXi -lXinerama -lX11 #-L$(BP)libs/glfw/build/src -lglfw3
 
 clean: 
 	rm bin/*
 
 endif
+
+#	ld -v bin/Mesh.o bin/ShaderUtils.o bin/glTest.o  -o bin/gltst -ldl -lpthread -Llibs/glm/build/glm -lglm_static -lz -lGL -lGLEW -lX11 -lm -Llibs/assimp/build/lib/ -lIrrXML -lassimp -Llibs/glfw/build/src -lglfw3
