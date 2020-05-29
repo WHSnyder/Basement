@@ -8,39 +8,32 @@
 
 #include <fstream>
 #include <iostream>
-#include <sstream>      // std::stringstream
-
-using namespace std;
+#include <sstream>
 
 extern string basepath;
 
 
+using namespace std;
 
 string read_shader(string filepath){
 
     filepath.insert(0, basepath);
 
-	std::string content;
-    std::ifstream fileStream(filepath.c_str());
+	string content;
+    ifstream fileStream(filepath.c_str());
 
     if(!fileStream.is_open()) {
-        std::cerr << "Could not read file " << filepath << ". File does not exist." << std::endl;
+        cerr << "Could not read file " << filepath << ". File does not exist." << endl;
         return "";
     }
 
-    std::string line = "";
-    std::stringstream shaderData;
-
-    #ifdef MACOS
-    while(!fileStream.eof()) {
-        std::getline(fileStream, line);
-        content.append(line + " ");
-    }
-    #else
+    string line = "";
+    stringstream shaderData;
     shaderData << fileStream.rdbuf();
-    #endif
 
     fileStream.close();
+    
     content = shaderData.str();
+    
     return content; 
 }
