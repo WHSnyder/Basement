@@ -113,7 +113,7 @@ add_subdirectory(src/phys)
 #add_subdirectory(libs/imgui)
 
 #target_link_libraries(basement PUBLIC "-Wl,--allow-shlib-undefined")
-target_link_libraries(basement PUBLIC "-Wl,--no-as-needed")
+target_link_libraries(basement PUBLIC "-Wl,--no-as-needed")  #<---this is needed on ubuntu
 
 target_link_directories(basement PUBLIC libs/glm/build/glm)
 target_link_libraries(basement PUBLIC glm_static)

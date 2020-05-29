@@ -10,10 +10,9 @@
 #include <iostream>
 #include <sstream>
 
-extern string basepath;
-
-
 using namespace std;
+
+extern string basepath;
 
 string read_shader(string filepath){
 
