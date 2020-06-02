@@ -37,9 +37,9 @@ else()
 
 endif()
 
-
 set_property(TARGET basement PROPERTY CXX_STANDARD 17)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
+
 
 if (UNIX AND NOT APPLE)
 	target_link_libraries(basement PUBLIC "-Wl,--no-as-needed")
@@ -57,7 +57,7 @@ if (DEFINED GLPATH)
 	target_link_directories(basement PRIVATE ${GLPATH})
 	target_link_libraries(basement PRIVATE GL GLEW)
 else()
-	find_package(OpenGL REQUIRED)
+	message(ERROR "You must specify a path to your OpenGL shared objects/dylibs")
 endif()
 
 if (APPLE)
@@ -71,9 +71,15 @@ include_directories(${OpenCV_INCLUDE_DIRS})
 
 set(ASSIMP_LIB_PATH ${CD}/libs/assimp/build/bin/) 
 
+if (UNIX AND NOT APPLE)
+	set(PX_DIR linux64/)
+elseif(APPLE)
+	set(PX_DIR osx64/)
+endif()
+
 #Physx SOs were moved into Lib folders from bin ones
-set(PHYSX_LIBS_DIR ${CD}/libs/physx/PhysX_3.4/Lib/linux64/)
-set(PHYSX_LIBS_DIR_SHARED ${CD}/libs/physx/PxShared/lib/linux64/)
+set(PHYSX_LIBS_DIR ${CD}/libs/physx/PhysX_3.4/Lib/${PX_DIR})
+set(PHYSX_LIBS_DIR_SHARED ${CD}/libs/physx/PxShared/lib/${PX_DIR})
 set(PHYSX_INC_DIR ${CD}/libs/physx/PhysX_3.4/Include)
 set(PHYSX_INC_DIR_SHARED ${CD}/libs/physx/PxShared/include)
 
