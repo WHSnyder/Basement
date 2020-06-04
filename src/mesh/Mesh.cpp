@@ -70,7 +70,8 @@ void Mesh::read_obj_file(string filename){
     //Check errors
     if ((!scene) || (scene->mFlags == AI_SCENE_FLAGS_INCOMPLETE) || (!scene->mRootNode)){
         cerr << "Error loading w/assimp" << string(importer.GetErrorString()) << endl;
-        return -1;
+        //Return fail
+        return;
     }
 
     for (unsigned int i = 0; i < scene->mNumMeshes; ++i){

@@ -1,5 +1,7 @@
 import time, sys
-sys.path.append("/Users/will/projects/cpprtx/build")
+
+#sys.path.append("/Users/will/projects/cpprtx/build")
+sys.path.append("/home/will/projects/cpprtx/build")
 
 import termios, tty, os
 
@@ -40,10 +42,15 @@ def getch():
 
 button_delay = 0.2
 
+
+print("Importing GameContext...\n")
+
 from GameContext import *
 
+print("Imported GameContext successfully\n")
+
 init_window()
-init_game("/Users/will/projects/cpprtx/")
+init_game("/home/will/projects/cpprtx/")
 
 print("PID = " + str(os.getpid()))
 
@@ -61,7 +68,7 @@ while True:
 
 	step_game(timelapsed)
 
-	if timecur - timestart > 4:
+	if timecur - timestart > 12:
 		while timecur - timestart < 8:
 			timecur = time.perf_counter()
 		break	

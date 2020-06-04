@@ -3,7 +3,7 @@
 #include "rendering/Texture.h"
 
 #include <iostream>
-#include <vector>
+
 
 using namespace std;
 
@@ -38,6 +38,8 @@ int compile_shader(GLenum shaderType, string shaderCode){
 
 GLuint build_program(string shader_path){
 
+	std::cout << "Building shader " << shader_path << std::endl;
+ 
 	GLuint v_id,f_id, prog_id;
 
 	string vshader = string(shader_path);
@@ -216,7 +218,7 @@ void Shader::printUniforms(){
 	printf("Active Uniforms: %d\n", names.size());
 
 	for (int i = 0; i < names.size(); i++){
-	    printf("Uniform #%d Type: %u Name: %s\n", i, types[i], names[i]);
+	    //printf("Uniform #%d Type: %u Name: %s\n", i, types[i], names[i]);
 	}
 }
 

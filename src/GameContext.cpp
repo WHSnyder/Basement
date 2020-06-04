@@ -2,9 +2,11 @@
 #include <pybind11/pybind11.h>
 #endif
 
+/*
 #include "imgui/imgui.h"
 #include "imgui/bindings/imgui_impl_glfw.h"
 #include "imgui/bindings/imgui_impl_opengl3.h"
+*/
 
 #include <GL/glew.h>
 
@@ -155,7 +157,7 @@ int width, height;
 
 GLFWwindow* window;
 
-void initialize_window(){
+int initialize_window(){
 
 	if (!glfwInit()) {
 		fprintf(stderr, "Failed to initialize GLFW\n");
@@ -202,19 +204,16 @@ void initialize_window(){
     glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LESS); 
 
+	/*IMGUI_CHECKVERSION();
 
-
-	cout << "ID val = " << reinterpret_cast<void *>(glfwGetNSGLContext(window)) << endl;
-
-
-	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
 	ImGuiIO &io = ImGui::GetIO();
 
 	ImGui_ImplGlfw_InitForOpenGL(window, true);
 	ImGui_ImplOpenGL3_Init(glsl_version);
 
-	ImGui::StyleColorsDark();
+	ImGui::StyleColorsDark();*/
+	return 0;
 }
 
 
@@ -246,9 +245,9 @@ mat4 depthOrtho = proj;
 mat4 depthView = lookAt(lightPos, vec3(0,9,0), normalize(cross(vec3(1,0,0),lookDir)));
 mat4 depthProjMat = glm::ortho<float>(-20,20,-10,10,0,30);
 
-vec3 tm = terrain_mult;
+vec3 ter_mult = terrain_mult;
 
-mat t1 = translate(vec3(-1,0,-1) * tm), t2 = translate(vec3(1,0,-1) * tm), t3 = translate(vec3(-1,0,1) * tm), t4 = translate(vec3(1,0,1) * tm);
+mat t1 = translate(vec3(-1,0,-1) * ter_mult), t2 = translate(vec3(1,0,-1) * ter_mult), t3 = translate(vec3(-1,0,1) * ter_mult), t4 = translate(vec3(1,0,1) * ter_mult);
 float *t1p = value_ptr(t1), *t2p = value_ptr(t2), *t3p = value_ptr(t3), *t4p = value_ptr(t4);
 
 float *viewptr = value_ptr(playerViewMat), *projptr = value_ptr(proj);
@@ -308,14 +307,14 @@ void initialize_game(string inpath){
 //Run main game loop
 int step_game(float timestep){
 
-	ImGui_ImplOpenGL3_NewFrame();
+	/*ImGui_ImplOpenGL3_NewFrame();
 	ImGui_ImplGlfw_NewFrame();
 	ImGui::NewFrame();
 
 	ImGui::Begin("Triangle Position/Color");
 	static float rotation = 0.0;
 	ImGui::SliderFloat("rotation", &rotation, 0, 2 * 3);
-	ImGui::End();
+	ImGui::End();*/
 
 	mainSimu -> stepSimu(timestep);
 	mainSimu -> getModelMats();
@@ -377,10 +376,10 @@ int step_game(float timestep){
 	playerViewMat = computeMatricesFromInputs();
 	viewptr = value_ptr(playerViewMat);	
 
-	ImGui::Render();
+	/*ImGui::Render();
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
-	showFPS(window);
+	showFPS(window);*/
 
 	glfwSwapBuffers(window);
 	glfwPollEvents();
@@ -393,11 +392,12 @@ int step_game(float timestep){
 
 
 void destroy_game(){
-
+	/*
 	ImGui_ImplOpenGL3_Shutdown();
 	ImGui_ImplGlfw_Shutdown();
 	ImGui::DestroyContext();
-
+	*/
+	
 	glfwDestroyWindow(window);
 	glfwTerminate();
 
@@ -426,7 +426,7 @@ void destroy_game(){
 
 int main(int argc, char **argv){
 
-	string inpath = "/Users/will/projects/cpprtx/";
+	string inpath = "/home/will/projects/cpprtx/";
 	
 	initialize_window();
 	initialize_game(inpath);
