@@ -6,5 +6,5 @@ Feature overview:
 - Basic shadow mapping
 - Perlin noise terrain generator
 - Arbitrary 3D models filetypes
-- Node editor for creating OpenGL pipelines (very incomplete, based on (this ImGUI demo)[https://github.com/thedmd/imgui-node-editor])
+- Node editor for creating OpenGL pipelines (very incomplete, based on [this ImGUI demo](https://github.com/thedmd/imgui-node-editor))
 - Python bindings for important game control functions
