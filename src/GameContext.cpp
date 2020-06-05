@@ -27,6 +27,7 @@
 #include "rendering/Shader.h"
 #include "utils/Controls.hpp"
 #include "rendering/RenderTarget.h"
+#include "tf_driver/StyleTransfer.h"
 
 
 #ifdef MACOS
@@ -236,12 +237,12 @@ float *img_data = generate_terrain(dim, freq, terrain_mult.y, px_samples);
 float sphereMat[16] = {}, boxMat[16] = {}; 
 
 mat4 playerViewMat = lookAt(vec3(18,18,18),vec3(0,0,-10),vec3(0,1.0,0));
-mat4 proj = infinitePerspective(glm::radians(45.0f), 1.0f, 1.0f);
+mat4 proj1 = infinitePerspective(glm::radians(45.0f), 1.0f, 1.0f);
 mat4 rot = mat4(1.0), testmat, iden = mat4(1.0), trans = translate(vec3(0,9,0)), lighttrans = translate(vec3(0,18,18));
 
 vec3 lightPos = vec3(0,18,18), lookDir = vec3(0,9,0) - lightPos;
 
-mat4 depthOrtho = proj;
+mat4 depthOrtho = proj1;
 mat4 depthView = lookAt(lightPos, vec3(0,9,0), normalize(cross(vec3(1,0,0),lookDir)));
 mat4 depthProjMat = glm::ortho<float>(-20,20,-10,10,0,30);
 
@@ -250,7 +251,7 @@ vec3 ter_mult = terrain_mult;
 mat t1 = translate(vec3(-1,0,-1) * ter_mult), t2 = translate(vec3(1,0,-1) * ter_mult), t3 = translate(vec3(-1,0,1) * ter_mult), t4 = translate(vec3(1,0,1) * ter_mult);
 float *t1p = value_ptr(t1), *t2p = value_ptr(t2), *t3p = value_ptr(t3), *t4p = value_ptr(t4);
 
-float *viewptr = value_ptr(playerViewMat), *projptr = value_ptr(proj);
+float *viewptr = value_ptr(playerViewMat), *projptr = value_ptr(proj1);
 
 
 void initialize_game(string inpath){
@@ -458,6 +459,7 @@ int main(int argc, char **argv){
 PYBIND11_MODULE(GameContext, m) {
     
     m.doc() = "Full game loop";
+    m.def("run_model", &run_model, "Run CPP test for TF");
     m.def("init_window", &initialize_window, "Initialize imgui, windows, etc");
     m.def("init_game", &initialize_game, "Initialize game resources, vars");
     m.def("step_game", &step_game, "Run game iteration");

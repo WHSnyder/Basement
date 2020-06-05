@@ -50,8 +50,14 @@ from GameContext import *
 print("Imported GameContext successfully\n")
 
 init_window()
-init_game("/home/will/projects/cpprtx/")
+run_model()
 
+print("Model ran")
+
+init_game("/home/will/projects/cpprtx/")
+destroy_game()
+
+'''
 print("PID = " + str(os.getpid()))
 
 timelast = time.perf_counter()
@@ -74,3 +80,4 @@ while True:
 		break	
 
 destroy_game()
+'''
