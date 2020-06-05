@@ -6,7 +6,6 @@ project(tf_tests)
 if (BUILDTEST)
 
 	add_library(test_TFCPP STATIC)
-	#add_executable(test_TFCPP)
 
 	target_sources(test_TFCPP PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/StyleTransfer.cpp ${CMAKE_CURRENT_SOURCE_DIR}/cpp_tf_test.cpp)
 
@@ -22,17 +21,22 @@ if (BUILDTEST)
 	target_include_directories(test_TFCPP PUBLIC ${CD}/libs/tf_gl/tensorflow/lite/tools/make/downloads/absl)
 	target_include_directories(test_TFCPP PUBLIC ${CD}/src/tf_driver)
 
-
 	target_link_directories(test_TFCPP PUBLIC ${CD}/libs/tf_gl/bazel-bin/tensorflow/lite)
 	target_link_libraries(test_TFCPP PUBLIC tensorflowlite)
 
-	target_link_directories(test_TFCPP PUBLIC ${CD}/libs/tf_gl/bazel-bin/tensorflow/lite/delegates/gpu)
-	target_link_libraries(test_TFCPP PUBLIC tensorflowlite_gpu_delegate) 
 
+	if (APPLE)
 
+		target_link_libraries(test_TFCPP PUBLIC ${CD}/libs/tf_gl/bazel-bin/tensorflow/lite/delegates/gpu/tensorflowlite_gpu_dylib.dylib)
 
-	if (UNIX AND NOT APPLE)
+		target_link_options(test_TFCPP PUBLIC -undefined dynamic_lookup)
+		
+	else()
+
+		target_link_directories(test_TFCPP PUBLIC ${CD}/libs/tf_gl/bazel-bin/tensorflow/lite/delegates/gpu)
+		target_link_libraries(test_TFCPP PUBLIC tensorflowlite_gpu_delegate)
+
 		target_link_libraries(test_TFCPP PUBLIC "-Wl,--no-as-needed")
+	
 	endif()
-
 endif()
