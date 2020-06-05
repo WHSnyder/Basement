@@ -69,7 +69,7 @@ else ()
 	pkg_check_modules(OpenCV REQUIRED opencv)
 endif()
 
-include_directories(${OpenCV_INCLUDE_DIRS})
+target_include_directories(basement PUBLIC ${OpenCV_INCLUDE_DIRS})
 
 set(ASSIMP_LIB_PATH ${CD}/libs/assimp/build/bin/) 
 
@@ -100,6 +100,11 @@ add_subdirectory(src/mesh)
 add_subdirectory(src/utils)
 add_subdirectory(src/phys)
 #add_subdirectory(libs/imgui)
+
+if (BUILDTEST)
+	add_subdirectory(src/tf_driver)
+	target_link_libraries(basement PUBLIC test_TFCPP)
+endif()
 
 target_link_directories(basement PUBLIC libs/glm/build/glm)
 target_link_libraries(basement PUBLIC glm_static)
