@@ -214,7 +214,6 @@ StyleTransfer::~StyleTransfer() {
 
     // NEW: Clean up.
     TfLiteGpuDelegateDelete(delegate);
-    std::cout << "Deleted successfully" << std::endl;
 }
 
 cv::Mat StyleTransfer::preProcessImage(cv::Mat input) {
