@@ -26,7 +26,7 @@
 
 #else
 
-#include "tensorflow/lite/delegates/gpu/gl_delegate.h"
+#include "tensorflow/lite/delegates/gpu/metal_delegate.h"
 #endif
 
 #include <opencv2/opencv.hpp>

@@ -427,7 +427,7 @@ void destroy_game(){
 
 int main(int argc, char **argv){
 
-	string inpath = "/home/will/projects/cpprtx/";
+	string inpath = "/Users/will/projects/cpprtx/";
 	
 	initialize_window();
 	initialize_game(inpath);

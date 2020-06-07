@@ -18,13 +18,13 @@
 #include <iostream>
 #include <string>
 
-std::string MODEL_PATH = "/home/will/projects/cpprtx/libs/tf_models/magenta_models/";
-std::string APP_PATH = "/home/will/Desktop/";
-std::string ZION = APP_PATH + "points.jpeg";
-std::string INPUT_IMAGE = APP_PATH + "guili.jpg";
+std::string MODEL_PATH = "/Users/will/projects/cpprtx/libs/tf_models/magenta_models/";
+std::string APP_PATH = "/Users/will/Desktop/";
+std::string ZION = APP_PATH + "points.jpg";
+std::string INPUT_IMAGE = APP_PATH + "giuli.jpg";
 std::string style_predict_model = MODEL_PATH + "arb_style_predict.tflite";
 std::string style_transfer_model = MODEL_PATH + "arb_style_transform.tflite";
-std::string GRAND_CANYON = APP_PATH + "huntersinsnow.jpeg";
+std::string GRAND_CANYON = APP_PATH + "huntersinsnow.jpg";
 std::string LASSEN = APP_PATH + "starry.jpg";
 
 StyleTransfer::StyleTransfer() {
@@ -44,7 +44,7 @@ StyleTransfer::StyleTransfer() {
     }
 
     // NEW: Prepare GPU delegate.
-    delegate = TfLiteGpuDelegateCreate(/*default options=*/nullptr);
+    delegate = TFLGpuDelegateCreate(/*default options=*/nullptr);
     if (style_interpreter_-> ModifyGraphWithDelegate(delegate) != kTfLiteOk){
         std::cout << "BIG FAIL" << std::endl;  
     } 
@@ -68,7 +68,7 @@ std::string StyleTransfer::getRenderedStyle(int styleChosen) {
     // Do the style transfer code
     std::vector<float> styleVec = getStyle(styleChosen);
     if(styleVec.size() > 0) {
-        cv::Mat image = cv::imread(INPUT_IMAGE, CV_LOAD_IMAGE_COLOR);
+        cv::Mat image = cv::imread(INPUT_IMAGE, cv::IMREAD_COLOR);
 
         cv::Mat processedImage = preProcessImage(image);
 
@@ -114,6 +114,8 @@ std::string StyleTransfer::getRenderedStyle(int styleChosen) {
             outputImage.convertTo(outputImage, CV_8UC3);
             cv::cvtColor(outputImage, outputImage, cv::COLOR_BGR2RGB);
 
+            //std::cout << "Writing output" << std::endl;
+
             std::string outputString = APP_PATH + "/output.jpg";
             cv::imwrite(outputString, outputImage);
 
@@ -141,7 +143,7 @@ std::vector<float> StyleTransfer::getStyle(int styleVal) {
             styleImage = ZION;
             break;
     }
-    cv::Mat styleMat =  cv::imread(styleImage, CV_LOAD_IMAGE_COLOR);
+    cv::Mat styleMat =  cv::imread(styleImage, cv::IMREAD_COLOR);
     cv::cvtColor(styleMat, styleMat, cv::COLOR_BGR2RGB);
 
     styleMat.convertTo(styleMat, CV_32F, 1.f/255);
@@ -213,10 +215,12 @@ int StyleTransfer::fromNameToIndex(std::string stdName, bool isInput, bool isSty
 StyleTransfer::~StyleTransfer() {
 
     // NEW: Clean up.
-    TfLiteGpuDelegateDelete(delegate);
+    TFLGpuDelegateDelete(delegate);
 }
 
 cv::Mat StyleTransfer::preProcessImage(cv::Mat input) {
+
+    //std::cout << "Writing testcpwhat" << std::endl;
 
     std::string firstImageStr = APP_PATH + "/testcppwhat.jpg";
     cv::imwrite(firstImageStr, input);
@@ -225,6 +229,8 @@ cv::Mat StyleTransfer::preProcessImage(cv::Mat input) {
     cv::Size imageSize(384, 384);
     cv::resize(input, resizedImage, imageSize);
     // I don't want to lose the alpha channel of the image coming in
+
+    //std::cout << "Writing testcpp" << std::endl;
 
     std::string outputString = APP_PATH + "/testcpp.jpg";
     cv::imwrite(outputString, resizedImage);

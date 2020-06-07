@@ -18,7 +18,7 @@ else()
 	
 	add_library(basement SHARED)
 
-	find_package(Python3 3.6 EXACT COMPONENTS Interpreter Development)
+	find_package(Python3 3.7 EXACT COMPONENTS Interpreter Development)
 	target_include_directories(basement PUBLIC ${Python3_INCLUDE_DIRS})
 	
 	execute_process (
@@ -71,7 +71,7 @@ endif()
 
 target_include_directories(basement PUBLIC ${OpenCV_INCLUDE_DIRS})
 
-set(ASSIMP_LIB_PATH ${CD}/libs/assimp/build/bin/) 
+set(ASSIMP_LIB_PATH ${CD}/libs/assimp/build/lib/) 
 
 if (UNIX AND NOT APPLE)
 	set(PX_DIR linux64/)

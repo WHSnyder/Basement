@@ -1,7 +1,7 @@
 import time, sys
 
-#sys.path.append("/Users/will/projects/cpprtx/build")
-sys.path.append("/home/will/projects/cpprtx/build")
+sys.path.append("/Users/will/projects/cpprtx/build")
+#sys.path.append("/home/will/projects/cpprtx/build")
 
 import termios, tty, os
 
@@ -43,28 +43,21 @@ def getch():
 button_delay = 0.2
 
 
-print("Importing GameContext...\n")
-
+os.chdir("/Users/will/projects/cpprtx/libs/tf_gl")
 from GameContext import *
+os.chdir("/Users/will/projects/cpprtx/")
 
-print("Imported GameContext successfully\n")
 
 init_window()
 run_model()
 
 print("Model ran")
 
-init_game("/home/will/projects/cpprtx/")
-destroy_game()
-
-'''
-print("PID = " + str(os.getpid()))
+init_game("/Users/will/projects/cpprtx/")
+#destroy_game()
 
 timelast = time.perf_counter()
 timestart = timelast
-
-#fd = sys.stdin.fileno()
-#old_settings = termios.tcgetattr(fd)
 
 while True:
 	
@@ -80,4 +73,3 @@ while True:
 		break	
 
 destroy_game()
-'''
