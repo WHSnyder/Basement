@@ -20,12 +20,12 @@
 
 std::string MODEL_PATH = "/home/will/projects/cpprtx/libs/tf_models/magenta_models/";
 std::string APP_PATH = "/home/will/Desktop/";
-std::string ZION = APP_PATH + "points.jpeg";
-std::string INPUT_IMAGE = APP_PATH + "guili.jpg";
+std::string POINTILISM = APP_PATH + "points.jpeg";
+std::string INPUT_IMAGE = APP_PATH + "hills.jpeg";
 std::string style_predict_model = MODEL_PATH + "arb_style_predict.tflite";
 std::string style_transfer_model = MODEL_PATH + "arb_style_transform.tflite";
-std::string GRAND_CANYON = APP_PATH + "huntersinsnow.jpeg";
-std::string LASSEN = APP_PATH + "starry.jpg";
+std::string HUNTERS = APP_PATH + "huntersinsnow.jpeg";
+std::string STARRY = APP_PATH + "starry.jpg";
 
 StyleTransfer::StyleTransfer() {
 
@@ -44,9 +44,9 @@ StyleTransfer::StyleTransfer() {
     }
 
     // NEW: Prepare GPU delegate.
-    delegate = TfLiteGpuDelegateCreate(/*default options=*/nullptr);
-    if (style_interpreter_-> ModifyGraphWithDelegate(delegate) != kTfLiteOk){
-        std::cout << "BIG FAIL" << std::endl;  
+    delegate = TfLiteGpuDelegateCreate(nullptr);
+    if (transfer_interpreter_-> ModifyGraphWithDelegate(delegate) != kTfLiteOk){
+        std::cout << "Failed to modify graph with delegate" << std::endl;  
     } 
 }
 
@@ -107,14 +107,14 @@ std::string StyleTransfer::getRenderedStyle(int styleChosen) {
             // Get the data out of the outputBuffer
             const float * outputBuffer = transfer_interpreter_->typed_tensor<float>(outputIndex);
 
-            auto tensorMat = cv::Mat(outputImageSize, CV_32FC3, (void *) outputBuffer);
+            auto tensorMat = cv::Mat(outputImageSize, CV_32FC4, (void *) outputBuffer);
             cv::Mat outputImage;
             const cv::Scalar maxVal = cv::Scalar(255, 255, 255);
             cv::multiply(tensorMat, maxVal, outputImage);
             outputImage.convertTo(outputImage, CV_8UC3);
             cv::cvtColor(outputImage, outputImage, cv::COLOR_BGR2RGB);
 
-            std::string outputString = APP_PATH + "/output.jpg";
+            std::string outputString = APP_PATH + "/output.png";
             cv::imwrite(outputString, outputImage);
 
             return outputString;
@@ -131,17 +131,17 @@ std::vector<float> StyleTransfer::getStyle(int styleVal) {
     std::string styleImage;
     switch(styleVal) {
         case(0) :
-            styleImage = GRAND_CANYON;
+            styleImage = STARRY;
             break;
         case(1) :
-            styleImage = LASSEN;
+            styleImage = STARRY;
             break;
         case(2) :
         default :
-            styleImage = ZION;
+            styleImage = STARRY;
             break;
     }
-    cv::Mat styleMat =  cv::imread(styleImage, CV_LOAD_IMAGE_COLOR);
+    cv::Mat styleMat =  cv::imread(styleImage, cv::IMREAD_COLOR);
     cv::cvtColor(styleMat, styleMat, cv::COLOR_BGR2RGB);
 
     styleMat.convertTo(styleMat, CV_32F, 1.f/255);
@@ -177,11 +177,10 @@ std::vector<float> StyleTransfer::getStyle(int styleVal) {
         const float * outputBuffer = style_interpreter_->typed_tensor<float>(outputIndex);
         memcpy(outputFloat.data(), outputBuffer, outputByteSize);
 
-
         return outputFloat;
     }
-
 }
+
 
 int StyleTransfer::fromNameToIndex(std::string stdName, bool isInput, bool isStylePredict) const
 {
@@ -213,7 +212,7 @@ int StyleTransfer::fromNameToIndex(std::string stdName, bool isInput, bool isSty
 StyleTransfer::~StyleTransfer() {
 
     // NEW: Clean up.
-    TfLiteGpuDelegateDelete(delegate);
+    //TfLiteGpuDelegateDelete(delegate);
 }
 
 cv::Mat StyleTransfer::preProcessImage(cv::Mat input) {

@@ -39,14 +39,13 @@ else()
 endif()
 
 set_property(TARGET basement PROPERTY CXX_STANDARD 17)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC") #not sure how this works with executables
 
 
 if (UNIX AND NOT APPLE)
 	target_link_libraries(basement PUBLIC "-Wl,--no-as-needed")
 elseif(APPLE)
 	target_link_options(basement PUBLIC -undefined dynamic_lookup)
-
 endif()
 
 include_directories(basement PUBLIC include)
@@ -79,7 +78,7 @@ elseif(APPLE)
 	set(PX_DIR osx64/)
 endif()
 
-#Physx SOs were moved into Lib folders from bin ones
+#Physx SOs were moved into Lib folders from Bin ones. Nvidia really should've included a pckconfig/cmake module...
 set(PHYSX_LIBS_DIR ${CD}/libs/physx/PhysX_3.4/Lib/${PX_DIR})
 set(PHYSX_LIBS_DIR_SHARED ${CD}/libs/physx/PxShared/lib/${PX_DIR})
 set(PHYSX_INC_DIR ${CD}/libs/physx/PhysX_3.4/Include)
