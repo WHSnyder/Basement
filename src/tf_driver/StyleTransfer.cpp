@@ -25,7 +25,7 @@ std::string INPUT_IMAGE = APP_PATH + "gate.jpg";
 std::string style_predict_model = MODEL_PATH + "arb_style_predict.tflite";
 std::string style_transfer_model = MODEL_PATH + "arb_style_transform.tflite";
 std::string LASSEN = APP_PATH + "scream.jpg";
-std::string GRAND_CANYON = APP_PATH + "scream.jpg";
+std::string GRAND_CANYON = APP_PATH + "starry.jpg";
 
 
 void printVector(std::vector<int> const &a) {
@@ -247,17 +247,12 @@ StyleTransfer::~StyleTransfer() {
 
 cv::Mat StyleTransfer::preProcessImage(cv::Mat input) {
 
-    std::cout << "Writing testcpwhat" << std::endl;
-
     std::string firstImageStr = APP_PATH + "/testcppwhat.jpg";
     cv::imwrite(firstImageStr, input);
 
     cv::Mat resizedImage;
     cv::Size imageSize(384, 384);
     cv::resize(input, resizedImage, imageSize);
-    // I don't want to lose the alpha channel of the image coming in
-
-    std::cout << "Writing testcpp" << std::endl;
 
     std::string outputString = APP_PATH + "/testcpp.jpg";
     cv::imwrite(outputString, resizedImage);
