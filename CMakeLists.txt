@@ -3,7 +3,6 @@ cmake_minimum_required(VERSION 3.2)
 project(basement_engine)
 
 option(TESTS "Build basic tests" OFF)
-option(MACOS "Build for Mac" ON)
 option(BINDPY "Build with pybind11" OFF)
 option(GLPATH "Search system for OpenGL" OFF)
 

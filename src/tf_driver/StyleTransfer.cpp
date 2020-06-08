@@ -20,12 +20,22 @@
 
 std::string MODEL_PATH = "/Users/will/projects/cpprtx/libs/tf_models/magenta_models/";
 std::string APP_PATH = "/Users/will/Desktop/";
-std::string ZION = APP_PATH + "points.jpg";
-std::string INPUT_IMAGE = APP_PATH + "giuli.jpg";
+std::string ZION = APP_PATH + "grad.jpg";
+std::string INPUT_IMAGE = APP_PATH + "gate.jpg";
 std::string style_predict_model = MODEL_PATH + "arb_style_predict.tflite";
 std::string style_transfer_model = MODEL_PATH + "arb_style_transform.tflite";
-std::string GRAND_CANYON = APP_PATH + "huntersinsnow.jpg";
-std::string LASSEN = APP_PATH + "starry.jpg";
+std::string LASSEN = APP_PATH + "scream.jpg";
+std::string GRAND_CANYON = APP_PATH + "starry.jpg";
+
+
+void printVector(std::vector<int> const &a) {
+    std::cout << "Input indicies: ";
+    for(int i=0; i < a.size(); i++)
+       std::cout << a.at(i) << ' ';
+    std::cout << std::endl;
+}
+
+
 
 StyleTransfer::StyleTransfer() {
 
@@ -39,13 +49,14 @@ StyleTransfer::StyleTransfer() {
     if (style_builder(&style_interpreter_) != kTfLiteOk) {
         std::cout << "Error with style interpreter" << std::endl;
     }
+
     if (transform_builder(&transfer_interpreter_) != kTfLiteOk) {
         std::cout << "Error with transfer interpreter" << std::endl;
     }
 
     // NEW: Prepare GPU delegate.
     delegate = TFLGpuDelegateCreate(/*default options=*/nullptr);
-    if (style_interpreter_-> ModifyGraphWithDelegate(delegate) != kTfLiteOk){
+    if (style_interpreter_ -> ModifyGraphWithDelegate(delegate) != kTfLiteOk){
         std::cout << "BIG FAIL" << std::endl;  
     } 
 }
@@ -67,22 +78,30 @@ std::string StyleTransfer::getRenderedStyle(int styleChosen) {
 
     // Do the style transfer code
     std::vector<float> styleVec = getStyle(styleChosen);
-    if(styleVec.size() > 0) {
-        cv::Mat image = cv::imread(INPUT_IMAGE, cv::IMREAD_COLOR);
 
+    if(styleVec.size() > 0) {
+
+        cv::Mat image = cv::imread(INPUT_IMAGE, cv::IMREAD_COLOR);
         cv::Mat processedImage = preProcessImage(image);
 
         transfer_interpreter_->AllocateTensors();
 
-        auto contentImageIndex = fromNameToIndex("content_image", true, false);
-        auto styleInputIndex = fromNameToIndex("mobilenet_conv/Conv/BiasAdd", true, false);
+        int contentImageIndex = fromNameToIndex("content_image", true, false);
+        int styleInputIndex = fromNameToIndex("mobilenet_conv/Conv/BiasAdd", true, false);
+
+        std::cout << "Content index: " << contentImageIndex << std::endl;
+        std::cout << "Style index: " << styleInputIndex << std::endl;
+        printVector(transfer_interpreter_ -> inputs());
 
         auto contentBuffer = transfer_interpreter_->typed_tensor<float>(contentImageIndex);
         auto styleBuffer = transfer_interpreter_->typed_tensor<float>(styleInputIndex);
+
         TfLiteIntArray* styleDims = transfer_interpreter_->tensor(styleInputIndex)->dims;
         TfLiteIntArray* contentDims = transfer_interpreter_->tensor(contentImageIndex)->dims;
+
         unsigned int styleSize = sizeof(float);
         unsigned int contentSize = sizeof(float);
+
         for(int i = 1; i < styleDims->size; ++i) {
             styleSize = styleSize * styleDims->data[i];
         }
@@ -130,7 +149,9 @@ std::string StyleTransfer::getRenderedStyle(int styleChosen) {
 
 
 std::vector<float> StyleTransfer::getStyle(int styleVal) {
+
     std::string styleImage;
+
     switch(styleVal) {
         case(0) :
             styleImage = GRAND_CANYON;
@@ -139,29 +160,36 @@ std::vector<float> StyleTransfer::getStyle(int styleVal) {
             styleImage = LASSEN;
             break;
         case(2) :
+            styleImage = ZION;
+            break;
         default :
             styleImage = ZION;
             break;
     }
-    cv::Mat styleMat =  cv::imread(styleImage, cv::IMREAD_COLOR);
+
+    cv::Mat styleMat = cv::imread(styleImage, cv::IMREAD_COLOR);
     cv::cvtColor(styleMat, styleMat, cv::COLOR_BGR2RGB);
 
-    styleMat.convertTo(styleMat, CV_32F, 1.f/255);
+    styleMat.convertTo(styleMat, CV_32FC3, 1.f/255.0f);
 
     std::string inputName = "style_image";
     auto inputIndex = fromNameToIndex(inputName, true, true);
 
-    style_interpreter_->AllocateTensors();
+    style_interpreter_ -> AllocateTensors();
 
-    auto tensorBuffer = style_interpreter_->typed_tensor<float>(inputIndex);
+    auto tensorBuffer = style_interpreter_ -> typed_tensor<float>(inputIndex);
     unsigned int tensorSize = styleMat.total() * styleMat.elemSize();
-    memcpy((void *) tensorBuffer, (void *)styleMat.data, tensorSize);
+    memcpy((void *) tensorBuffer, (void *) styleMat.data, tensorSize);
 
     if(style_interpreter_->Invoke() != kTfLiteOk) {
+        
         // Return the empty vector
         std::vector<float> emptyVec;
+        std::cout << "TFLite error!!!!!" << std::endl;
         return emptyVec;
-    } else {
+    } 
+    else {
+
         auto outputIndex = fromNameToIndex("mobilenet_conv/Conv/BiasAdd", false, true);
 
         // First element in the output shape is the batch size.
@@ -179,14 +207,13 @@ std::vector<float> StyleTransfer::getStyle(int styleVal) {
         const float * outputBuffer = style_interpreter_->typed_tensor<float>(outputIndex);
         memcpy(outputFloat.data(), outputBuffer, outputByteSize);
 
-
         return outputFloat;
     }
-
 }
 
-int StyleTransfer::fromNameToIndex(std::string stdName, bool isInput, bool isStylePredict) const
-{
+
+int StyleTransfer::fromNameToIndex(std::string stdName, bool isInput, bool isStylePredict) const {
+    
     ::tflite::Interpreter * interpreter;
 
     if(isStylePredict)
@@ -194,16 +221,12 @@ int StyleTransfer::fromNameToIndex(std::string stdName, bool isInput, bool isSty
     else
         interpreter = transfer_interpreter_.get();
 
-    int len = isInput ? interpreter->inputs().size()
-                      : interpreter->outputs().size();
+    int len = isInput ? interpreter->inputs().size() : interpreter->outputs().size();
 
-
-    for (int tIndex = 0; tIndex < len; ++tIndex)
-    {
+    for (int tIndex = 0; tIndex < len; ++tIndex){
         std::string tName = std::string(isInput ? interpreter->GetInputName(tIndex)
                                                 : interpreter->GetOutputName(tIndex));
-        if (tName == stdName)
-        {
+        if (tName == stdName){
             return isInput ? interpreter->inputs()[tIndex]
                            : interpreter->outputs()[tIndex];
         }
