@@ -3,7 +3,6 @@ cmake_minimum_required(VERSION 3.2)
 project(basement_engine)
 
 option(TESTS "Build basic tests" OFF)
-option(MACOS "Build for Mac" ON)
 option(BINDPY "Build with pybind11" OFF)
 option(GLPATH "Search system for OpenGL" OFF)
 
@@ -70,7 +69,7 @@ endif()
 
 target_include_directories(basement PUBLIC ${OpenCV_INCLUDE_DIRS})
 
-set(ASSIMP_LIB_PATH ${CD}/libs/assimp/build/bin/) 
+set(ASSIMP_LIB_PATH ${CD}/libs/assimp/build/lib/) 
 
 if (UNIX AND NOT APPLE)
 	set(PX_DIR linux64/)

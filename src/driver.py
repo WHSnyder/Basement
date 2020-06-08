@@ -1,53 +1,10 @@
-import time, sys
+import time, sys, os
 
-#sys.path.append("/Users/will/projects/cpprtx/build")
-sys.path.append("/home/will/projects/cpprtx/build")
+sys.path.insert(0,"/home/will/projects/cpprtx/build/")
 
-import termios, tty, os
-
-'''
-def isData():
-    return select.select([sys.stdin], [], [], 0) == ([sys.stdin], [], [])
-
-def getch():
-	c = None
-	old_settings = termios.tcgetattr(sys.stdin)
-	try:
-	    tty.setcbreak(sys.stdin.fileno())
-
-	    if isData():
-	        c = sys.stdin.read(1)
-
-	finally:
-	    termios.tcsetattr(sys.stdin, termios.TCSADRAIN, old_settings)
-	    return c
-'''
-
-def getch():
-
-    fd = sys.stdin.fileno()
-    old_settings = termios.tcgetattr(fd)
-
-    try:
-        tty.setraw(sys.stdin.fileno())
-        #print("tryna read")
-        ch = sys.stdin.read(1)
-        #print("done read")
-
-    finally:
-        termios.tcsetattr(fd, termios.TCSANOW, old_settings)
-
-    return ch
-
-
-button_delay = 0.2
-
-
-print("Importing GameContext...\n")
-
+#os.chdir("/home/will/projects/cpprtx/libs/tf_gl/")
 from GameContext import *
-
-print("Imported GameContext successfully\n")
+#os.chdir("/home/will/projects/cpprtx/")
 
 init_window()
 run_model()
@@ -55,16 +12,10 @@ run_model()
 print("Model ran")
 
 init_game("/home/will/projects/cpprtx/")
-destroy_game()
-
-'''
-print("PID = " + str(os.getpid()))
+#destroy_game()
 
 timelast = time.perf_counter()
 timestart = timelast
-
-#fd = sys.stdin.fileno()
-#old_settings = termios.tcgetattr(fd)
 
 while True:
 	
@@ -74,10 +25,9 @@ while True:
 
 	step_game(timelapsed)
 
-	if timecur - timestart > 12:
-		while timecur - timestart < 8:
+	if timecur - timestart > 2:
+		while timecur - timestart < 1:
 			timecur = time.perf_counter()
 		break	
 
 destroy_game()
-'''

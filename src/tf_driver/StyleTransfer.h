@@ -30,7 +30,6 @@
 #endif
 
 #include <opencv2/opencv.hpp>
-#include <stdlib.h>
 
 class StyleTransfer {
 

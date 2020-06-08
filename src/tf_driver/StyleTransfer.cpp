@@ -20,12 +20,21 @@
 
 std::string MODEL_PATH = "/home/will/projects/cpprtx/libs/tf_models/magenta_models/";
 std::string APP_PATH = "/home/will/Desktop/";
-std::string POINTILISM = APP_PATH + "points.jpeg";
-std::string INPUT_IMAGE = APP_PATH + "hills.jpeg";
+std::string ZION = APP_PATH + "grad.jpg";
+std::string INPUT_IMAGE = APP_PATH + "gate.jpg";
 std::string style_predict_model = MODEL_PATH + "arb_style_predict.tflite";
 std::string style_transfer_model = MODEL_PATH + "arb_style_transform.tflite";
-std::string HUNTERS = APP_PATH + "huntersinsnow.jpeg";
-std::string STARRY = APP_PATH + "starry.jpg";
+std::string LASSEN = APP_PATH + "scream.jpg";
+std::string GRAND_CANYON = APP_PATH + "scream.jpg";
+
+
+void printVector(std::vector<int> const &a) {
+    std::cout << "Input indicies: ";
+    for(int i=0; i < a.size(); i++)
+       std::cout << a.at(i) << ' ';
+    std::cout << std::endl;
+}
+
 
 StyleTransfer::StyleTransfer() {
 
@@ -39,14 +48,17 @@ StyleTransfer::StyleTransfer() {
     if (style_builder(&style_interpreter_) != kTfLiteOk) {
         std::cout << "Error with style interpreter" << std::endl;
     }
+
     if (transform_builder(&transfer_interpreter_) != kTfLiteOk) {
         std::cout << "Error with transfer interpreter" << std::endl;
     }
 
+    std::cout << "Bind delegate" << std::endl;
+
     // NEW: Prepare GPU delegate.
-    delegate = TfLiteGpuDelegateCreate(nullptr);
-    if (transfer_interpreter_-> ModifyGraphWithDelegate(delegate) != kTfLiteOk){
-        std::cout << "Failed to modify graph with delegate" << std::endl;  
+    delegate = TfLiteGpuDelegateCreate(/*default options=*/nullptr);
+    if (style_interpreter_ -> ModifyGraphWithDelegate(delegate) != kTfLiteOk){
+        std::cout << "BIG FAIL" << std::endl;  
     } 
 }
 
@@ -60,6 +72,8 @@ StyleTransfer::StyleTransfer() {
  */
 std::string StyleTransfer::getRenderedStyle(int styleChosen) {
 
+    std::cout << "Getting rendered style" << std::endl;
+
     // Predict the style
     // Resize the image to the shape and do pre-processing
     // Do the style transfert
@@ -67,22 +81,30 @@ std::string StyleTransfer::getRenderedStyle(int styleChosen) {
 
     // Do the style transfer code
     std::vector<float> styleVec = getStyle(styleChosen);
-    if(styleVec.size() > 0) {
-        cv::Mat image = cv::imread(INPUT_IMAGE, CV_LOAD_IMAGE_COLOR);
 
+    if(styleVec.size() > 0) {
+
+        cv::Mat image = cv::imread(INPUT_IMAGE, cv::IMREAD_COLOR);
         cv::Mat processedImage = preProcessImage(image);
 
         transfer_interpreter_->AllocateTensors();
 
-        auto contentImageIndex = fromNameToIndex("content_image", true, false);
-        auto styleInputIndex = fromNameToIndex("mobilenet_conv/Conv/BiasAdd", true, false);
+        int contentImageIndex = fromNameToIndex("content_image", true, false);
+        int styleInputIndex = fromNameToIndex("mobilenet_conv/Conv/BiasAdd", true, false);
+
+        std::cout << "Content index: " << contentImageIndex << std::endl;
+        std::cout << "Style index: " << styleInputIndex << std::endl;
+        printVector(transfer_interpreter_ -> inputs());
 
         auto contentBuffer = transfer_interpreter_->typed_tensor<float>(contentImageIndex);
         auto styleBuffer = transfer_interpreter_->typed_tensor<float>(styleInputIndex);
+
         TfLiteIntArray* styleDims = transfer_interpreter_->tensor(styleInputIndex)->dims;
         TfLiteIntArray* contentDims = transfer_interpreter_->tensor(contentImageIndex)->dims;
+
         unsigned int styleSize = sizeof(float);
         unsigned int contentSize = sizeof(float);
+
         for(int i = 1; i < styleDims->size; ++i) {
             styleSize = styleSize * styleDims->data[i];
         }
@@ -107,14 +129,14 @@ std::string StyleTransfer::getRenderedStyle(int styleChosen) {
             // Get the data out of the outputBuffer
             const float * outputBuffer = transfer_interpreter_->typed_tensor<float>(outputIndex);
 
-            auto tensorMat = cv::Mat(outputImageSize, CV_32FC4, (void *) outputBuffer);
+            auto tensorMat = cv::Mat(outputImageSize, CV_32FC3, (void *) outputBuffer);
             cv::Mat outputImage;
             const cv::Scalar maxVal = cv::Scalar(255, 255, 255);
             cv::multiply(tensorMat, maxVal, outputImage);
             outputImage.convertTo(outputImage, CV_8UC3);
             cv::cvtColor(outputImage, outputImage, cv::COLOR_BGR2RGB);
 
-            std::string outputString = APP_PATH + "/output.png";
+            std::string outputString = APP_PATH + "/output.jpg";
             cv::imwrite(outputString, outputImage);
 
             return outputString;
@@ -128,38 +150,49 @@ std::string StyleTransfer::getRenderedStyle(int styleChosen) {
 
 
 std::vector<float> StyleTransfer::getStyle(int styleVal) {
+
+    std::cout << "Getting style" << std::endl;
+
     std::string styleImage;
+
     switch(styleVal) {
         case(0) :
-            styleImage = STARRY;
+            styleImage = GRAND_CANYON;
             break;
         case(1) :
-            styleImage = STARRY;
+            styleImage = GRAND_CANYON;
             break;
         case(2) :
+            styleImage = GRAND_CANYON;
+            break;
         default :
-            styleImage = STARRY;
+            styleImage = GRAND_CANYON;
             break;
     }
-    cv::Mat styleMat =  cv::imread(styleImage, cv::IMREAD_COLOR);
+
+    cv::Mat styleMat = cv::imread(styleImage, cv::IMREAD_COLOR);
     cv::cvtColor(styleMat, styleMat, cv::COLOR_BGR2RGB);
 
-    styleMat.convertTo(styleMat, CV_32F, 1.f/255);
+    styleMat.convertTo(styleMat, CV_32FC3, 1.f/255.0f);
 
     std::string inputName = "style_image";
     auto inputIndex = fromNameToIndex(inputName, true, true);
 
-    style_interpreter_->AllocateTensors();
+    style_interpreter_ -> AllocateTensors();
 
-    auto tensorBuffer = style_interpreter_->typed_tensor<float>(inputIndex);
+    auto tensorBuffer = style_interpreter_ -> typed_tensor<float>(inputIndex);
     unsigned int tensorSize = styleMat.total() * styleMat.elemSize();
-    memcpy((void *) tensorBuffer, (void *)styleMat.data, tensorSize);
+    memcpy((void *) tensorBuffer, (void *) styleMat.data, tensorSize);
 
     if(style_interpreter_->Invoke() != kTfLiteOk) {
+        
         // Return the empty vector
         std::vector<float> emptyVec;
+        std::cout << "TFLite error!!!!!" << std::endl;
         return emptyVec;
-    } else {
+    } 
+    else {
+
         auto outputIndex = fromNameToIndex("mobilenet_conv/Conv/BiasAdd", false, true);
 
         // First element in the output shape is the batch size.
@@ -182,8 +215,9 @@ std::vector<float> StyleTransfer::getStyle(int styleVal) {
 }
 
 
-int StyleTransfer::fromNameToIndex(std::string stdName, bool isInput, bool isStylePredict) const
-{
+
+int StyleTransfer::fromNameToIndex(std::string stdName, bool isInput, bool isStylePredict) const {
+    
     ::tflite::Interpreter * interpreter;
 
     if(isStylePredict)
@@ -191,16 +225,12 @@ int StyleTransfer::fromNameToIndex(std::string stdName, bool isInput, bool isSty
     else
         interpreter = transfer_interpreter_.get();
 
-    int len = isInput ? interpreter->inputs().size()
-                      : interpreter->outputs().size();
+    int len = isInput ? interpreter->inputs().size() : interpreter->outputs().size();
 
-
-    for (int tIndex = 0; tIndex < len; ++tIndex)
-    {
+    for (int tIndex = 0; tIndex < len; ++tIndex){
         std::string tName = std::string(isInput ? interpreter->GetInputName(tIndex)
                                                 : interpreter->GetOutputName(tIndex));
-        if (tName == stdName)
-        {
+        if (tName == stdName){
             return isInput ? interpreter->inputs()[tIndex]
                            : interpreter->outputs()[tIndex];
         }
@@ -212,10 +242,12 @@ int StyleTransfer::fromNameToIndex(std::string stdName, bool isInput, bool isSty
 StyleTransfer::~StyleTransfer() {
 
     // NEW: Clean up.
-    //TfLiteGpuDelegateDelete(delegate);
+    TfLiteGpuDelegateDelete(delegate);
 }
 
 cv::Mat StyleTransfer::preProcessImage(cv::Mat input) {
+
+    std::cout << "Writing testcpwhat" << std::endl;
 
     std::string firstImageStr = APP_PATH + "/testcppwhat.jpg";
     cv::imwrite(firstImageStr, input);
@@ -224,6 +256,8 @@ cv::Mat StyleTransfer::preProcessImage(cv::Mat input) {
     cv::Size imageSize(384, 384);
     cv::resize(input, resizedImage, imageSize);
     // I don't want to lose the alpha channel of the image coming in
+
+    std::cout << "Writing testcpp" << std::endl;
 
     std::string outputString = APP_PATH + "/testcpp.jpg";
     cv::imwrite(outputString, resizedImage);
