@@ -22,12 +22,13 @@ class Shader {
 
 		GLuint data_texture, image_texture, shadow_texture;
 		GLuint proj_loc, view_loc, model_loc, col_loc;
+		int isCompute = 0;
 
 	public:
 
 		GLuint progID;
 
-		Shader(std::string shaderpath);
+		Shader(std::string shaderpath, int buildCompute = 0);
 
 		void setModel(float *model);
 		void setView(float *view);

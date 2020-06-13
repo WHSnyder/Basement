@@ -221,9 +221,9 @@ int initialize_window(){
 Simu *mainSimu;
 
 Mesh *cube, *sphere, *terrain_plane, *plane;
-RenderTarget *shadowTarget;
+RenderTarget *shadowTarget, *textureTarget;
 Texture *noise_tex, *grass_tex, *skybox;
-Shader *shadow_shader, *terrain_shader, *basic_shader, *skybox_shader, *plane_shader;
+Shader *shadow_shader, *terrain_shader, *basic_shader, *skybox_shader, *plane_shader, *copy_compute_shader;
 
 //Perlin noise params
 int dim = 64;
@@ -266,6 +266,7 @@ void initialize_game(string inpath){
 	plane = gen_plane();
 
 	shadowTarget = new RenderTarget(1024,1024,1);
+	textureTarget = new RenderTarget(200,200,0);
 
 	noise_tex = new Texture(img_data, dim, dim, 0);
     grass_tex = new Texture(string("assets/images/grass.jpg"), 0);
@@ -277,6 +278,8 @@ void initialize_game(string inpath){
 	terrain_shader = new Shader("assets/shaders/noise_test");
 	basic_shader = new Shader("assets/shaders/basic");
 	skybox_shader = new Shader("assets/shaders/cubemap");
+
+	copy_compute_shader = new Shader("assets/shaders/texRGB_2_ssbo",1);
 
 	mainSimu -> addTerrain(px_samples, dim, terrain_mult);
 	mainSimu -> addSphere(vec3(-4,23,-4), 1.0f, 1, reinterpret_cast<void *>(sphereMat));
@@ -403,6 +406,7 @@ void destroy_game(){
 	glfwTerminate();
 
 	delete shadowTarget;
+	delete textureTarget;
 	delete px_samples;
 	delete mainSimu;
 
@@ -411,6 +415,7 @@ void destroy_game(){
 	delete terrain_shader;
 	delete skybox_shader;
 	delete basic_shader;
+	delete copy_compute_shader;
 
 	delete grass_tex;
 	delete skybox;
