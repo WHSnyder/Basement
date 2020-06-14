@@ -26,17 +26,11 @@ if (BUILDTEST)
 
 
 	if (APPLE)
-
-		target_link_libraries(test_TFCPP PUBLIC ${CD}/libs/master_tf/bazel-bin/tensorflow/lite/delegates/gpu/tensorflow_lite_gpu_dylib.dylib)
-
+		target_link_libraries(test_TFCPP PUBLIC ${CD}/libs/tf_gl/bazel-bin/tensorflow/lite/delegates/gpu/tensorflow_lite_gpu_dylib.dylib)
 		target_link_options(test_TFCPP PUBLIC -undefined dynamic_lookup)
-		
 	else()
-
 		target_link_directories(test_TFCPP PUBLIC ${CD}/libs/tf_gl/bazel-bin/tensorflow/lite/delegates/gpu)
 		target_link_libraries(test_TFCPP PUBLIC tensorflowlite_gpu_delegate)
-
 		target_link_libraries(test_TFCPP PUBLIC "-Wl,--no-as-needed")
-	
 	endif()
 endif()

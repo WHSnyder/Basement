@@ -18,14 +18,14 @@
 #include <iostream>
 #include <string>
 
-std::string MODEL_PATH = "/home/will/projects/cpprtx/libs/tf_models/magenta_models/";
-std::string APP_PATH = "/home/will/Desktop/";
+std::string MODEL_PATH = "/Users/will/projects/cpprtx/libs/tf_models/magenta_models/";
+std::string APP_PATH = "/Users/will/Desktop/";
 std::string ZION = APP_PATH + "grad.jpg";
 std::string INPUT_IMAGE = APP_PATH + "gate.jpg";
 std::string style_predict_model = MODEL_PATH + "arb_style_predict.tflite";
 std::string style_transfer_model = MODEL_PATH + "arb_style_transform.tflite";
 std::string LASSEN = APP_PATH + "scream.jpg";
-std::string GRAND_CANYON = APP_PATH + "starry.jpg";
+std::string GRAND_CANYON = APP_PATH + "scream.jpg";
 
 
 void printVector(std::vector<int> const &a) {
@@ -56,7 +56,7 @@ StyleTransfer::StyleTransfer() {
     std::cout << "Bind delegate" << std::endl;
 
     // NEW: Prepare GPU delegate.
-    delegate = TfLiteGpuDelegateCreate(/*default options=*/nullptr);
+    delegate = TFLGpuDelegateCreate(/*default options=*/nullptr);
     if (style_interpreter_ -> ModifyGraphWithDelegate(delegate) != kTfLiteOk){
         std::cout << "BIG FAIL" << std::endl;  
     } 
@@ -242,7 +242,7 @@ int StyleTransfer::fromNameToIndex(std::string stdName, bool isInput, bool isSty
 StyleTransfer::~StyleTransfer() {
 
     // NEW: Clean up.
-    TfLiteGpuDelegateDelete(delegate);
+    TFLGpuDelegateDelete(delegate);
 }
 
 cv::Mat StyleTransfer::preProcessImage(cv::Mat input) {

@@ -21,13 +21,7 @@
 
 #define MAC_OPENGL
 
-#if (__MACOS__)
-
-
-#else
-
-#include "tensorflow/lite/delegates/gpu/gl_delegate.h"
-#endif
+#include "tensorflow/lite/delegates/gpu/metal_delegate.h"
 
 #include <opencv2/opencv.hpp>
 

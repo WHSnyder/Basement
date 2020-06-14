@@ -17,7 +17,7 @@ else()
 	
 	add_library(basement SHARED)
 
-	find_package(Python3 3.6 EXACT COMPONENTS Interpreter Development)
+	find_package(Python3 3.7 EXACT COMPONENTS Interpreter Development)
 	target_include_directories(basement PUBLIC ${Python3_INCLUDE_DIRS})
 	
 	execute_process (

@@ -1,17 +1,17 @@
 import time, sys, os
 
-sys.path.insert(0,"/home/will/projects/cpprtx/build/")
+sys.path.insert(0,"/Users/will/projects/cpprtx/build/")
 
-#os.chdir("/home/will/projects/cpprtx/libs/tf_gl/")
+os.chdir("/Users/will/projects/cpprtx/libs/tf_gl/")
 from GameContext import *
-#os.chdir("/home/will/projects/cpprtx/")
+os.chdir("/Users/will/projects/cpprtx/")
 
 init_window()
 run_model()
 
 print("Model ran")
 
-init_game("/home/will/projects/cpprtx/")
+init_game("/Users/will/projects/cpprtx/")
 #destroy_game()
 
 timelast = time.perf_counter()
