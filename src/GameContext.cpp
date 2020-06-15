@@ -48,6 +48,7 @@
 using namespace std;
 
 GLuint ssbo = 0;
+float totalTime = 0;
 
 
 
@@ -161,12 +162,14 @@ void showFPS(GLFWwindow *pWindow){
 
 void run_ssbo_test(Shader *tex2ssbo_compute, Shader *ssbo2tex_compute, Texture *tex){
 
-	/*glUseProgram(tex2ssbo_compute -> progID); 
-	glBindBuffer(GL_SHADER_STORAGE_BUFFER, ssbo);
+	glUseProgram(tex2ssbo_compute -> progID); 
+	//glBindBuffer(GL_SHADER_STORAGE_BUFFER, ssbo);
 
 	glCheckError();
 
 	tex2ssbo_compute -> setImageTexture(tex -> getID(),0,7);
+	//tex2ssbo_compute -> setFloat("timeStep", totalTime);
+
 
 	//GLuint block_index = 0;
 	//block_index = glGetProgramResourceIndex(copy_compute -> progID, GL_SHADER_STORAGE_BLOCK, "output_data");
@@ -177,20 +180,19 @@ void run_ssbo_test(Shader *tex2ssbo_compute, Shader *ssbo2tex_compute, Texture *
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, ssbo);
 
 	glDispatchCompute(24, 24, 1);    
- 	glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+ 	glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT | GL_SHADER_IMAGE_ACCESS_BARRIER_BIT | GL_TEXTURE_FETCH_BARRIER_BIT);
 
- 	glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);*/
+ 	//glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 
  	glUseProgram(ssbo2tex_compute -> progID);
 
+	glCheckError();
+
+
  	//glBindBuffer(GL_SHADER_STORAGE_BUFFER, ssbo);
- 	//glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, ssbo);
+ 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, ssbo);
 	
-	//GLuint image_loc = glGetUniformLocation(ssbo2tex_compute -> progID, "image");
-	//glBindTexture(GL_TEXTURE_2D,tex -> getID());
-	//COUT("Tex id")
-	//COUT(tex -> getID())
-	
+
 	glBindImageTexture(0, tex -> getID(), 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA32F);
 	//glUniform1i(image_loc, 0);
 
@@ -376,6 +378,8 @@ void initialize_game(string inpath){
 //Run main game loop
 int step_game(float timestep){
 
+	totalTime += timestep;
+
 	/*ImGui_ImplOpenGL3_NewFrame();
 	ImGui_ImplGlfw_NewFrame();
 	ImGui::NewFrame();
@@ -442,7 +446,6 @@ int step_game(float timestep){
 
 	skybox_shader -> setView(viewptr);
 	cube -> draw(skybox_shader -> progID);
-	glCheckError();
 
 	playerViewMat = computeMatricesFromInputs();
 	viewptr = value_ptr(playerViewMat);	

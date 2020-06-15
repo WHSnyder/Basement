@@ -22,7 +22,7 @@ while True:
 
 	step_game(timelapsed)
 
-	if timecur - timestart > 9:
+	if timecur - timestart > 10:
 		while timecur - timestart < 1:
 			timecur = time.perf_counter()
 		break	

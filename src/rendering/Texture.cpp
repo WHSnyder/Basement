@@ -81,12 +81,12 @@ GLuint bindTexture(int color, int rows, int cols, void *data){
 
     cout << "Bound new texture at " << tex << endl;
 
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
-    glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA32F, cols, rows);
+    glTexStorage2D(GL_TEXTURE_2D, 4, GL_RGBA32F, cols, rows);
     glCheckError();
 
     /*glTexImage2D(GL_TEXTURE_2D,     // tex type
