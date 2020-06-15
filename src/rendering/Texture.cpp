@@ -78,34 +78,42 @@ GLuint bindTexture(int color, int rows, int cols, void *data){
 
 	glGenTextures(1, &tex);
     glBindTexture(GL_TEXTURE_2D, tex);
-    glCheckError();
 
     cout << "Bound new texture at " << tex << endl;
 
-    //interp method
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glCheckError();
-
-    //clamping method
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glCheckError();
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+    glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA32F, cols, rows);
     glCheckError();
 
-    glTexImage2D(GL_TEXTURE_2D,     // tex type
+    /*glTexImage2D(GL_TEXTURE_2D,     // tex type
                 0,                 // 0 mipmap level = top level
-                color ? GL_RGB : GL_RED,            
+                color ? GL_RGBA : GL_RED, //RGB is internally converted to rgba32f            
                 cols,
                 rows,
                 0,                 // Border 0 for now, might change with atlessing + mipmapping
                 color ? GL_RGB : GL_RED, // Single channel for perlin map, rgb for opencv
                 color ? GL_UNSIGNED_BYTE : GL_FLOAT,  //If color, were using opencv image, else, perlin map
                 data); 
+    */
 
+    glTexSubImage2D(GL_TEXTURE_2D,     // tex type
+                0,                 // 0 mipmap level = top level
+                0,
+                0,          
+                cols,
+                rows,
+                color ? GL_RGB : GL_RED, // Single channel for perlin map, rgb for opencv
+                color ? GL_UNSIGNED_BYTE : GL_FLOAT,  //If color, were using opencv image, else, perlin map
+                data); 
+    
+
+    glCheckError();
     glGenerateMipmap(GL_TEXTURE_2D);
     glCheckError();
-
     return tex;
 }
 
@@ -125,15 +133,17 @@ Texture::Texture(string filepath, int cubemap, std::string extension){
     if (!cubemap){
         
         cv::Mat img = imread(filepath, cv::IMREAD_COLOR);
-        cv::resize(img, img, cv::Size(1024,1024), 0, 0, cv::INTER_LINEAR);
+        cv::resize(img, img, cv::Size(384,384), 0, 0, cv::INTER_LINEAR);
+        //cv::cvtColor(img,img,)
 
-        rows = 1024, cols = rows;
+        rows = 384, cols = rows;
 
         data = malloc(3 * rows * cols);
 
         memcpy(data, (void *) img.data, 3 * rows * cols);
 
         texID = bindTexture(1, rows, cols, data);
+        glCheckError();
     }
 
     else {

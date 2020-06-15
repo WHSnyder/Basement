@@ -49,19 +49,6 @@ GLuint build_compute_program(string shader_path){
     glAttachShader(prog_id, c_id);
 	glLinkProgram(prog_id);
 
-	glCheckError();
-
-	int work_grp_size[3];
-
-	glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_SIZE, 0, &work_grp_size[0]);
-	glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_SIZE, 1, &work_grp_size[1]);
-	glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_SIZE, 2, &work_grp_size[2]);
-
-	printf("max local (in one shader) work group sizes x:%i y:%i z:%i\n",
-														work_grp_size[0],
-														work_grp_size[1],
-														work_grp_size[2]);
-
 	return prog_id;
 }
 
@@ -175,6 +162,16 @@ void Shader::setView(float *view){
 void Shader::setProj(float *proj){
 	glUseProgram(progID);
 	glUniformMatrix4fv(proj_loc, 1, GL_FALSE, proj);
+}
+
+
+void Shader::setInt(string name, int i){
+
+	GLuint tempID;
+
+	glUseProgram(progID); 
+	tempID = glGetUniformLocation(progID, name.c_str());
+	glUniform1i(tempID, i);
 }
 
 

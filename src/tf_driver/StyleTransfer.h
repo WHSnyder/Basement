@@ -18,6 +18,7 @@
 
 #include "tensorflow/lite/kernels/register.h"
 #include "tensorflow/lite/model.h"
+#include "GL/glew.h"
 
 #define MAC_OPENGL
 
@@ -35,7 +36,7 @@ class StyleTransfer {
 
 public:
     
-    StyleTransfer();
+    StyleTransfer(GLuint inputSSSBO = 10000);
     ~StyleTransfer();
 
     std::string getRenderedStyle(int styleChosen);

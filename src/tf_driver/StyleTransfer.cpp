@@ -36,7 +36,7 @@ void printVector(std::vector<int> const &a) {
 }
 
 
-StyleTransfer::StyleTransfer() {
+StyleTransfer::StyleTransfer(GLuint inputSSBO) {
 
     // Spin up the interpreter
     style_predict_model_ = ::tflite::FlatBufferModel::BuildFromFile(style_predict_model.c_str());
@@ -57,9 +57,11 @@ StyleTransfer::StyleTransfer() {
 
     // NEW: Prepare GPU delegate.
     delegate = TfLiteGpuDelegateCreate(/*default options=*/nullptr);
-    if (style_interpreter_ -> ModifyGraphWithDelegate(delegate) != kTfLiteOk){
+    if (transfer_interpreter_ -> ModifyGraphWithDelegate(delegate) != kTfLiteOk)
         std::cout << "BIG FAIL" << std::endl;  
-    } 
+    
+    //if (inputSSBO != 10000)
+    //	delegate -> BindBufferToTensor(inputSSBO,0);
 }
 
 /*

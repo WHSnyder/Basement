@@ -15,6 +15,7 @@
 #include <chrono>
 #include <iostream>
 #include <vector>
+#include <memory>
 
 #include <sys/types.h>
 #include <unistd.h>
@@ -28,6 +29,8 @@
 #include "utils/Controls.hpp"
 #include "rendering/RenderTarget.h"
 #include "tf_driver/StyleTransfer.h"
+
+#define COUT(x) std::cout << x << std::endl;
 
 
 #ifdef MACOS
@@ -44,6 +47,7 @@
 
 using namespace std;
 
+GLuint ssbo = 0;
 
 
 
@@ -51,7 +55,7 @@ string basepath;
 int inputbreak = 0;
 
 
-const char *glsl_version = "#version 410";
+const char *glsl_version = "#version 450";
 
 mat4 biasMatrix(
 	0.5, 0.0, 0.0, 0.0,
@@ -107,13 +111,13 @@ float *generate_terrain(int dim, double freq, float height_mult, int32_t *physx_
 ///usr/local/opt/python/Frameworks/Python.framework/Versions/
 
 //For quads fullscreen or otherwise
-Mesh *gen_plane(){
+std::unique_ptr<Mesh> gen_plane(){
 
     vec3 verts[] = {vec3(-1,1,0), vec3(1,1,0), vec3(-1,-1,0), vec3(1,-1,0)};
     vec3 norms[] = {vec3(0,0,1), vec3(0,0,1), vec3(0,0,1), vec3(0,0,1)};
     GLuint inds[] = {0,1,2,1,3,2};
 
-    return new Mesh(vector<vec3>(verts,verts+4), vector<vec3>(norms,norms+4), vector<GLuint>(inds,inds+6));
+    return make_unique<Mesh>(vector<vec3>(verts,verts+4), vector<vec3>(norms,norms+4), vector<GLuint>(inds,inds+6));
 }
 
 
@@ -153,6 +157,51 @@ void showFPS(GLFWwindow *pWindow){
 }
 
 
+
+
+void run_ssbo_test(Shader *tex2ssbo_compute, Shader *ssbo2tex_compute, Texture *tex){
+
+	/*glUseProgram(tex2ssbo_compute -> progID); 
+	glBindBuffer(GL_SHADER_STORAGE_BUFFER, ssbo);
+
+	glCheckError();
+
+	tex2ssbo_compute -> setImageTexture(tex -> getID(),0,7);
+
+	//GLuint block_index = 0;
+	//block_index = glGetProgramResourceIndex(copy_compute -> progID, GL_SHADER_STORAGE_BLOCK, "output_data");
+	//COUT(block_index)
+	//GLuint ssbo_binding_point_index = 2;
+	//glShaderStorageBlockBinding(copy_compute -> progID, block_index, ssbo_binding_point_index);
+
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, ssbo);
+
+	glDispatchCompute(24, 24, 1);    
+ 	glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+
+ 	glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);*/
+
+ 	glUseProgram(ssbo2tex_compute -> progID);
+
+ 	//glBindBuffer(GL_SHADER_STORAGE_BUFFER, ssbo);
+ 	//glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, ssbo);
+	
+	//GLuint image_loc = glGetUniformLocation(ssbo2tex_compute -> progID, "image");
+	//glBindTexture(GL_TEXTURE_2D,tex -> getID());
+	//COUT("Tex id")
+	//COUT(tex -> getID())
+	
+	glBindImageTexture(0, tex -> getID(), 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA32F);
+	//glUniform1i(image_loc, 0);
+
+	//glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, ssbo);
+	glDispatchCompute(24, 24, 1);    
+ 	glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT | GL_SHADER_IMAGE_ACCESS_BARRIER_BIT | GL_TEXTURE_FETCH_BARRIER_BIT);
+}
+
+
+
+
 float timeratio;
 int width, height;
 
@@ -167,8 +216,8 @@ int initialize_window(){
 	}
 
 	glfwWindowHint(GLFW_SAMPLES, 8);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
 	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE); // To make MacOS happy; should not be needed
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
@@ -217,13 +266,12 @@ int initialize_window(){
 	return 0;
 }
 
+RenderTarget *shadowTarget;
 
-Simu *mainSimu;
-
-Mesh *cube, *sphere, *terrain_plane, *plane;
-RenderTarget *shadowTarget, *textureTarget;
-Texture *noise_tex, *grass_tex, *skybox;
-Shader *shadow_shader, *terrain_shader, *basic_shader, *skybox_shader, *plane_shader, *copy_compute_shader;
+std::unique_ptr<Simu> mainSimu;
+std::unique_ptr<Mesh> cube, sphere, terrain_plane, plane;
+std::unique_ptr<Texture> noise_tex, grass_tex, skybox, scream;
+std::unique_ptr<Shader> shadow_shader, terrain_shader, basic_shader, skybox_shader, plane_shader, tex2SSBO, SSBO2tex;
 
 //Perlin noise params
 int dim = 64;
@@ -253,33 +301,48 @@ float *t1p = value_ptr(t1), *t2p = value_ptr(t2), *t3p = value_ptr(t3), *t4p = v
 
 float *viewptr = value_ptr(playerViewMat), *projptr = value_ptr(proj1);
 
+int bufferSize = 384 * 384 * 3;
+float *shaderData;
+
+
 
 void initialize_game(string inpath){
 
+	shaderData = new float[bufferSize]();
+
+	glGenBuffers(1, &ssbo);
+	glBindBuffer(GL_SHADER_STORAGE_BUFFER, ssbo);
+	glBufferData(GL_SHADER_STORAGE_BUFFER, bufferSize*sizeof(float), shaderData, GL_DYNAMIC_COPY);
+	GLvoid* p = glMapBuffer(GL_SHADER_STORAGE_BUFFER, GL_WRITE_ONLY);
+	memcpy(p, &shaderData, bufferSize * sizeof(float));
+	glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
+	glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+
 	basepath = inpath;
 
-	mainSimu = new Simu();
+	mainSimu = make_unique<Simu>();
 	
-	cube = new Mesh(string("assets/meshes/cube.obj"));
-	sphere = new Mesh(string("assets/meshes/ball.obj"));
-	terrain_plane = new Mesh(string("assets/meshes/terrain_plane.obj"));
+	cube = make_unique<Mesh>(string("assets/meshes/cube.obj"));
+	sphere =  make_unique<Mesh>(string("assets/meshes/ball.obj"));
+	terrain_plane = make_unique<Mesh>(string("assets/meshes/terrain_plane.obj"));
 	plane = gen_plane();
 
 	shadowTarget = new RenderTarget(1024,1024,1);
-	textureTarget = new RenderTarget(200,200,0);
+	//textureTarget = new RenderTarget(200,200,0);
 
-	noise_tex = new Texture(img_data, dim, dim, 0);
-    grass_tex = new Texture(string("assets/images/grass.jpg"), 0);
-    skybox = new Texture(string("assets/images/yellowcloud"), 1);
+	noise_tex = make_unique<Texture>(img_data, dim, dim, 0);
+    grass_tex = make_unique<Texture>(string("assets/images/grass.jpg"), 0);
+    skybox = make_unique<Texture>(string("assets/images/yellowcloud"), 1);
+    scream = make_unique<Texture>(string("assets/images/scream.jpg"), 0);
     //Texture skybox = Texture(string("/Users/will/projects/TombVoyage/Assets/SpaceSkiesFree/Skybox_2/Textures/1K_Resolution/1K_TEX"), 1);
 
-    shadow_shader = new Shader("assets/shaders/shadow"); 
-	plane_shader = new Shader("assets/shaders/plane");
-	terrain_shader = new Shader("assets/shaders/noise_test");
-	basic_shader = new Shader("assets/shaders/basic");
-	skybox_shader = new Shader("assets/shaders/cubemap");
-
-	copy_compute_shader = new Shader("assets/shaders/texRGB_2_ssbo",1);
+    shadow_shader = make_unique<Shader>("assets/shaders/shadow"); 
+	plane_shader = make_unique<Shader>("assets/shaders/plane");
+	terrain_shader = make_unique<Shader>("assets/shaders/noise_test");
+	basic_shader = make_unique<Shader>("assets/shaders/basic");
+	skybox_shader = make_unique<Shader>("assets/shaders/cubemap");
+	tex2SSBO = make_unique<Shader>("assets/shaders/texRGB_2_ssbo",1);
+	SSBO2tex = make_unique<Shader>("assets/shaders/ssbo_2_texRGB",1);
 
 	mainSimu -> addTerrain(px_samples, dim, terrain_mult);
 	mainSimu -> addSphere(vec3(-4,23,-4), 1.0f, 1, reinterpret_cast<void *>(sphereMat));
@@ -297,7 +360,7 @@ void initialize_game(string inpath){
  	terrain_shader -> setMat4(string("shadowProj"), depthProjMat);
     terrain_shader -> setShadowTexture(shadowTarget -> getTexture());
 
-	plane_shader -> setImageTexture(shadowTarget -> getTexture(), 0, 4);
+	plane_shader -> setImageTexture(scream -> getID(), 0, 4);
 	plane_shader -> setProj(projptr);
 
 	skybox_shader -> setProj(projptr);
@@ -305,7 +368,9 @@ void initialize_game(string inpath){
 
  	shadow_shader -> setProj(value_ptr(depthProjMat));
  	shadow_shader -> setView(value_ptr(depthView));
-}
+
+ 	//run_ssbo_test(tex2SSBO.get(), SSBO2tex.get(), scream.get());
+ }
 
 
 //Run main game loop
@@ -319,6 +384,8 @@ int step_game(float timestep){
 	static float rotation = 0.0;
 	ImGui::SliderFloat("rotation", &rotation, 0, 2 * 3);
 	ImGui::End();*/
+	
+	run_ssbo_test(tex2SSBO.get(), SSBO2tex.get(), scream.get());
 
 	mainSimu -> stepSimu(timestep);
 	mainSimu -> getModelMats();
@@ -406,25 +473,12 @@ void destroy_game(){
 	glfwTerminate();
 
 	delete shadowTarget;
-	delete textureTarget;
+	//delete textureTarget;
 	delete px_samples;
-	delete mainSimu;
+	glDeleteBuffers(1,&ssbo);
 
-	delete shadow_shader;
-	delete plane_shader;
-	delete terrain_shader;
-	delete skybox_shader;
-	delete basic_shader;
-	delete copy_compute_shader;
+	delete[] shaderData;
 
-	delete grass_tex;
-	delete skybox;
-	delete noise_tex;
-
-	delete plane;
-	delete sphere;
-	delete cube;
-	delete terrain_plane;
 }
 
 

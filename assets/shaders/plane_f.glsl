@@ -7,5 +7,5 @@ uniform sampler2D imageTex;
 out vec4 outColor;
 
 void main(){
-    outColor = vec4(texture(imageTex, texCoord).rgb, 1.0);
+    outColor = vec4(texture(imageTex, texCoord).bgr, 1.0);
 }

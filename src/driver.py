@@ -7,12 +7,9 @@ from GameContext import *
 #os.chdir("/home/will/projects/cpprtx/")
 
 init_window()
-run_model()
-
-print("Model ran")
+#run_model()
 
 init_game("/home/will/projects/cpprtx/")
-#destroy_game()
 
 timelast = time.perf_counter()
 timestart = timelast
@@ -25,7 +22,7 @@ while True:
 
 	step_game(timelapsed)
 
-	if timecur - timestart > 6:
+	if timecur - timestart > 9:
 		while timecur - timestart < 1:
 			timecur = time.perf_counter()
 		break	

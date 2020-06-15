@@ -34,6 +34,7 @@ class Shader {
 		void setView(float *view);
 		void setProj(float *proj);
 
+		void setInt(std::string name, int i);
 		void setFloat(std::string name, float f);
 		void setVec3(std::string name, glm::vec3 v);
 		void setMat4(std::string name, glm::mat4 m);
