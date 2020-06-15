@@ -163,40 +163,15 @@ void showFPS(GLFWwindow *pWindow){
 void run_ssbo_test(Shader *tex2ssbo_compute, Shader *ssbo2tex_compute, Texture *tex){
 
 	glUseProgram(tex2ssbo_compute -> progID); 
-	//glBindBuffer(GL_SHADER_STORAGE_BUFFER, ssbo);
-
-	glCheckError();
-
 	tex2ssbo_compute -> setImageTexture(tex -> getID(),0,7);
 	//tex2ssbo_compute -> setFloat("timeStep", totalTime);
-
-
-	//GLuint block_index = 0;
-	//block_index = glGetProgramResourceIndex(copy_compute -> progID, GL_SHADER_STORAGE_BLOCK, "output_data");
-	//COUT(block_index)
-	//GLuint ssbo_binding_point_index = 2;
-	//glShaderStorageBlockBinding(copy_compute -> progID, block_index, ssbo_binding_point_index);
-
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, ssbo);
-
 	glDispatchCompute(24, 24, 1);    
  	glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT | GL_SHADER_IMAGE_ACCESS_BARRIER_BIT | GL_TEXTURE_FETCH_BARRIER_BIT);
 
- 	//glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
-
  	glUseProgram(ssbo2tex_compute -> progID);
-
-	glCheckError();
-
-
- 	//glBindBuffer(GL_SHADER_STORAGE_BUFFER, ssbo);
- 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, ssbo);
-	
-
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, ssbo);
 	glBindImageTexture(0, tex -> getID(), 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA32F);
-	//glUniform1i(image_loc, 0);
-
-	//glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, ssbo);
 	glDispatchCompute(24, 24, 1);    
  	glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT | GL_SHADER_IMAGE_ACCESS_BARRIER_BIT | GL_TEXTURE_FETCH_BARRIER_BIT);
 }
