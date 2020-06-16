@@ -13,19 +13,16 @@
 #include <string>
 
 
-int run_model(unsigned int ssbo){
+int run_model(unsigned int ssbo, unsigned int ssbo_in){
 
-    StyleTransfer *instance = new StyleTransfer(ssbo);
+    StyleTransfer *instance = new StyleTransfer(ssbo, ssbo_in);
+    instance -> setStyle(0);
+    instance -> execute();
 
-    std::string path = instance -> getRenderedStyle(0);
-
-
-
-    std::cout << "Result saved at " << path << std::endl;
+    //std::string path = instance -> getRenderedStyle(0);
+    //std::cout << "Result saved at " << path << std::endl;
 
     delete instance;
-
-
 
     return 0;
 }

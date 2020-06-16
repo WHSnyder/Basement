@@ -44,13 +44,10 @@
 #define SP(mytype) std::shared_ptr()
 
 
-
 using namespace std;
 
-GLuint ssbo = 0;
+GLuint ssbo = 0, ssboIn = 0;
 float totalTime = 0;
-
-
 
 string basepath;
 int inputbreak = 0;
@@ -158,15 +155,22 @@ void showFPS(GLFWwindow *pWindow){
 }
 
 
-void run_ssbo_test(Shader *tex2ssbo_compute, Shader *ssbo2tex_compute, Texture *tex){
+void populateInputSSBO(Shader *tex2ssbo, Texture *tex){
 
-	/*glUseProgram(tex2ssbo_compute -> progID); 
+	glUseProgram(tex2ssbo_compute -> progID); 
 	tex2ssbo_compute -> setImageTexture(tex -> getID(),0,7);
 	//tex2ssbo_compute -> setFloat("timeStep", totalTime);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, ssbo);
 	glDispatchCompute(24, 24, 1);    
- 	glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT | GL_SHADER_IMAGE_ACCESS_BARRIER_BIT | GL_TEXTURE_FETCH_BARRIER_BIT);*/
+ 	glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT | GL_SHADER_IMAGE_ACCESS_BARRIER_BIT | GL_TEXTURE_FETCH_BARRIER_BIT);
 
+
+}
+
+
+void run_ssbo_test(Shader *tex2ssbo_compute, Shader *ssbo2tex_compute, Texture *tex){
+
+	
  	glUseProgram(ssbo2tex_compute -> progID);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, ssbo);
 	glBindImageTexture(0, tex -> getID(), 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA32F);
@@ -275,26 +279,38 @@ float *t1p = value_ptr(t1), *t2p = value_ptr(t2), *t3p = value_ptr(t3), *t4p = v
 float *viewptr = value_ptr(playerViewMat), *projptr = value_ptr(proj1);
 
 int bufferSize = 400 * 400 * 3;
-float *shaderData;
+float *dataOutSSBO, *dataInSSBO;
+
+std::unique_ptr<StyleTransfer> stModel;
 
 
 
 void initialize_game(string inpath){
 
-	shaderData = new float[bufferSize]();
+	dataOutSSBO = new float[bufferSize]();
 
 	glGenBuffers(1, &ssbo);
 	glBindBuffer(GL_SHADER_STORAGE_BUFFER, ssbo);
-	glBufferData(GL_SHADER_STORAGE_BUFFER, bufferSize*sizeof(float), shaderData, GL_DYNAMIC_COPY);
+	glBufferData(GL_SHADER_STORAGE_BUFFER, bufferSize*sizeof(float), dataOutSSBO, GL_DYNAMIC_COPY);
 	GLvoid* p = glMapBuffer(GL_SHADER_STORAGE_BUFFER, GL_WRITE_ONLY);
-	memcpy(p, &shaderData, bufferSize * sizeof(float));
+	memcpy(p, dataOutSSBO, bufferSize * sizeof(float));
 	glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
 	glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 
-	COUT("SSBO at")
-	COUT(ssbo)
-	run_model(ssbo);
-	COUT("RAN MODEL")
+
+	dataInSSBO = new float[bufferSize]();
+
+	glGenBuffers(1, &ssboIn);
+	glBindBuffer(GL_SHADER_STORAGE_BUFFER, ssboIn);
+	glBufferData(GL_SHADER_STORAGE_BUFFER, bufferSize*sizeof(float), dataInSSBO, GL_DYNAMIC_COPY);
+	GLvoid* p = glMapBuffer(GL_SHADER_STORAGE_BUFFER, GL_WRITE_ONLY);
+	memcpy(p, dataInSSBO, bufferSize * sizeof(float));
+	glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
+	glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+
+	stModel = make_unique<StyleTransfer>(ssbo,ssboIn);
+	stModel -> setStyle(0);
+	stModel -> execute();
 
 	basepath = inpath;
 
@@ -338,8 +354,11 @@ void initialize_game(string inpath){
  	terrain_shader -> setMat4(string("shadowProj"), depthProjMat);
     terrain_shader -> setShadowTexture(shadowTarget -> getTexture());
 
-	plane_shader -> setImageTexture(scream -> getID(), 0, 4);
+	//plane_shader -> setImageTexture(scream -> getID(), 0, 4);
+
 	plane_shader -> setProj(projptr);
+	glUseProgram(plane_shader -> progID);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, ssbo);
 
 	skybox_shader -> setProj(projptr);
 	skybox_shader -> setImageTexture(skybox -> getID(), 1, 9);
@@ -365,7 +384,8 @@ int step_game(float timestep){
 	ImGui::SliderFloat("rotation", &rotation, 0, 2 * 3);
 	ImGui::End();*/
 	
-	run_ssbo_test(tex2SSBO.get(), SSBO2tex.get(), scream.get());
+
+	//run_ssbo_test(tex2SSBO.get(), SSBO2tex.get(), scream.get());
 
 	mainSimu -> stepSimu(timestep);
 	mainSimu -> getModelMats();
@@ -393,6 +413,10 @@ int step_game(float timestep){
 
 	plane_shader -> setModel(value_ptr(testmat));
 	plane_shader -> setView(viewptr);
+
+	//plane_shader -> setModel(value_ptr(iden));
+	//plane_shader -> setView(value_ptr(iden));
+	//plane_shader -> setProj(value_ptr(iden));
 	plane -> draw(plane_shader -> progID);
 
 	basic_shader -> setView(viewptr);
@@ -456,7 +480,7 @@ void destroy_game(){
 	delete px_samples;
 	glDeleteBuffers(1,&ssbo);
 
-	delete[] shaderData;
+	delete[] dataOutSSBO;
 
 }
 

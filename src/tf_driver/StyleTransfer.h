@@ -36,15 +36,17 @@ class StyleTransfer {
 
 public:
     
-    StyleTransfer(unsigned int inputSSSBO = 10000);
+    StyleTransfer(unsigned int ssboOut = 10000, unsigned int ssboIn = 10000);
     ~StyleTransfer();
 
-    std::string getRenderedStyle(int styleChosen);
+    std::string getRenderedStyle();
 
 private:
 
     cv::Mat preProcessImage(cv::Mat input);
     std::vector<float> getStyle(int styleVal);
+    std::vector<float> styleEncoding;
+
     int fromNameToIndex(std::string stdName, bool isInput, bool isStylePredict) const;
 
     std::unique_ptr<::tflite::FlatBufferModel> style_predict_model_;
@@ -55,4 +57,4 @@ private:
     TfLiteDelegate *delegate;
 };
 
-int run_model(unsigned int ssbo=10000);
+int run_model(unsigned int ssbo=10000, unsigned int ssboIn=10000);

@@ -38,9 +38,7 @@ void printVector(std::vector<int> const &a) {
 }
 
 
-
-
-StyleTransfer::StyleTransfer(unsigned int outputSSBO) {
+StyleTransfer::StyleTransfer(unsigned int outputSSBO, unsigned int inputSSBO) {
 
     // Spin up the interpreter
     style_predict_model_ = ::tflite::FlatBufferModel::BuildFromFile(style_predict_model.c_str());
@@ -58,10 +56,11 @@ StyleTransfer::StyleTransfer(unsigned int outputSSBO) {
     delegate = TfLiteGpuDelegateCreate(/*default options=*/nullptr);
      
     if (outputSSBO != 10000){
-    	auto outputIndex = fromNameToIndex("transformer/expand/conv3/conv/Sigmoid", false, false);
-    	COUT("Output index is:")
-    	COUT(outputIndex)
+    	int outputIndex = fromNameToIndex("transformer/expand/conv3/conv/Sigmoid", false, false);
     	TfLiteGpuDelegateBindBufferToTensor(delegate, outputSSBO, outputIndex);
+
+    	int contentImageIndex = fromNameToIndex("content_image", true, false);
+    	TfLiteGpuDelegateBindBufferToTensor(delegate, inputSSBO, contentImageIndex);
     }
 
     if (transfer_interpreter_ -> ModifyGraphWithDelegate(delegate) != kTfLiteOk)
@@ -76,7 +75,7 @@ StyleTransfer::StyleTransfer(unsigned int outputSSBO) {
  *
  * Output: A String going to where the stored image is on private storage
  */
-std::string StyleTransfer::getRenderedStyle(int styleChosen) {
+std::string StyleTransfer::execute() {
 
     COUT("Getting rendered style")
 
@@ -86,43 +85,42 @@ std::string StyleTransfer::getRenderedStyle(int styleChosen) {
     // Do the post-processing to get this image back into a jpeg format
 
     // Do the style transfer code
-    std::vector<float> styleVec = getStyle(styleChosen);
+   
+    if(styleEncoding.size() > 0) {
 
-    if(styleVec.size() > 0) {
-
-        cv::Mat image = cv::imread(INPUT_IMAGE, cv::IMREAD_COLOR);
-        cv::Mat processedImage = preProcessImage(image);
+        //cv::Mat image = cv::imread(INPUT_IMAGE, cv::IMREAD_COLOR);
+        //cv::Mat processedImage = preProcessImage(image);
 
         transfer_interpreter_->AllocateTensors();
 
-        int contentImageIndex = fromNameToIndex("content_image", true, false);
+        //int contentImageIndex = fromNameToIndex("content_image", true, false);
         int styleInputIndex = fromNameToIndex("mobilenet_conv/Conv/BiasAdd", true, false);
 
-        std::cout << "Content index: " << contentImageIndex << std::endl;
-        std::cout << "Style index: " << styleInputIndex << std::endl;
-        printVector(transfer_interpreter_ -> inputs());
+        //std::cout << "Content index: " << contentImageIndex << std::endl;
+        //std::cout << "Style index: " << styleInputIndex << std::endl;
+        //printVector(transfer_interpreter_ -> inputs());
 
-        auto contentBuffer = transfer_interpreter_->typed_tensor<float>(contentImageIndex);
+        //auto contentBuffer = transfer_interpreter_->typed_tensor<float>(contentImageIndex);
         auto styleBuffer = transfer_interpreter_->typed_tensor<float>(styleInputIndex);
 
         TfLiteIntArray* styleDims = transfer_interpreter_->tensor(styleInputIndex)->dims;
-        TfLiteIntArray* contentDims = transfer_interpreter_->tensor(contentImageIndex)->dims;
+        //TfLiteIntArray* contentDims = transfer_interpreter_->tensor(contentImageIndex)->dims;
 
         unsigned int styleSize = sizeof(float);
-        unsigned int contentSize = sizeof(float);
+        //unsigned int contentSize = sizeof(float);
 
         for(int i = 1; i < styleDims->size; ++i) {
             styleSize = styleSize * styleDims->data[i];
         }
-        for(int j = 1; j < contentDims->size; ++j) {
+        /*for(int j = 1; j < contentDims->size; ++j) {
             contentSize = contentSize * contentDims->data[j];
-        }
-        memcpy(contentBuffer, processedImage.data, contentSize);
-        memcpy(styleBuffer, styleVec.data(), styleSize);
+        }*/
+        //memcpy(contentBuffer, processedImage.data, contentSize);
+        memcpy(styleBuffer, styleEncoding.data(), styleSize);
 
         if(transfer_interpreter_->Invoke() == kTfLiteOk) {
 
-        	COUT("Run successful")
+        	/*COUT("Run successful")
 
             auto outputIndex = fromNameToIndex("transformer/expand/conv3/conv/Sigmoid", false, false);
             TfLiteIntArray* dims = transfer_interpreter_->tensor(outputIndex)->dims;
@@ -146,7 +144,7 @@ std::string StyleTransfer::getRenderedStyle(int styleChosen) {
             cv::cvtColor(outputImage, outputImage, cv::COLOR_BGR2RGB);
 
             std::string outputString = APP_PATH + "/output.jpg";
-            cv::imwrite(outputString, outputImage);
+            cv::imwrite(outputString, outputImage);*/
 
             return "";//outputString;
         } else {
@@ -158,10 +156,9 @@ std::string StyleTransfer::getRenderedStyle(int styleChosen) {
 }
 
 
-std::vector<float> StyleTransfer::getStyle(int styleVal) {
+void StyleTransfer::setStyle(int styleVal) {
 
     std::cout << "Getting style" << std::endl;
-
     std::string styleImage;
 
     switch(styleVal) {
@@ -198,7 +195,7 @@ std::vector<float> StyleTransfer::getStyle(int styleVal) {
         // Return the empty vector
         std::vector<float> emptyVec;
         std::cout << "TFLite error!!!!!" << std::endl;
-        return emptyVec;
+        styleEncoding = std::move(emptyVec);
     } 
     else {
 
@@ -219,7 +216,7 @@ std::vector<float> StyleTransfer::getStyle(int styleVal) {
         const float * outputBuffer = style_interpreter_->typed_tensor<float>(outputIndex);
         memcpy(outputFloat.data(), outputBuffer, outputByteSize);
 
-        return outputFloat;
+        styleEncoding = std::move(outputFloat);
     }
 }
 
@@ -249,6 +246,8 @@ int StyleTransfer::fromNameToIndex(std::string stdName, bool isInput, bool isSty
 
 
 StyleTransfer::~StyleTransfer() {
+
+	COUT("Destroying style transferer")
 
     // NEW: Clean up.
     TfLiteGpuDelegateDelete(delegate);
