@@ -36,7 +36,7 @@ class StyleTransfer {
 
 public:
     
-    StyleTransfer(GLuint inputSSSBO = 10000);
+    StyleTransfer(unsigned int inputSSSBO = 10000);
     ~StyleTransfer();
 
     std::string getRenderedStyle(int styleChosen);
@@ -55,4 +55,4 @@ private:
     TfLiteDelegate *delegate;
 };
 
-int run_model();
+int run_model(unsigned int ssbo=10000);

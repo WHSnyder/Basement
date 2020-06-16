@@ -158,16 +158,14 @@ void showFPS(GLFWwindow *pWindow){
 }
 
 
-
-
 void run_ssbo_test(Shader *tex2ssbo_compute, Shader *ssbo2tex_compute, Texture *tex){
 
-	glUseProgram(tex2ssbo_compute -> progID); 
+	/*glUseProgram(tex2ssbo_compute -> progID); 
 	tex2ssbo_compute -> setImageTexture(tex -> getID(),0,7);
 	//tex2ssbo_compute -> setFloat("timeStep", totalTime);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, ssbo);
 	glDispatchCompute(24, 24, 1);    
- 	glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT | GL_SHADER_IMAGE_ACCESS_BARRIER_BIT | GL_TEXTURE_FETCH_BARRIER_BIT);
+ 	glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT | GL_SHADER_IMAGE_ACCESS_BARRIER_BIT | GL_TEXTURE_FETCH_BARRIER_BIT);*/
 
  	glUseProgram(ssbo2tex_compute -> progID);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, ssbo);
@@ -175,8 +173,6 @@ void run_ssbo_test(Shader *tex2ssbo_compute, Shader *ssbo2tex_compute, Texture *
 	glDispatchCompute(24, 24, 1);    
  	glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT | GL_SHADER_IMAGE_ACCESS_BARRIER_BIT | GL_TEXTURE_FETCH_BARRIER_BIT);
 }
-
-
 
 
 float timeratio;
@@ -278,7 +274,7 @@ float *t1p = value_ptr(t1), *t2p = value_ptr(t2), *t3p = value_ptr(t3), *t4p = v
 
 float *viewptr = value_ptr(playerViewMat), *projptr = value_ptr(proj1);
 
-int bufferSize = 384 * 384 * 3;
+int bufferSize = 400 * 400 * 3;
 float *shaderData;
 
 
@@ -294,6 +290,11 @@ void initialize_game(string inpath){
 	memcpy(p, &shaderData, bufferSize * sizeof(float));
 	glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
 	glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+
+	COUT("SSBO at")
+	COUT(ssbo)
+	run_model(ssbo);
+	COUT("RAN MODEL")
 
 	basepath = inpath;
 

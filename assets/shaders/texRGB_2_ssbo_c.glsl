@@ -9,7 +9,6 @@ uniform sampler2D imageTex;
 void main() {
 
 	ivec2 gid = ivec2(gl_GlobalInvocationID.xy);
-
 	if (gid.x >= 384 || gid.y >= 384) return;
 
 	vec3 pixel = texelFetch(imageTex, gid, 0).xyz;

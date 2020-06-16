@@ -25,7 +25,9 @@ std::string INPUT_IMAGE = APP_PATH + "gate.jpg";
 std::string style_predict_model = MODEL_PATH + "arb_style_predict.tflite";
 std::string style_transfer_model = MODEL_PATH + "arb_style_transform.tflite";
 std::string LASSEN = APP_PATH + "scream.jpg";
-std::string GRAND_CANYON = APP_PATH + "starry.jpg";
+std::string GRAND_CANYON = APP_PATH + "scream.jpg";
+
+#define COUT(x) std::cout << x << std::endl;
 
 
 void printVector(std::vector<int> const &a) {
@@ -36,7 +38,9 @@ void printVector(std::vector<int> const &a) {
 }
 
 
-StyleTransfer::StyleTransfer(GLuint inputSSBO) {
+
+
+StyleTransfer::StyleTransfer(unsigned int outputSSBO) {
 
     // Spin up the interpreter
     style_predict_model_ = ::tflite::FlatBufferModel::BuildFromFile(style_predict_model.c_str());
@@ -45,23 +49,23 @@ StyleTransfer::StyleTransfer(GLuint inputSSBO) {
     ::tflite::InterpreterBuilder style_builder(*style_predict_model_, resolver);
     ::tflite::InterpreterBuilder transform_builder(*transfer_model_, resolver);
 
-    if (style_builder(&style_interpreter_) != kTfLiteOk) {
-        std::cout << "Error with style interpreter" << std::endl;
-    }
-
-    if (transform_builder(&transfer_interpreter_) != kTfLiteOk) {
-        std::cout << "Error with transfer interpreter" << std::endl;
-    }
-
-    std::cout << "Bind delegate" << std::endl;
-
-    // NEW: Prepare GPU delegate.
-    delegate = TfLiteGpuDelegateCreate(/*default options=*/nullptr);
-    if (transfer_interpreter_ -> ModifyGraphWithDelegate(delegate) != kTfLiteOk)
-        std::cout << "BIG FAIL" << std::endl;  
+    if (style_builder(&style_interpreter_) != kTfLiteOk)
+        COUT("Error with style interpreter")
     
-    //if (inputSSBO != 10000)
-    //	delegate -> BindBufferToTensor(inputSSBO,0);
+    if (transform_builder(&transfer_interpreter_) != kTfLiteOk)
+        COUT("Error with transfer interpreter")
+    
+    delegate = TfLiteGpuDelegateCreate(/*default options=*/nullptr);
+     
+    if (outputSSBO != 10000){
+    	auto outputIndex = fromNameToIndex("transformer/expand/conv3/conv/Sigmoid", false, false);
+    	COUT("Output index is:")
+    	COUT(outputIndex)
+    	TfLiteGpuDelegateBindBufferToTensor(delegate, outputSSBO, outputIndex);
+    }
+
+    if (transfer_interpreter_ -> ModifyGraphWithDelegate(delegate) != kTfLiteOk)
+        COUT("Failure modifying transfer graph with delegate!")
 }
 
 /*
@@ -74,7 +78,7 @@ StyleTransfer::StyleTransfer(GLuint inputSSBO) {
  */
 std::string StyleTransfer::getRenderedStyle(int styleChosen) {
 
-    std::cout << "Getting rendered style" << std::endl;
+    COUT("Getting rendered style")
 
     // Predict the style
     // Resize the image to the shape and do pre-processing
@@ -117,6 +121,9 @@ std::string StyleTransfer::getRenderedStyle(int styleChosen) {
         memcpy(styleBuffer, styleVec.data(), styleSize);
 
         if(transfer_interpreter_->Invoke() == kTfLiteOk) {
+
+        	COUT("Run successful")
+
             auto outputIndex = fromNameToIndex("transformer/expand/conv3/conv/Sigmoid", false, false);
             TfLiteIntArray* dims = transfer_interpreter_->tensor(outputIndex)->dims;
             int outputSize = 1;
@@ -141,7 +148,7 @@ std::string StyleTransfer::getRenderedStyle(int styleChosen) {
             std::string outputString = APP_PATH + "/output.jpg";
             cv::imwrite(outputString, outputImage);
 
-            return outputString;
+            return "";//outputString;
         } else {
             return "";
         }

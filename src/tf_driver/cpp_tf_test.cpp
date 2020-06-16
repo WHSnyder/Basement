@@ -13,9 +13,9 @@
 #include <string>
 
 
-int run_model(){
+int run_model(unsigned int ssbo){
 
-    StyleTransfer *instance = new StyleTransfer();
+    StyleTransfer *instance = new StyleTransfer(ssbo);
 
     std::string path = instance -> getRenderedStyle(0);
 
