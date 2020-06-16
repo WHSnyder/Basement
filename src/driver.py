@@ -14,6 +14,8 @@ init_game("/home/will/projects/cpprtx/")
 timelast = time.perf_counter()
 timestart = timelast
 
+frames = 0
+
 while True:
 	
 	timecur = time.perf_counter()
@@ -22,9 +24,16 @@ while True:
 
 	step_game(timelapsed)
 
-	if timecur - timestart > 2:
+	if timecur - timestart > 3:
+
+		os.system('nvidia-smi')
+
 		while timecur - timestart < 1:
 			timecur = time.perf_counter()
 		break	
+
+	frames += 1
+
+print("FPS aggregate: " + str(frames / (timecur - timestart)))
 
 destroy_game()

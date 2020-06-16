@@ -55,6 +55,7 @@ StyleTransfer::StyleTransfer(unsigned int outputSSBO, unsigned int inputSSBO) {
     delegate = TfLiteGpuDelegateCreate(/*default options=*/nullptr);
      
     if (outputSSBO != 10000){
+    	
     	int outputIndex = fromNameToIndex("transformer/expand/conv3/conv/Sigmoid", false, false);
     	TfLiteGpuDelegateBindBufferToTensor(delegate, outputSSBO, outputIndex);
 
@@ -66,6 +67,14 @@ StyleTransfer::StyleTransfer(unsigned int outputSSBO, unsigned int inputSSBO) {
         COUT("Failure modifying transfer graph with delegate!")
 }
 
+
+int StyleTransfer::execute(){
+	return transfer_interpreter_->Invoke() == kTfLiteOk ? 0 : -1;
+}
+
+
+
+
 /*
  * This will run the inference on both, so that we can get the transformed image.
  *
@@ -74,7 +83,7 @@ StyleTransfer::StyleTransfer(unsigned int outputSSBO, unsigned int inputSSBO) {
  *
  * Output: A String going to where the stored image is on private storage
  */
-std::string StyleTransfer::execute() {
+int StyleTransfer::prime() {
 
     COUT("Getting rendered style")
 
@@ -145,13 +154,12 @@ std::string StyleTransfer::execute() {
             std::string outputString = APP_PATH + "/output.jpg";
             cv::imwrite(outputString, outputImage);*/
 
-            return "";//outputString;
+            return 0;//outputString;
         } else {
-            return "";
+            return -1;
         }
     }
-    return "";
-
+    return 0;
 }
 
 

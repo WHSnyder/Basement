@@ -241,13 +241,11 @@ int initialize_window(){
 }
 
 
-RenderTarget *shadowTarget;
-
-std::unique_ptr<RenderTarget> textureTarget;
+std::unique_ptr<RenderTarget> shadowTarget, textureTarget;
 std::unique_ptr<Simu> mainSimu;
 std::unique_ptr<Mesh> cube, sphere, terrain_plane, plane;
 std::unique_ptr<Texture> noise_tex, grass_tex, skybox, scream;
-std::unique_ptr<Shader> shadow_shader, terrain_shader, basic_shader, skybox_shader, plane_shader, tex2SSBO, SSBO2tex;
+std::unique_ptr<Shader> shadow_shader, terrain_shader, basic_shader, skybox_shader, plane_shader, tex2SSBO;
 
 //Perlin noise params
 int dim = 64;
@@ -315,6 +313,7 @@ void initialize_game(string inpath){
 	//Create and set style for the ST
 	stModel = make_unique<StyleTransfer>(ssbo,ssboIn);
 	stModel -> setStyle(0);
+	stModel -> prime();
 
 	basepath = inpath;
 	mainSimu = make_unique<Simu>();
@@ -324,7 +323,7 @@ void initialize_game(string inpath){
 	terrain_plane = make_unique<Mesh>(string("assets/meshes/terrain_plane.obj"));
 	plane = gen_plane();
 
-	shadowTarget = new RenderTarget(1024,1024,1);
+	shadowTarget = make_unique<RenderTarget>(1024,1024,1);
 	//textureTarget = new RenderTarget(200,200,0);
 
 	noise_tex = make_unique<Texture>(img_data, dim, dim, 0);
@@ -358,12 +357,6 @@ void initialize_game(string inpath){
 	terrain_shader -> setMat4(string("shadowView"), depthView);
  	terrain_shader -> setMat4(string("shadowProj"), depthProjMat);
     terrain_shader -> setShadowTexture(shadowTarget -> getTexture());
-
-	plane_shader -> setProj(value_ptr(iden));
-	terrain_shader -> setView(value_ptr(iden));
-	terrain_shader -> setProj(value_ptr(iden));
-	glUseProgram(plane_shader -> progID);
-	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, ssbo);
 
 	skybox_shader -> setProj(projptr);
 	skybox_shader -> setImageTexture(skybox -> getID(), 1, 9);
@@ -405,12 +398,8 @@ int step_game(float timestep){
 	textureTarget -> set();
 	glCheckError();
 
+	terrain_shader -> setView(viewptr);
 	terrain_plane -> draw(terrain_shader -> progID);
-
-	plane_shader -> setModel(value_ptr(iden));
-	plane_shader -> setView(value_ptr(iden));
-	plane_shader -> setProj(value_ptr(iden));
-	plane -> draw(plane_shader -> progID);
 
 	basic_shader -> setView(viewptr);
 	basic_shader -> setModel(sphereMat);
@@ -451,6 +440,11 @@ int step_game(float timestep){
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glCheckError(); 
 
+	//Set FS quad up
+	plane_shader -> setModel(value_ptr(iden));
+	plane_shader -> setView(value_ptr(iden));
+	plane_shader -> setProj(value_ptr(iden));
+
 	glUseProgram(plane_shader -> progID);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, ssbo);
 	plane -> draw(plane_shader -> progID);
@@ -480,14 +474,13 @@ void destroy_game(){
 	glfwDestroyWindow(window);
 	glfwTerminate();
 
-	delete shadowTarget;
-	//delete textureTarget;
 	delete px_samples;
+	
 	glDeleteBuffers(1,&ssbo);
 	glDeleteBuffers(1,&ssboIn);
+
 	delete[] dataOutSSBO;
 	delete[] dataInSSBO;
-
 }
 
 
@@ -520,10 +513,7 @@ int main(int argc, char **argv){
 
 	return 1;
 }
-
-
 #else
-
 PYBIND11_MODULE(GameContext, m) {
     
     m.doc() = "Full game loop";
@@ -533,5 +523,4 @@ PYBIND11_MODULE(GameContext, m) {
     m.def("step_game", &step_game, "Run game iteration");
     m.def("destroy_game", &destroy_game, "Run game iteration");
 }
-
 #endif

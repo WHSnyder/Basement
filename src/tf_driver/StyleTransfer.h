@@ -41,7 +41,8 @@ public:
     ~StyleTransfer();
 
     void setStyle(int styleVal);
-    std::string execute();
+    int execute();
+    int prime();
 
 private:
 

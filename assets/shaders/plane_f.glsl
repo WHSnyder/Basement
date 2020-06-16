@@ -11,8 +11,10 @@ out vec4 outColor;
 
 void main(){
 
-	ivec2 gid = ivec2(texCoord * ivec2(384,384));
-	int linear_index = 3 * ((384 - gid.y) * 384 + gid.x);
+	int dim = 384;
+
+	ivec2 gid = ivec2(texCoord * ivec2(dim));
+	int linear_index = 3 * ((dim - gid.y) * dim + gid.x);
 
 	vec4 outCol = vec4(1.0);
   	outCol.x = output_data.elements[linear_index + 0];

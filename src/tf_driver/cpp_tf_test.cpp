@@ -17,6 +17,7 @@ int run_model(unsigned int ssbo, unsigned int ssbo_in){
 
     StyleTransfer *instance = new StyleTransfer(ssbo, ssbo_in);
     instance -> setStyle(0);
+    instance -> prime();
     instance -> execute();
 
     //std::string path = instance -> getRenderedStyle(0);
