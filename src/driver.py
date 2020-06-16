@@ -25,7 +25,7 @@ while True:
 
 	step_game(timelapsed)
 
-	if timecur - timestart > 2:
+	if timecur - timestart > 6:
 		while timecur - timestart < 1:
 			timecur = time.perf_counter()
 		break	

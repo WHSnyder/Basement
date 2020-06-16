@@ -36,9 +36,39 @@ int compile_shader(GLenum shaderType, string shaderCode){
 }
 
 
+GLuint build_compute_program(string shader_path){
+
+	std::cout << "Building compute program " << shader_path << std::endl;
+
+	string cshader = string(shader_path);
+	cshader.append("_c.glsl");
+    string cshader_txt = read_shader(cshader);
+
+    GLuint c_id = compile_shader(GL_COMPUTE_SHADER, cshader_txt);
+    GLuint prog_id = glCreateProgram();
+    glAttachShader(prog_id, c_id);
+	glLinkProgram(prog_id);
+
+	glCheckError();
+
+	int work_grp_size[3];
+
+	glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_SIZE, 0, &work_grp_size[0]);
+	glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_SIZE, 1, &work_grp_size[1]);
+	glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_SIZE, 2, &work_grp_size[2]);
+
+	printf("max local (in one shader) work group sizes x:%i y:%i z:%i\n",
+														work_grp_size[0],
+														work_grp_size[1],
+														work_grp_size[2]);
+
+	return prog_id;
+}
+
+
 GLuint build_program(string shader_path){
 
-	std::cout << "Building shader " << shader_path << std::endl;
+	std::cout << "Building raster program " << shader_path << std::endl;
  
 	GLuint v_id,f_id, prog_id;
 
@@ -60,20 +90,24 @@ GLuint build_program(string shader_path){
 
     glAttachShader(prog_id, v_id);
 	glAttachShader(prog_id, f_id);
-	glCheckError();
-
 	glLinkProgram(prog_id);
+
+	glCheckError();
 
 	return prog_id;
 }
 
 
-Shader::Shader(string shader_path){
+Shader::Shader(string shader_path, int buildCompute){
 
-	progID = build_program(shader_path);
+	if (buildCompute)
+		progID = build_compute_program(shader_path);
+	else 
+		progID = build_program(shader_path);
 
 	glUseProgram(progID); 
 
+	//Most will throw ignorable errors.
 	data_texture = glGetUniformLocation(progID, "dataTex");
 	image_texture = glGetUniformLocation(progID, "imageTex");
 	proj_loc = glGetUniformLocation(progID, "p");
