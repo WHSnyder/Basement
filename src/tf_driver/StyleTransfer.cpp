@@ -16,7 +16,6 @@
 
 #include "StyleTransfer.h"
 #include <iostream>
-#include <string>
 
 std::string MODEL_PATH = "/home/will/projects/cpprtx/libs/tf_models/magenta_models/";
 std::string APP_PATH = "/home/will/Desktop/";

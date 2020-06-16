@@ -155,20 +155,17 @@ void showFPS(GLFWwindow *pWindow){
 }
 
 
-void populateInputSSBO(Shader *tex2ssbo, Texture *tex){
+void populateInputSSBO(Shader *tex2ssbo, GLuint texID){
 
-	glUseProgram(tex2ssbo_compute -> progID); 
-	tex2ssbo_compute -> setImageTexture(tex -> getID(),0,7);
-	//tex2ssbo_compute -> setFloat("timeStep", totalTime);
-	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, ssbo);
+	glUseProgram(tex2ssbo -> progID); 
+	tex2ssbo -> setImageTexture(texID, 0, 7);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, ssboIn);
 	glDispatchCompute(24, 24, 1);    
  	glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT | GL_SHADER_IMAGE_ACCESS_BARRIER_BIT | GL_TEXTURE_FETCH_BARRIER_BIT);
-
-
 }
 
-
-void run_ssbo_test(Shader *tex2ssbo_compute, Shader *ssbo2tex_compute, Texture *tex){
+/*
+void transferSSBO(Shader *tex2ssbo_compute, Shader *ssbo2tex_compute, Texture *tex){
 
 	
  	glUseProgram(ssbo2tex_compute -> progID);
@@ -176,7 +173,7 @@ void run_ssbo_test(Shader *tex2ssbo_compute, Shader *ssbo2tex_compute, Texture *
 	glBindImageTexture(0, tex -> getID(), 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA32F);
 	glDispatchCompute(24, 24, 1);    
  	glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT | GL_SHADER_IMAGE_ACCESS_BARRIER_BIT | GL_TEXTURE_FETCH_BARRIER_BIT);
-}
+}*/
 
 
 float timeratio;
@@ -243,8 +240,10 @@ int initialize_window(){
 	return 0;
 }
 
+
 RenderTarget *shadowTarget;
 
+std::unique_ptr<RenderTarget> textureTarget;
 std::unique_ptr<Simu> mainSimu;
 std::unique_ptr<Mesh> cube, sphere, terrain_plane, plane;
 std::unique_ptr<Texture> noise_tex, grass_tex, skybox, scream;
@@ -287,6 +286,8 @@ std::unique_ptr<StyleTransfer> stModel;
 
 void initialize_game(string inpath){
 
+
+	//This SSBO will hold the ST's output
 	dataOutSSBO = new float[bufferSize]();
 
 	glGenBuffers(1, &ssbo);
@@ -298,22 +299,24 @@ void initialize_game(string inpath){
 	glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 
 
+	//We will render to textureTarget, then copy to this SSBO w/compute
+	//shader.  ST then consumes this SSBO.
 	dataInSSBO = new float[bufferSize]();
 
 	glGenBuffers(1, &ssboIn);
 	glBindBuffer(GL_SHADER_STORAGE_BUFFER, ssboIn);
 	glBufferData(GL_SHADER_STORAGE_BUFFER, bufferSize*sizeof(float), dataInSSBO, GL_DYNAMIC_COPY);
-	GLvoid* p = glMapBuffer(GL_SHADER_STORAGE_BUFFER, GL_WRITE_ONLY);
-	memcpy(p, dataInSSBO, bufferSize * sizeof(float));
+	GLvoid* p2 = glMapBuffer(GL_SHADER_STORAGE_BUFFER, GL_WRITE_ONLY);
+	memcpy(p2, dataInSSBO, bufferSize * sizeof(float));
 	glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
 	glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 
+
+	//Create and set style for the ST
 	stModel = make_unique<StyleTransfer>(ssbo,ssboIn);
 	stModel -> setStyle(0);
-	stModel -> execute();
 
 	basepath = inpath;
-
 	mainSimu = make_unique<Simu>();
 	
 	cube = make_unique<Mesh>(string("assets/meshes/cube.obj"));
@@ -336,7 +339,9 @@ void initialize_game(string inpath){
 	basic_shader = make_unique<Shader>("assets/shaders/basic");
 	skybox_shader = make_unique<Shader>("assets/shaders/cubemap");
 	tex2SSBO = make_unique<Shader>("assets/shaders/texRGB_2_ssbo",1);
-	SSBO2tex = make_unique<Shader>("assets/shaders/ssbo_2_texRGB",1);
+	
+	//Replaced by modified plane shader that covers screen
+	//SSBO2tex = make_unique<Shader>("assets/shaders/ssbo_2_texRGB",1);
 
 	mainSimu -> addTerrain(px_samples, dim, terrain_mult);
 	mainSimu -> addSphere(vec3(-4,23,-4), 1.0f, 1, reinterpret_cast<void *>(sphereMat));
@@ -354,9 +359,9 @@ void initialize_game(string inpath){
  	terrain_shader -> setMat4(string("shadowProj"), depthProjMat);
     terrain_shader -> setShadowTexture(shadowTarget -> getTexture());
 
-	//plane_shader -> setImageTexture(scream -> getID(), 0, 4);
-
-	plane_shader -> setProj(projptr);
+	plane_shader -> setProj(value_ptr(iden));
+	terrain_shader -> setView(value_ptr(iden));
+	terrain_shader -> setProj(value_ptr(iden));
 	glUseProgram(plane_shader -> progID);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, ssbo);
 
@@ -366,8 +371,8 @@ void initialize_game(string inpath){
  	shadow_shader -> setProj(value_ptr(depthProjMat));
  	shadow_shader -> setView(value_ptr(depthView));
 
- 	//run_ssbo_test(tex2SSBO.get(), SSBO2tex.get(), scream.get());
- }
+ 	textureTarget = make_unique<RenderTarget>(384,384,0);
+}
 
 
 //Run main game loop
@@ -384,9 +389,6 @@ int step_game(float timestep){
 	ImGui::SliderFloat("rotation", &rotation, 0, 2 * 3);
 	ImGui::End();*/
 	
-
-	//run_ssbo_test(tex2SSBO.get(), SSBO2tex.get(), scream.get());
-
 	mainSimu -> stepSimu(timestep);
 	mainSimu -> getModelMats();
 
@@ -394,29 +396,20 @@ int step_game(float timestep){
 	testmat = trans * rot;
 
 	shadowTarget -> set();
-	shadow_shader -> setModel(value_ptr(testmat));
-	plane -> draw(shadow_shader -> progID);
+
 	shadow_shader -> setModel(sphereMat);
 	sphere -> draw(shadow_shader -> progID);
 	shadow_shader -> setModel(boxMat);
 	cube -> draw(shadow_shader -> progID);
 
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	glViewport(0, 0, width, height);
-
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	textureTarget -> set();
 	glCheckError();
 
-	terrain_shader -> setView(viewptr);
-	terrain_shader -> setProj(projptr);
 	terrain_plane -> draw(terrain_shader -> progID);
 
-	plane_shader -> setModel(value_ptr(testmat));
-	plane_shader -> setView(viewptr);
-
-	//plane_shader -> setModel(value_ptr(iden));
-	//plane_shader -> setView(value_ptr(iden));
-	//plane_shader -> setProj(value_ptr(iden));
+	plane_shader -> setModel(value_ptr(iden));
+	plane_shader -> setView(value_ptr(iden));
+	plane_shader -> setProj(value_ptr(iden));
 	plane -> draw(plane_shader -> progID);
 
 	basic_shader -> setView(viewptr);
@@ -450,6 +443,18 @@ int step_game(float timestep){
 	playerViewMat = computeMatricesFromInputs();
 	viewptr = value_ptr(playerViewMat);	
 
+	populateInputSSBO(tex2SSBO.get(), textureTarget -> getTexture());
+	stModel -> execute();
+
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glViewport(0, 0, width, height);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glCheckError(); 
+
+	glUseProgram(plane_shader -> progID);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, ssbo);
+	plane -> draw(plane_shader -> progID);
+
 	/*ImGui::Render();
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
@@ -479,8 +484,9 @@ void destroy_game(){
 	//delete textureTarget;
 	delete px_samples;
 	glDeleteBuffers(1,&ssbo);
-
+	glDeleteBuffers(1,&ssboIn);
 	delete[] dataOutSSBO;
+	delete[] dataInSSBO;
 
 }
 

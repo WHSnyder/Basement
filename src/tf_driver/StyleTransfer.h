@@ -19,6 +19,7 @@
 #include "tensorflow/lite/kernels/register.h"
 #include "tensorflow/lite/model.h"
 #include "GL/glew.h"
+#include <string>
 
 #define MAC_OPENGL
 
@@ -39,12 +40,12 @@ public:
     StyleTransfer(unsigned int ssboOut = 10000, unsigned int ssboIn = 10000);
     ~StyleTransfer();
 
-    std::string getRenderedStyle();
+    void setStyle(int styleVal);
+    std::string execute();
 
 private:
 
     cv::Mat preProcessImage(cv::Mat input);
-    std::vector<float> getStyle(int styleVal);
     std::vector<float> styleEncoding;
 
     int fromNameToIndex(std::string stdName, bool isInput, bool isStylePredict) const;
