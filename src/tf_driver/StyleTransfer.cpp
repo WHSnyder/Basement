@@ -18,8 +18,16 @@
 #include <iostream>
 #include <string>
 
+
+#if __APPLE__
 std::string MODEL_PATH = "/Users/will/projects/cpprtx/libs/tf_models/magenta_models/";
 std::string APP_PATH = "/Users/will/Desktop/";
+#else
+std::string MODEL_PATH = "/home/will/projects/cpprtx/libs/tf_models/magenta_models/";
+std::string APP_PATH = "/home/will/Desktop/";
+#endif
+
+
 std::string ZION = APP_PATH + "grad.jpg";
 std::string INPUT_IMAGE = APP_PATH + "gate.jpg";
 std::string style_predict_model = MODEL_PATH + "arb_style_predict.tflite";
@@ -45,16 +53,12 @@ StyleTransfer::StyleTransfer() {
     ::tflite::InterpreterBuilder style_builder(*style_predict_model_, resolver);
     ::tflite::InterpreterBuilder transform_builder(*transfer_model_, resolver);
 
-    if (style_builder(&style_interpreter_) != kTfLiteOk) {
+    if (style_builder(&style_interpreter_) != kTfLiteOk)
         std::cout << "Error with style interpreter" << std::endl;
-    }
-
-    if (transform_builder(&transfer_interpreter_) != kTfLiteOk) {
+    
+    if (transform_builder(&transfer_interpreter_) != kTfLiteOk)
         std::cout << "Error with transfer interpreter" << std::endl;
-    }
-
-    std::cout << "Bind delegate" << std::endl;
-
+    
     // NEW: Prepare GPU delegate.
     delegate = TFLGpuDelegateCreate(/*default options=*/nullptr);
     if (style_interpreter_ -> ModifyGraphWithDelegate(delegate) != kTfLiteOk){
@@ -240,9 +244,9 @@ int StyleTransfer::fromNameToIndex(std::string stdName, bool isInput, bool isSty
 
 
 StyleTransfer::~StyleTransfer() {
-
-    // NEW: Clean up.
+#if __APPLE__
     TFLGpuDelegateDelete(delegate);
+#endif
 }
 
 cv::Mat StyleTransfer::preProcessImage(cv::Mat input) {

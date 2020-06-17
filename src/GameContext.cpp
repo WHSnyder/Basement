@@ -29,17 +29,7 @@
 #include "rendering/RenderTarget.h"
 #include "tf_driver/StyleTransfer.h"
 
-
-#ifdef MACOS
-//#include "rendering/GLMetalInteropTex.h"
-//#define GLFW_EXPOSE_NATIVE_NSGL
-#endif
-
 #include <GLFW/glfw3.h>
-//#include <GLFW/glfw3native.h>
-
-#define SP(mytype) std::shared_ptr()
-
 
 
 using namespace std;
@@ -432,7 +422,11 @@ void destroy_game(){
 
 int main(int argc, char **argv){
 
+#if __APPLE__
+	string inpath = "/Users/will/projects/cpprtx/";
+#else
 	string inpath = "/home/will/projects/cpprtx/";
+#endif
 	
 	initialize_window();
 	initialize_game(inpath);
@@ -454,7 +448,6 @@ int main(int argc, char **argv){
 	}
 
 	destroy_game();
-
 	return 1;
 }
 
