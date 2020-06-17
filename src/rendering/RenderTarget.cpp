@@ -66,10 +66,13 @@ void bindTextureFramebuffer(GLuint& framebufferID, GLuint& depthBufferID, GLuint
 
 	COUT("SUBIMAGE INBOUND")
 
-	unsigned char *dummy = new unsigned char[cols * rows * 3](); 
+	unsigned char *dummy = new unsigned char[cols * rows * 3]();
+
+	for (int h = 0; h < 200 * 200; h++)
+		dummy[h] = 150; //Visual sanity check 
 
 	//Dummy texture data
-	glTexSubImage2D(GL_TEXTURE_2D,     
+	/*glTexSubImage2D(GL_TEXTURE_2D,     
                 0,                 
                 0,
                 0,          
@@ -78,7 +81,7 @@ void bindTextureFramebuffer(GLuint& framebufferID, GLuint& depthBufferID, GLuint
                 GL_RGB,
                 GL_UNSIGNED_BYTE,
                 dummy); // <- Causes seg fault?  A lot of docs use this...
-	
+	*/
 	delete[] dummy;
 
 	//Depth buffer

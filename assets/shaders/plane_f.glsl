@@ -12,14 +12,14 @@ out vec4 outColor;
 void main(){
 
 	int dim = 384;
-
 	ivec2 gid = ivec2(texCoord * ivec2(dim));
-	int linear_index = 3 * ((dim - gid.y) * dim + gid.x);
+
+	int linear_index = 3 * ((dim - gid.y) * dim + dim - gid.x);
 
 	vec4 outCol = vec4(1.0);
   	outCol.x = output_data.elements[linear_index + 0];
   	outCol.y = output_data.elements[linear_index + 1];
   	outCol.z = output_data.elements[linear_index + 2];
 
-    outColor = outCol;  /*vec4(texture(imageTex, texCoord).bgr, 1.0);*/
+    outColor = outCol;
 }

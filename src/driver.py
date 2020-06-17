@@ -22,18 +22,17 @@ while True:
 	timelapsed = timecur - timelast
 	timelast = timecur
 
-	step_game(timelapsed)
+	if step_game(timelapsed) < 0:
+		break
 
-	if timecur - timestart > 3:
-
-		os.system('nvidia-smi')
-
+	if timecur - timestart > 60:
 		while timecur - timestart < 1:
 			timecur = time.perf_counter()
 		break	
 
 	frames += 1
 
+os.system('nvidia-smi')
 print("FPS aggregate: " + str(frames / (timecur - timestart)))
 
 destroy_game()

@@ -24,7 +24,7 @@ std::string INPUT_IMAGE = APP_PATH + "gate.jpg";
 std::string style_predict_model = MODEL_PATH + "arb_style_predict.tflite";
 std::string style_transfer_model = MODEL_PATH + "arb_style_transform.tflite";
 std::string LASSEN = APP_PATH + "scream.jpg";
-std::string GRAND_CANYON = APP_PATH + "scream.jpg";
+std::string GRAND_CANYON = APP_PATH + "starry.jpg";
 
 #define COUT(x) std::cout << x << std::endl;
 
@@ -55,7 +55,7 @@ StyleTransfer::StyleTransfer(unsigned int outputSSBO, unsigned int inputSSBO) {
     delegate = TfLiteGpuDelegateCreate(/*default options=*/nullptr);
      
     if (outputSSBO != 10000){
-    	
+
     	int outputIndex = fromNameToIndex("transformer/expand/conv3/conv/Sigmoid", false, false);
     	TfLiteGpuDelegateBindBufferToTensor(delegate, outputSSBO, outputIndex);
 
@@ -69,7 +69,7 @@ StyleTransfer::StyleTransfer(unsigned int outputSSBO, unsigned int inputSSBO) {
 
 
 int StyleTransfer::execute(){
-	return transfer_interpreter_->Invoke() == kTfLiteOk ? 0 : -1;
+	return transfer_interpreter_ -> Invoke() == kTfLiteOk ? 0 : -1;
 }
 
 
@@ -96,8 +96,10 @@ int StyleTransfer::prime() {
    
     if(styleEncoding.size() > 0) {
 
-        //cv::Mat image = cv::imread(INPUT_IMAGE, cv::IMREAD_COLOR);
-        //cv::Mat processedImage = preProcessImage(image);
+    	COUT("Style encoding greater than 0")
+
+        cv::Mat image = cv::imread(INPUT_IMAGE, cv::IMREAD_COLOR);
+        cv::Mat processedImage = preProcessImage(image);
 
         transfer_interpreter_->AllocateTensors();
 
@@ -126,7 +128,7 @@ int StyleTransfer::prime() {
         //memcpy(contentBuffer, processedImage.data, contentSize);
         memcpy(styleBuffer, styleEncoding.data(), styleSize);
 
-        if(transfer_interpreter_->Invoke() == kTfLiteOk) {
+        //if(transfer_interpreter_->Invoke() == kTfLiteOk) {
 
         	/*COUT("Run successful")
 
@@ -154,10 +156,10 @@ int StyleTransfer::prime() {
             std::string outputString = APP_PATH + "/output.jpg";
             cv::imwrite(outputString, outputImage);*/
 
-            return 0;//outputString;
-        } else {
-            return -1;
-        }
+        //    return 0;//outputString;
+        //} else {
+        //    return -1;
+        //}
     }
     return 0;
 }
@@ -201,7 +203,7 @@ void StyleTransfer::setStyle(int styleVal) {
         
         // Return the empty vector
         std::vector<float> emptyVec;
-        std::cout << "TFLite error!!!!!" << std::endl;
+        COUT("TFLite error!!!!!");
         styleEncoding = std::move(emptyVec);
     } 
     else {

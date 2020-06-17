@@ -46,11 +46,12 @@
 
 using namespace std;
 
-GLuint ssbo = 0, ssboIn = 0;
+GLuint ssboOut = 0, ssboIn = 0;
 float totalTime = 0;
 
 string basepath;
 int inputbreak = 0;
+int toggleNetwork = 0;
 
 
 const char *glsl_version = "#version 450";
@@ -127,7 +128,7 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
         glfwSetWindowShouldClose(window, GL_TRUE);
    	if (key == GLFW_KEY_Q)
-   		inputbreak = 1;
+   		toggleNetwork = ~toggleNetwork;
 }
 
 double lastTime; 
@@ -196,7 +197,7 @@ int initialize_window(){
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
 	// Open a window and create its OpenGL context
-	window = glfwCreateWindow(600, 600, "Test", NULL, NULL);
+	window = glfwCreateWindow(400, 400, "Test", NULL, NULL);
 	if (!window) {
         glfwTerminate();
         exit(EXIT_FAILURE);
@@ -288,8 +289,8 @@ void initialize_game(string inpath){
 	//This SSBO will hold the ST's output
 	dataOutSSBO = new float[bufferSize]();
 
-	glGenBuffers(1, &ssbo);
-	glBindBuffer(GL_SHADER_STORAGE_BUFFER, ssbo);
+	glGenBuffers(1, &ssboOut);
+	glBindBuffer(GL_SHADER_STORAGE_BUFFER, ssboOut);
 	glBufferData(GL_SHADER_STORAGE_BUFFER, bufferSize*sizeof(float), dataOutSSBO, GL_DYNAMIC_COPY);
 	GLvoid* p = glMapBuffer(GL_SHADER_STORAGE_BUFFER, GL_WRITE_ONLY);
 	memcpy(p, dataOutSSBO, bufferSize * sizeof(float));
@@ -311,7 +312,7 @@ void initialize_game(string inpath){
 
 
 	//Create and set style for the ST
-	stModel = make_unique<StyleTransfer>(ssbo,ssboIn);
+	stModel = make_unique<StyleTransfer>(ssboOut,ssboIn);
 	stModel -> setStyle(0);
 	stModel -> prime();
 
@@ -433,22 +434,30 @@ int step_game(float timestep){
 	viewptr = value_ptr(playerViewMat);	
 
 	populateInputSSBO(tex2SSBO.get(), textureTarget -> getTexture());
-	stModel -> execute();
+	
+	if (toggleNetwork)
+		stModel -> execute();
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glViewport(0, 0, width, height);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glCheckError(); 
 
-	//Set FS quad up
 	plane_shader -> setModel(value_ptr(iden));
 	plane_shader -> setView(value_ptr(iden));
 	plane_shader -> setProj(value_ptr(iden));
 
 	glUseProgram(plane_shader -> progID);
-	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, ssbo);
-	plane -> draw(plane_shader -> progID);
 
+	if (toggleNetwork){
+		//Set FS quad up
+		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, ssboOut);
+		plane -> draw(plane_shader -> progID);
+	} else {
+		//Just render whatever we sent to the network
+		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, ssboIn);
+		plane -> draw(plane_shader -> progID);
+	}
 	/*ImGui::Render();
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
@@ -457,9 +466,11 @@ int step_game(float timestep){
 	glfwSwapBuffers(window);
 	glfwPollEvents();
 
+	if (glfwGetKey(window, GLFW_KEY_ESCAPE ) == GLFW_PRESS || glfwWindowShouldClose(window) != 0)
+		inputbreak = 1;
+
 	if (inputbreak)
-		inputbreak = 0;
-		return 1;
+		return -1;
 	return 0;
 }
 
@@ -476,7 +487,7 @@ void destroy_game(){
 
 	delete px_samples;
 	
-	glDeleteBuffers(1,&ssbo);
+	glDeleteBuffers(1,&ssboOut);
 	glDeleteBuffers(1,&ssboIn);
 
 	delete[] dataOutSSBO;
@@ -488,7 +499,11 @@ void destroy_game(){
 
 int main(int argc, char **argv){
 
-	string inpath = "/home/will/projects/cpprtx/";
+	string inpath = string(argv[1]);
+
+	if (argc < 2)
+		COUT("Please provide absolute path to project dir (will fix soon)")
+		return -1;
 	
 	initialize_window();
 	initialize_game(inpath);
