@@ -1,7 +1,10 @@
-import time, sys, os
+import time, sys, os, setproctitle
+
+setproctitle.setproctitle('st_basement_test')
+
+
 
 sys.path.insert(0,"/home/will/projects/cpprtx/build/")
-
 #os.chdir("/home/will/projects/cpprtx/libs/tf_gl/")
 from GameContext import *
 #os.chdir("/home/will/projects/cpprtx/")

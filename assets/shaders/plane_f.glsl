@@ -5,7 +5,6 @@ in vec2 texCoord;
 layout(std430) buffer;
 layout(binding = 1) buffer Output { float elements[]; } output_data;
 
-/*uniform sampler2D imageTex;*/
 
 out vec4 outColor;
 

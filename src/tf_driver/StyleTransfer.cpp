@@ -24,7 +24,7 @@ std::string INPUT_IMAGE = APP_PATH + "gate.jpg";
 std::string style_predict_model = MODEL_PATH + "arb_style_predict.tflite";
 std::string style_transfer_model = MODEL_PATH + "arb_style_transform.tflite";
 std::string LASSEN = APP_PATH + "scream.jpg";
-std::string GRAND_CANYON = APP_PATH + "starry.jpg";
+std::string GRAND_CANYON = APP_PATH + "vango.jpg";
 
 #define COUT(x) std::cout << x << std::endl;
 
@@ -167,7 +167,7 @@ int StyleTransfer::prime() {
 
 void StyleTransfer::setStyle(int styleVal) {
 
-    std::cout << "Getting style" << std::endl;
+    std::cout << "Getting style at " << GRAND_CANYON << std::endl;
     std::string styleImage;
 
     switch(styleVal) {
@@ -204,7 +204,7 @@ void StyleTransfer::setStyle(int styleVal) {
         // Return the empty vector
         std::vector<float> emptyVec;
         COUT("TFLite error!!!!!");
-        styleEncoding = std::move(emptyVec);
+        styleEncoding = emptyVec; //std::move(emptyVec);
     } 
     else {
 
@@ -225,7 +225,7 @@ void StyleTransfer::setStyle(int styleVal) {
         const float * outputBuffer = style_interpreter_->typed_tensor<float>(outputIndex);
         memcpy(outputFloat.data(), outputBuffer, outputByteSize);
 
-        styleEncoding = std::move(outputFloat);
+        styleEncoding = outputFloat; //std::move(outputFloat);
     }
 }
 

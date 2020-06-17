@@ -9,6 +9,8 @@ option(GLPATH "Search system for OpenGL" OFF)
 set(USINGMAC ON)
 set(CD "${CMAKE_CURRENT_SOURCE_DIR}")
 
+
+
 if (NOT BINDPY)
 
 	add_executable(basement)
@@ -26,7 +28,7 @@ else()
     	OUTPUT_STRIP_TRAILING_WHITESPACE
     )
 
-	set_target_properties(
+	set_target_properties (
 		basement PROPERTIES 
 		SUFFIX "${PY_EXT_SUFFIX}"
 		PREFIX ""
@@ -36,6 +38,7 @@ else()
 	add_definitions(-DPYBINDMAIN)
 
 endif()
+
 
 set_property(TARGET basement PROPERTY CXX_STANDARD 17)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC") #not sure how this works with executables

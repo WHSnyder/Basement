@@ -33,6 +33,8 @@
 #define COUT(x) std::cout << x << std::endl;
 
 
+
+
 #ifdef MACOS
 //#include "rendering/GLMetalInteropTex.h"
 //#define GLFW_EXPOSE_NATIVE_NSGL
@@ -106,8 +108,6 @@ float *generate_terrain(int dim, double freq, float height_mult, int32_t *physx_
 	return result;
 }
 
-//Python 3.7 root
-///usr/local/opt/python/Frameworks/Python.framework/Versions/
 
 //For quads fullscreen or otherwise
 std::unique_ptr<Mesh> gen_plane(){
@@ -127,8 +127,10 @@ static void error_callback(int error, const char* description){
 static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods){
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
         glfwSetWindowShouldClose(window, GL_TRUE);
-   	if (key == GLFW_KEY_Q)
+   	if (key == GLFW_KEY_Q && action == GLFW_PRESS){
+   		COUT("TOGGLED")
    		toggleNetwork = ~toggleNetwork;
+   	}
 }
 
 double lastTime; 
@@ -141,7 +143,7 @@ void showFPS(GLFWwindow *pWindow){
 	double delta = currentTime - lastTime;
 	nbFrames++;
 	
-	if ( delta >= 1.0 ){ // If last cout was more than 1 sec ago
+	if (delta >= 1.0){ // If last cout was more than 1 sec ago
 
 		double fps = double(nbFrames) / delta;
 
@@ -165,16 +167,6 @@ void populateInputSSBO(Shader *tex2ssbo, GLuint texID){
  	glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT | GL_SHADER_IMAGE_ACCESS_BARRIER_BIT | GL_TEXTURE_FETCH_BARRIER_BIT);
 }
 
-/*
-void transferSSBO(Shader *tex2ssbo_compute, Shader *ssbo2tex_compute, Texture *tex){
-
-	
- 	glUseProgram(ssbo2tex_compute -> progID);
-	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, ssbo);
-	glBindImageTexture(0, tex -> getID(), 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA32F);
-	glDispatchCompute(24, 24, 1);    
- 	glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT | GL_SHADER_IMAGE_ACCESS_BARRIER_BIT | GL_TEXTURE_FETCH_BARRIER_BIT);
-}*/
 
 
 float timeratio;
@@ -190,14 +182,14 @@ int initialize_window(){
 		return -1;
 	}
 
-	glfwWindowHint(GLFW_SAMPLES, 8);
+	glfwWindowHint(GLFW_SAMPLES, 4);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
 	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE); // To make MacOS happy; should not be needed
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
 	// Open a window and create its OpenGL context
-	window = glfwCreateWindow(400, 400, "Test", NULL, NULL);
+	window = glfwCreateWindow(600, 600, "Test", NULL, NULL);
 	if (!window) {
         glfwTerminate();
         exit(EXIT_FAILURE);
@@ -213,8 +205,9 @@ int initialize_window(){
 		return -1;
 	}
 
-	glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
-	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);  
+	glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_FALSE);
+	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED); 
+	//glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL); 
     glfwSetErrorCallback(error_callback);
     
     if (!glfwInit())
@@ -284,7 +277,6 @@ std::unique_ptr<StyleTransfer> stModel;
 
 
 void initialize_game(string inpath){
-
 
 	//This SSBO will hold the ST's output
 	dataOutSSBO = new float[bufferSize]();
@@ -382,6 +374,9 @@ int step_game(float timestep){
 	static float rotation = 0.0;
 	ImGui::SliderFloat("rotation", &rotation, 0, 2 * 3);
 	ImGui::End();*/
+
+	playerViewMat = computeMatricesFromInputs();
+	viewptr = value_ptr(playerViewMat);	
 	
 	mainSimu -> stepSimu(timestep);
 	mainSimu -> getModelMats();
@@ -429,10 +424,7 @@ int step_game(float timestep){
 
 	skybox_shader -> setView(viewptr);
 	cube -> draw(skybox_shader -> progID);
-
-	playerViewMat = computeMatricesFromInputs();
-	viewptr = value_ptr(playerViewMat);	
-
+	
 	populateInputSSBO(tex2SSBO.get(), textureTarget -> getTexture());
 	
 	if (toggleNetwork)
@@ -482,9 +474,6 @@ void destroy_game(){
 	ImGui::DestroyContext();
 	*/
 	
-	glfwDestroyWindow(window);
-	glfwTerminate();
-
 	delete px_samples;
 	
 	glDeleteBuffers(1,&ssboOut);
@@ -492,6 +481,11 @@ void destroy_game(){
 
 	delete[] dataOutSSBO;
 	delete[] dataInSSBO;
+
+
+
+	glfwDestroyWindow(window);
+	glfwTerminate();
 }
 
 
@@ -499,12 +493,15 @@ void destroy_game(){
 
 int main(int argc, char **argv){
 
-	string inpath = string(argv[1]);
+	COUT("GAME LAUNCH")
 
-	if (argc < 2)
+	std::string inpath = "/home/will/projects/cpprtx/";// string(argv[1]);
+
+	/*if (argc < 2)
 		COUT("Please provide absolute path to project dir (will fix soon)")
 		return -1;
-	
+	*/
+
 	initialize_window();
 	initialize_game(inpath);
 
@@ -525,6 +522,7 @@ int main(int argc, char **argv){
 	}
 
 	destroy_game();
+	
 
 	return 1;
 }
