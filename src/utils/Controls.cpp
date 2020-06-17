@@ -50,16 +50,16 @@ mat4 computeMatricesFromInputs(){
 	vec3 up = -1.0f * glm::cross(right, direction); //lol
 
 	//Forward
-	if (glfwGetKey( window, GLFW_KEY_UP ) == GLFW_PRESS)
+	if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
 		position += direction * deltaTime * speed;
 	//Backward
-	if (glfwGetKey( window, GLFW_KEY_DOWN ) == GLFW_PRESS)
+	if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
 		position -= direction * deltaTime * speed;
 	//Right
-	if (glfwGetKey( window, GLFW_KEY_RIGHT ) == GLFW_PRESS)
+	if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
 		position += right * deltaTime * speed;
 	//Left
-	if (glfwGetKey( window, GLFW_KEY_LEFT ) == GLFW_PRESS)
+	if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
 		position -= right * deltaTime * speed;
 
 	lastTime = currentTime;
