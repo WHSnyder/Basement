@@ -60,7 +60,7 @@ StyleTransfer::StyleTransfer() {
         std::cout << "Error with transfer interpreter" << std::endl;
     
     // NEW: Prepare GPU delegate.
-    delegate = TFLGpuDelegateCreate(/*default options=*/nullptr);
+    delegate = TFLGpuDelegateCreate(nullptr);
     if (style_interpreter_ -> ModifyGraphWithDelegate(delegate) != kTfLiteOk){
         std::cout << "BIG FAIL" << std::endl;  
     } 
