@@ -72,8 +72,6 @@ int StyleTransfer::execute(){
 }
 
 
-
-
 /*
  * This will run the inference on both, so that we can get the transformed image.
  *
@@ -183,8 +181,7 @@ void StyleTransfer::setStyle(int styleVal) {
 
     styleMat.convertTo(styleMat, CV_32FC3, 1.f/255.0f);
 
-    std::string inputName = "style_image";
-    auto inputIndex = fromNameToIndex(inputName, true, true);
+    auto inputIndex = fromNameToIndex("style_image", true, true);
 
     style_interpreter_ -> AllocateTensors();
 

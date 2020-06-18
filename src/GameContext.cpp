@@ -9,13 +9,13 @@
 */
 
 #include <GL/glew.h>
-
 #include <stdlib.h>
 #include <string>
 #include <chrono>
 #include <iostream>
 #include <vector>
 #include <memory>
+#include <time.h>
 
 #include <sys/types.h>
 #include <unistd.h>
@@ -48,12 +48,13 @@
 
 using namespace std;
 
-GLuint ssboOut = 0, ssboIn = 0;
-float totalTime = 0;
+GLuint ssboOut, ssboIn;
+float totalTime;
+int startTime;
 
 string basepath;
-int inputbreak = 0;
-int toggleNetwork = 0;
+int inputbreak;
+int toggleNetwork;
 
 
 const char *glsl_version = "#version 450";
@@ -79,8 +80,8 @@ void coutVec4(vec4 v){
 }
 
 float *generate_terrain(int dim, double freq, float height_mult, int32_t *physx_samples){
-
-	const siv::PerlinNoise perlin(61881);
+	COUT(startTime)
+	const siv::PerlinNoise perlin((float)startTime);
 	
 	float *result = (float *) calloc(dim * dim, sizeof(float));
 
@@ -248,7 +249,7 @@ int32_t *px_samples = (int32_t *) calloc(dim * dim, sizeof(int32_t));
 vec3 terrain_mult = 3.0f * vec3(10.0f, 5.0f, 10.0f);
 
 //Texture data
-float *img_data = generate_terrain(dim, freq, terrain_mult.y, px_samples);
+float *img_data;// = generate_terrain(dim, freq, terrain_mult.y, px_samples);
 
 float sphereMat[16] = {}, boxMat[16] = {}; 
 
@@ -446,7 +447,7 @@ int step_game(float timestep){
 		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, ssboOut);
 		plane -> draw(plane_shader -> progID);
 	} else {
-		//Just render whatever we sent to the network
+		//Render whatever we sent to the network
 		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, ssboIn);
 		plane -> draw(plane_shader -> progID);
 	}
@@ -459,20 +460,19 @@ int step_game(float timestep){
 	glfwPollEvents();
 
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE ) == GLFW_PRESS || glfwWindowShouldClose(window) != 0)
-		inputbreak = 1;
-
-	if (inputbreak)
 		return -1;
 	return 0;
 }
 
 
 void destroy_game(){
+	
 	/*
 	ImGui_ImplOpenGL3_Shutdown();
 	ImGui_ImplGlfw_Shutdown();
 	ImGui::DestroyContext();
 	*/
+	mainSimu.reset();
 	
 	delete px_samples;
 	
@@ -481,8 +481,6 @@ void destroy_game(){
 
 	delete[] dataOutSSBO;
 	delete[] dataInSSBO;
-
-
 
 	glfwDestroyWindow(window);
 	glfwTerminate();
@@ -495,40 +493,48 @@ int main(int argc, char **argv){
 
 	COUT("GAME LAUNCH")
 
-	std::string inpath = "/home/will/projects/cpprtx/";// string(argv[1]);
-
-	/*if (argc < 2)
-		COUT("Please provide absolute path to project dir (will fix soon)")
-		return -1;
-	*/
+#if __linux__
+	std::string inpath = "/home/will/projects/cpprtx/";
+#elif __APPLE__
+	std::string inpath = "/Users/will/projects/cpprtx/";
+#endif
 
 	initialize_window();
-	initialize_game(inpath);
+
+	auto p0 = std::chrono::time_point<std::chrono::system_clock>{};
+	//auto epoch_time = std::chrono::system_clock::to_time_t(p0);
 
 	auto t_last = std::chrono::high_resolution_clock::now();
+	
+	srand(time(NULL));
+    startTime = rand() % 100000000 + 1; 
+	img_data = generate_terrain(dim, freq, terrain_mult.y, px_samples);
+
+	initialize_game(inpath);
+
+
 	auto t_now = t_last;
-	float curtime = std::chrono::duration_cast<std::chrono::duration<float>>(t_now - t_last).count();
+	float timeStep;
 
 	while (1){
 
 		t_now = std::chrono::high_resolution_clock::now();
-		curtime = std::chrono::duration_cast<std::chrono::duration<float>>(t_now - t_last).count();
+		timeStep = std::chrono::duration_cast<std::chrono::duration<float>>(t_now - t_last).count();
 		t_last = t_now;
 
-		step_game(curtime);
+		step_game(timeStep);
 
 		if (glfwGetKey(window, GLFW_KEY_ESCAPE ) == GLFW_PRESS || glfwWindowShouldClose(window) != 0)
 			break;
 	}
 
 	destroy_game();
-	
 
 	return 1;
 }
+
 #else
-PYBIND11_MODULE(GameContext, m) {
-    
+PYBIND11_MODULE(GameContext, m) { 
     m.doc() = "Full game loop";
     m.def("run_model", &run_model, "Run CPP test for TF");
     m.def("init_window", &initialize_window, "Initialize imgui, windows, etc");
