@@ -16,3 +16,5 @@ imgui.ini
 **/assets/heavy_meshes/
 assets/heavy_meshes
 assets/heavy_meshes/*
+nvcompatlog.txt
+build/nvcompatlog.txt
