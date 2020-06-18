@@ -7,3 +7,14 @@ rm -rf /private/var/tmp/_bazel_will/*
 cmake .. -DGLPATH="/System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries/" -DBINDPY=ON
 
 cmake .. -DGLPATH="/usr/lib/x86_64-linux-gnu/" -DBINDPY=ON 
+
+
+
+TFL Notes
+
+-Compilation
+1 to 1 mapping from op to GL kernel?  So limiting... I must be misreading the compiler code?  Parallel reduction in GL compute shaders for the mean op alone is absolutely essential and requires more than one kernel.
+
+
+TFL Questions
+- Where exactly 

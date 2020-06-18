@@ -3,22 +3,10 @@ import tensorflow as tf
 
 
 
-#deleg = tf.lite.experimental.load_delegate("/Users/will/projects/cpprtx/libs/tf_gl/bazel-bin/tensorflow/lite/delegates/gpu/tensorflow_lite_gpu_dylib.dylib")
+interpreter = tf.lite.Interpreter("/home/will/projects/cpprtx/libs/tf_models/magenta_models/arb_style_transform.tflite")#, experimental_delegates=[deleg])
+#interpreter.allocate_tensors()
 
-interpreter = tf.lite.Interpreter("/Users/will/projects/cpprtx/libs/tf_models/test_tfconv.tflite")#, experimental_delegates=[deleg])
-interpreter.allocate_tensors()
+tensors = interpreter.get_tensor_details()
 
-
-
-
-#inp = interpreter.tensor(interpreter.get_input_details()[0]["index"])
-#print(inp)
-#output = interpreter.tensor(interpreter.get_output_details()[0]["index"])
-
-for i in range(100):
-	
-#	inp().fill(i)
-#	interpreter.invoke()
-#	print("Inference %s" % output())
-
-
+for i,tensor in enumerate(tensors):
+	print(str(i) + "\n" + str(tensor) + "\n")

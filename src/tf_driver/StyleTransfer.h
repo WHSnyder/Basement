@@ -51,10 +51,10 @@ private:
 
     int fromNameToIndex(std::string stdName, bool isInput, bool isStylePredict) const;
 
-    std::unique_ptr<::tflite::FlatBufferModel> style_predict_model_;
-    std::unique_ptr<::tflite::FlatBufferModel> transfer_model_;
-    std::unique_ptr<::tflite::Interpreter> style_interpreter_;
-    std::unique_ptr<::tflite::Interpreter> transfer_interpreter_;
+    std::unique_ptr<::tflite::FlatBufferModel> predictorModel;
+    std::unique_ptr<::tflite::FlatBufferModel> transfererModel;
+    std::unique_ptr<::tflite::Interpreter> styleInterpreter;
+    std::unique_ptr<::tflite::Interpreter> transferInterpreter;
 
     TfLiteDelegate *delegate;
 };
