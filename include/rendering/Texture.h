@@ -23,6 +23,7 @@ class Texture {
 
 	public:
 
+		Texture(int width, int height);
 		Texture(float *data, int width, int height, int color);
 		Texture(std::string filepath, int cubemap, std::string extension = std::string(".jpg"));
 

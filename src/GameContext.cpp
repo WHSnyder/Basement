@@ -43,14 +43,50 @@
 #include <GLFW/glfw3.h>
 //#include <GLFW/glfw3native.h>
 
-#define SP(mytype) std::shared_ptr()
+
+GLuint64 startTime, stopTime;
+unsigned int queryID[2];    
+std::unique_ptr<Texture> outputTexture;  
+
+
+void setTimer(){
+	
+	glGenQueries(2, queryID);
+	glQueryCounter(queryID[0], GL_TIMESTAMP);
+}
+
+
+GLuint64 getTimer(int block){
+
+	glQueryCounter(queryID[1], GL_TIMESTAMP);
+
+	GLuint64 stopTimerAvailable = 0;
+	int tc = 0;
+	while (!stopTimerAvailable && block) {
+	  glGetQueryObjectui64v(queryID[1], GL_QUERY_RESULT_AVAILABLE, &stopTimerAvailable);
+	  tc++;
+	}
+
+	glGetQueryObjectui64v(queryID[0], GL_QUERY_RESULT, &startTime);
+	glGetQueryObjectui64v(queryID[1], GL_QUERY_RESULT, &stopTime);
+
+	return stopTime - startTime;
+}
+
+
+
+	
+
+	
+
+
 
 
 using namespace std;
 
 GLuint ssboOut, ssboIn;
 float totalTime;
-int startTime;
+int terrainSeed;
 
 string basepath;
 int inputbreak;
@@ -80,8 +116,8 @@ void coutVec4(vec4 v){
 }
 
 float *generate_terrain(int dim, double freq, float height_mult, int32_t *physx_samples){
-	COUT(startTime)
-	const siv::PerlinNoise perlin((float)startTime);
+
+	const siv::PerlinNoise perlin((float)terrainSeed);
 	
 	float *result = (float *) calloc(dim * dim, sizeof(float));
 
@@ -96,7 +132,7 @@ float *generate_terrain(int dim, double freq, float height_mult, int32_t *physx_
 			if (i == 0 || i == dim - 1) per = 0.0; 
 			if (j == 0 || j == dim - 1) per = 0.0;
 			
-			//Texture be flipped for opengl <-> physx correspondence
+			//Texture flipped for opengl <-> physx correspondence
 			result[j * dim + i] = per; 
 
 			//Increase range of samples, then set scale factor in HF constructor to compensate for 16 bit limitation
@@ -169,6 +205,16 @@ void populateInputSSBO(Shader *tex2ssbo, GLuint texID){
 }
 
 
+void populateOutputTex(Shader *ssbo2tex, GLuint ssbo){
+
+	glUseProgram(ssbo2tex -> progID); 
+	glBindImageTexture(0, outputTexture -> getID(), 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA32F);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, ssbo);
+	glDispatchCompute(24, 24, 1);    
+ 	glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT | GL_SHADER_IMAGE_ACCESS_BARRIER_BIT | GL_TEXTURE_FETCH_BARRIER_BIT);
+}
+
+
 
 float timeratio;
 int width, height;
@@ -183,7 +229,7 @@ int initialize_window(){
 		return -1;
 	}
 
-	glfwWindowHint(GLFW_SAMPLES, 4);
+	glfwWindowHint(GLFW_SAMPLES, 16);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
 	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE); // To make MacOS happy; should not be needed
@@ -240,7 +286,7 @@ std::unique_ptr<RenderTarget> shadowTarget, textureTarget;
 std::unique_ptr<Simu> mainSimu;
 std::unique_ptr<Mesh> cube, sphere, terrain_plane, plane;
 std::unique_ptr<Texture> noise_tex, grass_tex, skybox, scream;
-std::unique_ptr<Shader> shadow_shader, terrain_shader, basic_shader, skybox_shader, plane_shader, tex2SSBO;
+std::unique_ptr<Shader> shadow_shader, terrain_shader, basic_shader, skybox_shader, plane_shader, tex2SSBO, SSBO2tex;
 
 //Perlin noise params
 int dim = 64;
@@ -270,7 +316,7 @@ float *t1p = value_ptr(t1), *t2p = value_ptr(t2), *t3p = value_ptr(t3), *t4p = v
 
 float *viewptr = value_ptr(playerViewMat), *projptr = value_ptr(proj1);
 
-int bufferSize = 400 * 400 * 3;
+int bufferSize = 600 * 600 * 3;
 float *dataOutSSBO, *dataInSSBO;
 
 std::unique_ptr<StyleTransfer> stModel;
@@ -278,6 +324,8 @@ std::unique_ptr<StyleTransfer> stModel;
 
 
 void initialize_game(string inpath){
+
+	img_data = generate_terrain(dim, freq, terrain_mult.y, px_samples);
 
 	//This SSBO will hold the ST's output
 	dataOutSSBO = new float[bufferSize]();
@@ -320,6 +368,8 @@ void initialize_game(string inpath){
 	shadowTarget = make_unique<RenderTarget>(1024,1024,1);
 	//textureTarget = new RenderTarget(200,200,0);
 
+	outputTexture = make_unique<Texture>(384,384);
+	COUT("Made output texture")
 	noise_tex = make_unique<Texture>(img_data, dim, dim, 0);
     grass_tex = make_unique<Texture>(string("assets/images/grass.jpg"), 0);
     skybox = make_unique<Texture>(string("assets/images/yellowcloud"), 1);
@@ -334,7 +384,7 @@ void initialize_game(string inpath){
 	tex2SSBO = make_unique<Shader>("assets/shaders/texRGB_2_ssbo",1);
 	
 	//Replaced by modified plane shader that covers screen
-	//SSBO2tex = make_unique<Shader>("assets/shaders/ssbo_2_texRGB",1);
+	SSBO2tex = make_unique<Shader>("assets/shaders/ssbo_2_texRGB",1);
 
 	mainSimu -> addTerrain(px_samples, dim, terrain_mult);
 	mainSimu -> addSphere(vec3(-4,23,-4), 1.0f, 1, reinterpret_cast<void *>(sphereMat));
@@ -385,6 +435,8 @@ int step_game(float timestep){
 	rot = rotate(rot, timestep * glm::radians(20.0f), vec3(0.0f,1.0f,0.0f));
 	testmat = trans * rot;
 
+	setTimer();
+
 	shadowTarget -> set();
 
 	shadow_shader -> setModel(sphereMat);
@@ -393,7 +445,6 @@ int step_game(float timestep){
 	cube -> draw(shadow_shader -> progID);
 
 	textureTarget -> set();
-	glCheckError();
 
 	terrain_shader -> setView(viewptr);
 	terrain_plane -> draw(terrain_shader -> progID);
@@ -428,21 +479,27 @@ int step_game(float timestep){
 	
 	populateInputSSBO(tex2SSBO.get(), textureTarget -> getTexture());
 	
-	if (toggleNetwork)
+	if (toggleNetwork){
 		stModel -> execute();
+		populateOutputTex(SSBO2tex.get(), ssboOut);
+	} else {
+		populateOutputTex(SSBO2tex.get(), ssboIn);
+	}
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glViewport(0, 0, width, height);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glCheckError(); 
 
 	plane_shader -> setModel(value_ptr(iden));
 	plane_shader -> setView(value_ptr(iden));
 	plane_shader -> setProj(value_ptr(iden));
 
 	glUseProgram(plane_shader -> progID);
+	plane_shader -> setImageTexture(outputTexture -> getID(),0,5);
+	plane -> draw(plane_shader -> progID);
+	glCheckError();
 
-	if (toggleNetwork){
+	/*if (toggleNetwork){
 		//Set FS quad up
 		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, ssboOut);
 		plane -> draw(plane_shader -> progID);
@@ -450,11 +507,14 @@ int step_game(float timestep){
 		//Render whatever we sent to the network
 		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, ssboIn);
 		plane -> draw(plane_shader -> progID);
-	}
+	}*/
+
 	/*ImGui::Render();
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
 	showFPS(window);*/
+
+	printf("GPU FPS: %lu\n", 1000 / (getTimer(1) / 1000000));
 
 	glfwSwapBuffers(window);
 	glfwPollEvents();
@@ -507,7 +567,7 @@ int main(int argc, char **argv){
 	auto t_last = std::chrono::high_resolution_clock::now();
 	
 	srand(time(NULL));
-    startTime = rand() % 100000000 + 1; 
+    terrainSeed = rand() % 100000000 + 1; 
 	img_data = generate_terrain(dim, freq, terrain_mult.y, px_samples);
 
 	initialize_game(inpath);

@@ -1,13 +1,10 @@
-import time, sys, os, setproctitle
-
-setproctitle.setproctitle('st_basement_test')
-
+import time, sys, os
 
 
 sys.path.insert(0,"/home/will/projects/cpprtx/build/")
-#os.chdir("/home/will/projects/cpprtx/libs/tf_gl/")
+os.chdir("/home/will/projects/cpprtx/libs/tf_gl/")
 from GameContext import *
-#os.chdir("/home/will/projects/cpprtx/")
+os.chdir("/home/will/projects/cpprtx/")
 
 init_window()
 #run_model()
@@ -36,6 +33,6 @@ while True:
 	frames += 1
 
 os.system('nvidia-smi')
-print("FPS aggregate: " + str(frames / (timecur - timestart)))
+print("CPU FPS: " + str(frames / (timecur - timestart)))
 
 destroy_game()

@@ -15,6 +15,11 @@ void main() {
 	vec3 pixel = texelFetch(imageTex, gid, 0).xyz;
 
 	int linear_index = 3 * (gid.y * dim + gid.x);
+
+	if (linear_index >= 3 * 600 * 600){
+		return;
+	}
+
 	output_data.elements[linear_index + 0] = pixel.r;
 	output_data.elements[linear_index + 1] = pixel.g;
 	output_data.elements[linear_index + 2] = pixel.b;

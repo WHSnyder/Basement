@@ -72,7 +72,7 @@ GLuint loadCubemap(string basepath, string extension){
 }
 
 
-GLuint bindTexture(int color, int rows, int cols, void *data){
+GLuint bindTexture(int color, int rows, int cols, void *data, int mips=4){
 
 	GLuint tex;
 
@@ -86,8 +86,7 @@ GLuint bindTexture(int color, int rows, int cols, void *data){
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
-    glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA32F, cols, rows);
-    glCheckError();
+    glTexStorage2D(GL_TEXTURE_2D, mips, GL_RGBA32F, cols, rows);
 
     /*glTexImage2D(GL_TEXTURE_2D,     // tex type
                 0,                 // 0 mipmap level = top level
@@ -99,22 +98,28 @@ GLuint bindTexture(int color, int rows, int cols, void *data){
                 color ? GL_UNSIGNED_BYTE : GL_FLOAT,  //If color, were using opencv image, else, perlin map
                 data); 
     */
+    if (data != nullptr){
+        glTexSubImage2D(GL_TEXTURE_2D,     // tex type
+                    0,                 // 0 mipmap level = top level
+                    0,
+                    0,          
+                    cols,
+                    rows,
+                    color ? GL_RGB : GL_RED, // Single channel for perlin map, rgb for opencv
+                    color ? GL_UNSIGNED_BYTE : GL_FLOAT,  //If color, were using opencv image, else, perlin map
+                    data); 
+    }
 
-    glTexSubImage2D(GL_TEXTURE_2D,     // tex type
-                0,                 // 0 mipmap level = top level
-                0,
-                0,          
-                cols,
-                rows,
-                color ? GL_RGB : GL_RED, // Single channel for perlin map, rgb for opencv
-                color ? GL_UNSIGNED_BYTE : GL_FLOAT,  //If color, were using opencv image, else, perlin map
-                data); 
-    
-
-    glCheckError();
     glGenerateMipmap(GL_TEXTURE_2D);
-    glCheckError();
     return tex;
+}
+
+
+
+Texture::Texture(int width, int height){
+    
+    rows = height, cols = width;
+    texID = bindTexture(1, rows, cols, nullptr, 1);
 }
 
 
@@ -133,10 +138,10 @@ Texture::Texture(string filepath, int cubemap, std::string extension){
     if (!cubemap){
         
         cv::Mat img = imread(filepath, cv::IMREAD_COLOR);
-        cv::resize(img, img, cv::Size(384,384), 0, 0, cv::INTER_LINEAR);
+        cv::resize(img, img, cv::Size(600,600), 0, 0, cv::INTER_LINEAR);
         //cv::cvtColor(img,img,)
 
-        rows = 384, cols = rows;
+        rows = 600, cols = rows;
 
         data = malloc(3 * rows * cols);
 

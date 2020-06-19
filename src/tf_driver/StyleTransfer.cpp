@@ -19,7 +19,7 @@
 
 std::string MODEL_PATH = "/home/will/projects/cpprtx/libs/tf_models/magenta_models/";
 std::string APP_PATH = "/home/will/Desktop/";
-std::string ZION = APP_PATH + "grad.jpg";
+std::string GRAD = APP_PATH + "grad.jpg";
 std::string INPUT_IMAGE = APP_PATH + "gate.jpg";
 std::string predictorPath = MODEL_PATH + "arb_style_predict.tflite";
 std::string transfererPath = MODEL_PATH + "arb_style_transform.tflite";
@@ -43,18 +43,25 @@ StyleTransfer::StyleTransfer(unsigned int outputSSBO, unsigned int inputSSBO) {
     transfererModel = ::tflite::FlatBufferModel::BuildFromFile(transfererPath.c_str());
     ::tflite::ops::builtin::BuiltinOpResolver resolver;
     ::tflite::InterpreterBuilder style_builder(*predictorModel, resolver);
-    ::tflite::InterpreterBuilder transform_builder(*transfererModet, resolver);
+    ::tflite::InterpreterBuilder transform_builder(*transfererModel, resolver);
 
     if (style_builder(&styleInterpreter) != kTfLiteOk)
         COUT("Error with style interpreter")
     
     if (transform_builder(&transferInterpreter) != kTfLiteOk)
         COUT("Error with transfer interpreter")
+
+    std::vector<int> dims{1,600,600,3};
+    //transferInterpreter -> ResetVariableTensors();
+    //transferInterpreter -> ResizeInputTensor(0,dims);
+    //transferInterpreter -> ResetVariableTensors();
     
     delegate = TfLiteGpuDelegateCreate(nullptr);
      
     if (outputSSBO != 10000){
     	int outputIndex = fromNameToIndex("transformer/expand/conv3/conv/Sigmoid", false, false);
+        COUT("Output index:")
+        COUT(outputIndex)
     	TfLiteGpuDelegateBindBufferToTensor(delegate, outputSSBO, outputIndex);
     	int contentImageIndex = fromNameToIndex("content_image", true, false);
     	TfLiteGpuDelegateBindBufferToTensor(delegate, inputSSBO, contentImageIndex);
@@ -70,6 +77,8 @@ int StyleTransfer::execute(){
 }
 
 
+//Predicts the style vector from the current style image,
+//sets the transfer model's style vector tensor.
 int StyleTransfer::prime() {
 
     COUT("Getting rendered style")
@@ -182,13 +191,11 @@ void StyleTransfer::setStyle(int styleVal) {
     memcpy((void *) tensorBuffer, (void *) styleMat.data, tensorSize);
 
     if(styleInterpreter->Invoke() != kTfLiteOk) {
-        
         COUT("Failed to set style");
         std::vector<float> emptyVec;
         styleEncoding = emptyVec;
     } 
     else {
-
         auto outputIndex = fromNameToIndex("mobilenet_conv/Conv/BiasAdd", false, true);
 
         // First element in the output shape is the batch size.
@@ -249,7 +256,7 @@ cv::Mat StyleTransfer::preProcessImage(cv::Mat input) {
 
     cv::Mat resizedImage;
     cv::Size imageSize(384, 384);
-    cv::resize(input, resizedImage, imageSize);
+    cv::resize(input, resizedImage, imageSize); //Why oh why can you not resize in place with OpenCV...
 
     resizedImage.convertTo(resizedImage, CV_32F, 1.0f/255.0f);
 
