@@ -77,8 +77,6 @@ GLuint64 getTimer(int block){
 
 	
 
-	
-
 
 
 
@@ -288,6 +286,12 @@ std::unique_ptr<Mesh> cube, sphere, terrain_plane, plane;
 std::unique_ptr<Texture> noise_tex, grass_tex, skybox, scream;
 std::unique_ptr<Shader> shadow_shader, terrain_shader, basic_shader, skybox_shader, plane_shader, tex2SSBO, SSBO2tex;
 
+//Clouds
+std::unique_ptr<Texture> clouds3D;
+std::unique_ptr<Shader> perlinWorely, worely, volumetric_clouds;
+
+
+
 //Perlin noise params
 int dim = 64;
 double freq = 3.0;
@@ -374,6 +378,12 @@ void initialize_game(string inpath){
     grass_tex = make_unique<Texture>(string("assets/images/grass.jpg"), 0);
     skybox = make_unique<Texture>(string("assets/images/yellowcloud"), 1);
     scream = make_unique<Texture>(string("assets/images/scream.jpg"), 0);
+    
+    //Clouds
+    clouds3D = make_unique<Texture>(128,128,128);
+    perlinWorely = make_unique<Shader>("assets/shaders/perlin_worely",1);
+    worely = make_unique<Shader>("assets/shaders/worely",1);
+    volumetric_clouds = make_unique<Shader>("assets/shaders/volumetric_clouds",1);
     //Texture skybox = Texture(string("/Users/will/projects/TombVoyage/Assets/SpaceSkiesFree/Skybox_2/Textures/1K_Resolution/1K_TEX"), 1);
 
     shadow_shader = make_unique<Shader>("assets/shaders/shadow"); 
@@ -531,9 +541,7 @@ void destroy_game(){
 	ImGui_ImplOpenGL3_Shutdown();
 	ImGui_ImplGlfw_Shutdown();
 	ImGui::DestroyContext();
-	*/
-	mainSimu.reset();
-	
+	*/	
 	delete px_samples;
 	
 	glDeleteBuffers(1,&ssboOut);
@@ -589,7 +597,7 @@ int main(int argc, char **argv){
 	}
 
 	destroy_game();
-
+	exit(0);
 	return 1;
 }
 

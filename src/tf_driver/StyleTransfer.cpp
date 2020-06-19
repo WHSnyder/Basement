@@ -51,13 +51,12 @@ StyleTransfer::StyleTransfer(unsigned int outputSSBO, unsigned int inputSSBO) {
     if (transform_builder(&transferInterpreter) != kTfLiteOk)
         COUT("Error with transfer interpreter")
 
-    std::vector<int> dims{1,600,600,3};
-    //transferInterpreter -> ResetVariableTensors();
-    //transferInterpreter -> ResizeInputTensor(0,dims);
-    //transferInterpreter -> ResetVariableTensors();
-    
+#ifndef TFLV2
     delegate = TfLiteGpuDelegateCreate(nullptr);
-     
+#else
+    delegate = TfLiteGpuDelegateV2Create(nullptr);
+#endif
+
     if (outputSSBO != 10000){
     	int outputIndex = fromNameToIndex("transformer/expand/conv3/conv/Sigmoid", false, false);
         COUT("Output index:")
@@ -247,7 +246,11 @@ StyleTransfer::~StyleTransfer() {
 	COUT("Destroying style transferer")
 
 #if __linux__
+    #ifndef TFLV2
     TfLiteGpuDelegateDelete(delegate);
+    #else
+    TfLiteGpuDelegateV2Delete(delegate);
+    #endif
 #endif
 }
 

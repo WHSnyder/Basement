@@ -15,7 +15,6 @@ standardized names in GLSL so other classes dont have to reference them by strin
 name. 
 */
 
-
 class Shader {
 
 	private:
@@ -43,6 +42,7 @@ class Shader {
 		int setDataTexture(GLuint tID, GLuint slot);
 		int setImageTexture(GLuint tID, int cubemap, int unit);
 		int setShadowTexture(GLuint tID);
+		int setTexture(GLuint texID, std::string texName, int unit);
 
 		void printUniforms();
 		void getUniforms(std::vector<std::string>& names, std::vector<GLenum>& types, int filter=1);

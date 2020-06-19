@@ -13,9 +13,19 @@ extern GLenum glCheckError_(const char *file, int line);
 #define glCheckError() glCheckError_(__FILE__, __LINE__) 
 
 
+GLenum texEnums[] = {GL_TEXTURE_2D, GL_TEXTURE_CUBE_MAP, GL_TEXTURE_3D};
+
+/*
+void Shader::Dispatch(int w, int l, int d, int barrier){
+	glUseProgram(progID);
+	glDispatchCompute(w,l,d);
+}
+*/
+
+
 int compile_shader(GLenum shaderType, string shaderCode){
 	
-	unsigned int shader;
+	GLuint shader;
 	int success;
 	char infoLog[512];
 	const char *contents = shaderCode.c_str();
@@ -55,7 +65,7 @@ GLuint build_compute_program(string shader_path){
 
 GLuint build_program(string shader_path){
 
-	std::cout << "Building raster program " << shader_path << std::endl;
+	COUT(string("Building raster program ") + shader_path)
  
 	GLuint v_id,f_id, prog_id;
 
@@ -94,7 +104,7 @@ Shader::Shader(string shader_path, int buildCompute){
 
 	glUseProgram(progID); 
 
-	//Most will throw ignorable errors.
+	//For engine special vars, before I knew about glGetActiveUniform
 	data_texture = glGetUniformLocation(progID, "dataTex");
 	image_texture = glGetUniformLocation(progID, "imageTex");
 	proj_loc = glGetUniformLocation(progID, "p");
@@ -102,6 +112,25 @@ Shader::Shader(string shader_path, int buildCompute){
 	model_loc = glGetUniformLocation(progID, "m");
 	col_loc = glGetUniformLocation(progID, "color");
 	shadow_texture = glGetUniformLocation(progID, "shadowTex");
+}
+
+
+int Shader::setTexture(GLuint texID, string texName, int unit){
+	
+	GLuint tempID = glGetUniformLocation(progID, texName.c_str());
+	GLenum texType;
+	GLsizei uniSize;
+
+	glGetActiveUniform(progID, tempID, 0, 0, &uniSize, &texType, NULL);
+
+	glUseProgram(progID);
+	glUniform1i(tempID, unit);
+    glActiveTexture(GL_TEXTURE0 + unit); //The nuance of these calls is still hazy from memory...
+	glBindTexture(texType, texID);
+	
+	glCheckError();
+
+    return 0;
 }
 
 

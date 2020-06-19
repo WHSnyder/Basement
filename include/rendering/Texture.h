@@ -23,6 +23,7 @@ class Texture {
 
 	public:
 
+		Texture(int w, int h, int d);
 		Texture(int width, int height);
 		Texture(float *data, int width, int height, int color);
 		Texture(std::string filepath, int cubemap, std::string extension = std::string(".jpg"));
@@ -36,7 +37,8 @@ class Texture {
 		}
 
 		~Texture(){
-			delete data;
+			if (data != nullptr)
+				delete data; 
 			glDeleteTextures(1,&texID);
 		}
 };
