@@ -23,7 +23,7 @@ public:
 	~Clouds();
 
 	void update();
-	void draw();
+	void draw(unsigned int fboTex);
 
 	std::unique_ptr<Shader> cloudsShader, perlinWorelyShader, worelyShader;//, *weatherShader;
 	//ScreenSpaceShader *postProcessingShader;
@@ -40,11 +40,13 @@ public:
 	//sceneElements *scene;
 	//Skybox *sky;
 
-	void generateWeatherMap();
+private:
+
+	//void generateWeatherMap();
 	void generateModelTextures();
 	void initVariables();
 	void initShaders();
-	void generateWeatherMap();
+	//void generateWeatherMap();
 
 	enum cloudsTextureNames {fragColor, bloom, alphaness, cloudDistance};
 

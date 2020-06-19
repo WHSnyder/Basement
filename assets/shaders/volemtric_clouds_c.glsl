@@ -11,9 +11,11 @@
 layout(local_size_x = 16, local_size_y = 16, local_size_z = 1) in;
 
 layout(rgba32f, binding = 0) uniform image2D fragColor;
+/*
 layout(rgba32f, binding = 1) uniform image2D bloom;
 layout(rgba32f, binding = 2) uniform image2D alphaness;
 layout(rgba32f, binding = 3) uniform image2D cloudDistance;
+*/
 
 //uniform sampler2D sky;  CHANGE HERE
 
@@ -26,10 +28,12 @@ uniform mat4 inv_proj;
 //uniform mat4 invViewProj;
 
 uniform vec3 lightColor = vec3(1.0);
-uniform sampler3D cloud;
-uniform sampler3D worley32;
+uniform sampler3D perlinTex;
+uniform sampler3D worleyTex;
+/*
 uniform sampler2D weatherTex;
-uniform sampler2D depthMap;
+uniform sampler2D depthMap; 
+*/
 uniform vec3 lightDirection;
 
 uniform float coverage_multiplier = 0.4;
@@ -254,7 +258,7 @@ float sampleCloudDensity(vec3 p, bool expensive, float lod){
 		return 0.0;
 	}
 
-	vec4 low_frequency_noise = textureLod(cloud, vec3(uv*CLOUD_SCALE, heightFraction), lod);
+	vec4 low_frequency_noise = textureLod(perlinTex, vec3(uv*CLOUD_SCALE, heightFraction), lod);
 	float lowFreqFBM = dot(low_frequency_noise.gba, vec3(0.625, 0.25, 0.125));
 	float base_cloud = remap(low_frequency_noise.r, -(1.0 - lowFreqFBM), 1., 0.0 , 1.0);
 	
@@ -269,7 +273,7 @@ float sampleCloudDensity(vec3 p, bool expensive, float lod){
 	//bool expensive = true;
 	
 	if(expensive){
-		vec3 erodeCloudNoise = textureLod(worley32, vec3(moving_uv*CLOUD_SCALE, heightFraction)*curliness, lod).rgb;
+		vec3 erodeCloudNoise = textureLod(worleyTex, vec3(moving_uv*CLOUD_SCALE, heightFraction)*curliness, lod).rgb;
 		float highFreqFBM = dot(erodeCloudNoise.rgb, vec3(0.625, 0.25, 0.125));//(erodeCloudNoise.r * 0.625) + (erodeCloudNoise.g * 0.25) + (erodeCloudNoise.b * 0.125);
 		float highFreqNoiseModifier = mix(highFreqFBM, 1.0 - highFreqFBM, clamp(heightFraction * 10.0, 0.0, 1.0));
 
@@ -501,13 +505,15 @@ void main(){
 	bloom_v = vec4(getSun(worldDir, 128)*1.3,1.0);
 
 	if(fogAmount > 0.965){
-		fragColor_v = bg;
+		fragColor_v = vec4(.3,0.0,.3) + .05 * bg;
 		bloom_v = bg;
 		imageStore(fragColor, fragCoord, fragColor_v);
+		/*
 		imageStore(bloom, fragCoord, bloom_v);
 		imageStore(alphaness, fragCoord, vec4(0.0));
-		imageStore(cloudDistance, fragCoord, vec4(-1.0)); 
-		return; //early exit
+		imageStore(cloudDistance, fragCoord, vec4(-1.0));
+		*/
+		return; 
 	}
 
 	v = raymarchToCloud(startPos,endPos, bg.rgb, cloudDistance_v);
@@ -538,14 +544,16 @@ void main(){
 	if(cloudAlphaness > 0.1){ //apply fog to bloom buffer
 		float fogAmount = computeFogAmount(startPos, 0.00003);
 
-		vec3 cloud = mix(vec3(0.0), bloom_v.rgb, clamp(fogAmount,0.,1.));
-		bloom_v.rgb = bloom_v.rgb*(1.0 - cloudAlphaness) + cloud.rgb;
+		vec3 cloudL = mix(vec3(0.0), bloom_v.rgb, clamp(fogAmount,0.,1.));
+		bloom_v.rgb = bloom_v.rgb*(1.0 - cloudAlphaness) + cloudL.rgb;
 	}
 
 	fragColor_v.a = alphaness_v.r;
 
 	imageStore(fragColor, fragCoord, fragColor_v);
+	/*
 	imageStore(bloom, fragCoord, bloom_v);
 	imageStore(alphaness, fragCoord, alphaness_v);
 	imageStore(cloudDistance, fragCoord, cloudDistance_v);
+	*/
 }

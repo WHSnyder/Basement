@@ -30,6 +30,8 @@
 #include "rendering/RenderTarget.h"
 #include "tf_driver/StyleTransfer.h"
 
+#include "clouds/Clouds.h"
+
 #define COUT(x) std::cout << x << std::endl;
 
 
@@ -52,7 +54,6 @@ float CURTIME, TIMESTEP;
 glm::mat4 VIEWMAT, PROJMAT;
 glm::vec3 POSITION;
 int SCR_WIDTH, SCR_HEIGHT;
-
 
 
 
@@ -91,7 +92,6 @@ GLuint64 getTimer(int block){
 using namespace std;
 
 GLuint ssboOut, ssboIn;
-float totalTime;
 int terrainSeed;
 
 string basepath;
@@ -167,6 +167,7 @@ static void error_callback(int error, const char* description){
 	fputs(description, stderr);
 }
 
+
 static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods){
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
         glfwSetWindowShouldClose(window, GL_TRUE);
@@ -182,8 +183,7 @@ int nbFrames = 0;
 //From stackoverflow @https://gamedev.stackexchange.com/questions/133173/how-to-calculate-fps-in-glfw
 void showFPS(GLFWwindow *pWindow){
 
-	double currentTime = glfwGetTime();
-	double delta = currentTime - lastTime;
+	double delta = CURTIME - lastTime;
 	nbFrames++;
 	
 	if (delta >= 1.0){ // If last cout was more than 1 sec ago
@@ -196,7 +196,7 @@ void showFPS(GLFWwindow *pWindow){
 		glfwSetWindowTitle(pWindow, ss.str().c_str());
 
 		nbFrames = 0;
-		lastTime = currentTime;
+		lastTime = CURTIME;
 	}
 }
 
@@ -292,16 +292,17 @@ int initialize_window(){
 }
 
 
+
+
+
+
 std::unique_ptr<RenderTarget> shadowTarget, textureTarget;
 std::unique_ptr<Simu> mainSimu;
 std::unique_ptr<Mesh> cube, sphere, terrain_plane, plane;
 std::unique_ptr<Texture> noise_tex, grass_tex, skybox, scream;
 std::unique_ptr<Shader> shadow_shader, terrain_shader, basic_shader, skybox_shader, plane_shader, tex2SSBO, SSBO2tex;
 
-//Clouds
-std::unique_ptr<Texture> clouds3D;
-std::unique_ptr<Shader> perlinWorely, worely, volumetric_clouds;
-
+std::unique_ptr<Clouds> clouds;
 
 
 //Perlin noise params
@@ -339,6 +340,9 @@ std::unique_ptr<StyleTransfer> stModel;
 
 
 void initialize_game(string inpath){
+
+	clouds = make_unique<Clouds>(384,384);
+	glCheckError();
 
 	img_data = generate_terrain(dim, freq, terrain_mult.y, px_samples);
 
@@ -389,12 +393,6 @@ void initialize_game(string inpath){
     grass_tex = make_unique<Texture>(string("assets/images/grass.jpg"), 0);
     skybox = make_unique<Texture>(string("assets/images/yellowcloud"), 1);
     scream = make_unique<Texture>(string("assets/images/scream.jpg"), 0);
-    
-    //Clouds
-    clouds3D = make_unique<Texture>(128,128,128);
-    perlinWorely = make_unique<Shader>("assets/shaders/perlin_worely",1);
-    worely = make_unique<Shader>("assets/shaders/worely",1);
-    volumetric_clouds = make_unique<Shader>("assets/shaders/volumetric_clouds",1);
     //Texture skybox = Texture(string("/Users/will/projects/TombVoyage/Assets/SpaceSkiesFree/Skybox_2/Textures/1K_Resolution/1K_TEX"), 1);
 
     shadow_shader = make_unique<Shader>("assets/shaders/shadow"); 
@@ -436,7 +434,7 @@ void initialize_game(string inpath){
 //Run main game loop
 int step_game(float timestep){
 
-	totalTime += timestep;
+	CURTIME += timestep;
 
 	/*ImGui_ImplOpenGL3_NewFrame();
 	ImGui_ImplGlfw_NewFrame();

@@ -1,16 +1,26 @@
-#include "Clouds.h"
+#include "clouds/Clouds.h"
 
-#define TIMETO(CODE, TASK) 	t1 = glfwGetTime(); CODE; t2 = glfwGetTime(); std::cout << "Time to " + std::string(TASK) + " :" << (t2 - t1)*1e3 << "ms" << std::endl;
+#include <GL/glew.h>
+#include <GLFW/glfw3.h>
+
+
+//#define TIMETO(CODE, TASK) 	t1 = glfwGetTime(); CODE; t2 = glfwGetTime(); std::cout << "Time to " + std::string(TASK) + " :" << (t2 - t1)*1e3 << "ms" << std::endl;
 
 
 extern glm::vec3 POSITION;
-extern int SCR_WIDTH, SCR_HEIGHT;
+int SCR_WIDTH, SCR_HEIGHT;
+extern float CURTIME;
+
+extern GLenum glCheckError_(const char *file, int line);
+#define glCheckError() glCheckError_(__FILE__, __LINE__) 
 
 
 using namespace glm;
 
 
-CloudsModel::CloudsModel(sceneElements * scene, Skybox * sky) : scene(scene), sky(sky){
+Clouds::Clouds(int w, int h){
+	SCR_WIDTH = w;
+	SCR_HEIGHT = h;
 	initVariables();
 	initShaders();
 	generateModelTextures();
@@ -18,8 +28,13 @@ CloudsModel::CloudsModel(sceneElements * scene, Skybox * sky) : scene(scene), sk
 
 
 void CloudsModel::initShaders(){
-	cloudsShader = make_unique<Shader>("assets/shaders/volumetric_clouds",1);
 	
+	cloudsShader = make_unique<Shader>("assets/shaders/volumetric_clouds",1);
+	perlinWorelyShader = make_unique<Shader>("assets/shaders/perlin_worley",1);
+	worleyShader = make_unique<Shader>("assets/shaders/worley", 1);
+
+	glCheckError();
+
 	//postProcessingShader = new ScreenSpaceShader("shaders/clouds_post.frag");
 	//compute shaders
 	//weatherShader = new Shader("weatherMap");
@@ -30,7 +45,6 @@ void CloudsModel::initShaders(){
 
 void CloudsModel::generateModelTextures() {
 				
-	perlinWorelyShader = make_unique<Shader>("assets/shaders/perlin_worley",1);
 	perlinTex = make_unique<Texture>(128, 128, 128);
 	
 	//perlinWorelyShader -> setVec3("u_resolution", vec3(128, 128, 128));
@@ -42,12 +56,14 @@ void CloudsModel::generateModelTextures() {
   	glBindImageTexture(0, perlinTex -> getID(), 0, GL_TRUE, 0, GL_READ_WRITE, GL_RGBA8);
 	glDispatchCompute(INT_CEIL(128, 4), INT_CEIL(128, 4), INT_CEIL(128, 4));
 	glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
+
+	glCheckError();
 	
 	COUT("Computed worely")
 	glGenerateMipmap(GL_TEXTURE_3D);
 
 	
-	worleyShader = make_unique<Shader>("assets/shaders/worley", 1);
+
 	worleyTex = make_unique<Texture>(32, 32, 32);
 	
 	glUseProgram(worleyShader -> progID);
@@ -56,6 +72,8 @@ void CloudsModel::generateModelTextures() {
   	glBindImageTexture(0, worleyTex -> getID(), 0, GL_TRUE, 0, GL_READ_WRITE, GL_RGBA8);
 	glDispatchCompute(INT_CEIL(32, 4), INT_CEIL(32, 4), INT_CEIL(32, 4));
 	glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
+
+	glCheckError();
 
 	COUT("Wrote worely noise")
 	glGenerateMipmap(GL_TEXTURE_3D);
@@ -76,11 +94,13 @@ void CloudsModel::generateModelTextures() {
 
 void CloudsModel::update(){
 
+	/*	
 	seed = scene->seed;
 	if (seed != oldSeed) {
 		generateWeatherMap();
 		oldSeed = seed;
 	}
+	*/
 }
 
 
@@ -113,55 +133,55 @@ void CloudsModel::initVariables(){
 
 
 
-void Clouds::draw(GLuint depthTex) {
+void Clouds::draw(GLuint fboTex) {
 
 	float t1, t2;
+	static vec3 lightPos = 5.0 * vec3(0,18,18);
+	static vec3 lightColor = vec3(1.0,0.0,1.0);
+	static vec3 blue = vec3(1.0,0.0,0.0);
+	vec3 lightDir = normalize(POSITION - lightPos);
 
 	//cloudsFBO->bind();
+	/*
 	for (int i = 0; i < cloudsFBO->getNTextures(); ++i) 
 		bindTexture2D(cloudsFBO->getColorAttachmentTex(i), i);
-	
+	*/
 
-	sceneElements* s = drawableObject::scene;
-
-	cloudsShader -> use();
+	glUseProgram(cloudsShader -> progID); 
+	glBindImageTexture(0, fboTex, 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA32F);
 
 	cloudsShader -> setVec2("iResolution", vec2(SCR_WIDTH, SCR_HEIGHT));
-	cloudsShader -> setFloat("iTime", glfwGetTime());
+	cloudsShader -> setFloat("iTime", CURTIME);
 	cloudsShader -> setMat4("inv_proj", inverse(PROJMAT));
 	cloudsShader -> setMat4("inv_view", VIEWMAT);
 	cloudsShader -> setVec3("cameraPosition", POSITION);
-	cloudsShader -> setFloat("FOV", s->cam->Zoom);
-	cloudsShader -> setVec3("lightDirection", normalize(s->lightPos - s->cam->Position));
-	cloudsShader -> setVec3("lightColor", s->lightColor);
+	cloudsShader -> setFloat("FOV", .9);
+	cloudsShader -> setVec3("lightDirection", lightDir);
+	cloudsShader -> setVec3("lightColor", lightColor);
 	
-	cloudsShader -> setFloat("coverage_multiplier", model->coverage);
-	cloudsShader -> setFloat("cloudSpeed", model->cloudSpeed);
-	cloudsShader -> setFloat("crispiness", model->crispiness);
-	cloudsShader -> setFloat("curliness", model->curliness);
-	cloudsShader -> setFloat("absorption", model->absorption*0.01);
-	cloudsShader -> setFloat("densityFactor", model->density);
+	cloudsShader -> setFloat("coverage_multiplier", coverage);
+	cloudsShader -> setFloat("cloudSpeed", cloudSpeed);
+	cloudsShader -> setFloat("crispiness", crispiness);
+	cloudsShader -> setFloat("curliness", curliness);
+	cloudsShader -> setFloat("absorption", absorption*0.01);
+	cloudsShader -> setFloat("densityFactor", density);
 
 	//cloudsShader -> setBool("enablePowder", enablePowder);
 	
-	cloudsShader -> setFloat("earthRadius", model->earthRadius);
-	cloudsShader -> setFloat("sphereInnerRadius", model->sphereInnerRadius);
-	cloudsShader -> setFloat("sphereOuterRadius", model->sphereOuterRadius);
+	cloudsShader -> setFloat("earthRadius", earthRadius);
+	cloudsShader -> setFloat("sphereInnerRadius", sphereInnerRadius);
+	cloudsShader -> setFloat("sphereOuterRadius", sphereOuterRadius);
 
-	cloudsShader -> setVec3("cloudColorTop", model->cloudColorTop);
-	cloudsShader -> setVec3("cloudColorBottom", model->cloudColorBottom);
+	cloudsShader -> setVec3("cloudColorTop", cloudColorTop);
+	cloudsShader -> setVec3("cloudColorBottom", cloudColorBottom);
 	
-	cloudsShader -> setVec3("skyColorTop", model->sky->skyColorTop);
-	cloudsShader -> setVec3("skyColorBottom", model->sky->skyColorBottom);
+	cloudsShader -> setVec3("skyColorTop", blue);
+	cloudsShader -> setVec3("skyColorBottom", blue);
 
-	//mat4 vp = projMat * viewMat;
-	//cloudsShader -> setMat4("inv_view", inverse(vp));
-	//cloudsShader -> setMat4("gVP", vp);
-
-	cloudsShader -> setTexture(perlinTex -> getID(), "cloud",  0);
-	cloudsShader -> setTexture(worley -> getID(), "worley32", 1);
-	cloudsShader -> setTexture(depthTex, "depthMap", 3);
+	cloudsShader -> setTexture(perlinTex -> getID(), "perlinTex",  0);
+	cloudsShader -> setTexture(worley -> getID(), "worleyTex", 1);
 	
+	//cloudsShader -> setTexture(depthTex, "depthMap", 3);
 	//cloudsShader -> setTexture("weatherTex", model->weatherTex, 2);
 	//cloudsShader -> setTexture(model->sky->getSkyTexture(), "sky", 4);
 
