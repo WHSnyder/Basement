@@ -10,12 +10,15 @@
 #include <string>
 
 
-int run_model(){
+int run_model(unsigned int ssbo, unsigned int ssbo_in){
 
-    StyleTransfer *instance = new StyleTransfer();
+    StyleTransfer *instance = new StyleTransfer(ssbo, ssbo_in);
+    instance -> setStyle(0);
+    instance -> prime();
+    instance -> execute();
 
     std::string path = instance -> getRenderedStyle(0);
-    
+
     delete instance;
 
     return 0;

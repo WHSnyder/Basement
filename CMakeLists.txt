@@ -9,6 +9,8 @@ option(GLPATH "Search system for OpenGL" OFF)
 set(USINGMAC ON)
 set(CD "${CMAKE_CURRENT_SOURCE_DIR}")
 
+
+
 if (NOT BINDPY)
 
 	add_executable(basement)
@@ -26,7 +28,7 @@ else()
     	OUTPUT_STRIP_TRAILING_WHITESPACE
     )
 
-	set_target_properties(
+	set_target_properties (
 		basement PROPERTIES 
 		SUFFIX "${PY_EXT_SUFFIX}"
 		PREFIX ""
@@ -37,6 +39,7 @@ else()
 
 endif()
 
+
 set_property(TARGET basement PROPERTY CXX_STANDARD 17)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC") #not sure how this works with executables
 
@@ -46,6 +49,7 @@ elseif(APPLE)
 	target_link_options(basement PUBLIC -undefined dynamic_lookup)
 endif()
 
+include_directories(basement PUBLIC objects)
 include_directories(basement PUBLIC include)
 include_directories(basement PUBLIC libs)
 include_directories(basement PRIVATE libs/glm)
@@ -96,6 +100,7 @@ add_subdirectory(src/rendering)
 add_subdirectory(src/mesh)
 add_subdirectory(src/utils)
 add_subdirectory(src/phys)
+add_subdirectory(objects/clouds)
 #add_subdirectory(libs/imgui)
 
 

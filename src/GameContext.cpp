@@ -2,6 +2,10 @@
 #include <pybind11/pybind11.h>
 #endif
 
+
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+
 /*
 #include "imgui/imgui.h"
 #include "imgui/bindings/imgui_impl_glfw.h"
@@ -9,12 +13,13 @@
 */
 
 #include <GL/glew.h>
-
 #include <stdlib.h>
 #include <string>
 #include <chrono>
 #include <iostream>
 #include <vector>
+#include <memory>
+#include <time.h>
 
 #include <sys/types.h>
 #include <unistd.h>
@@ -29,19 +34,77 @@
 #include "rendering/RenderTarget.h"
 #include "tf_driver/StyleTransfer.h"
 
+
+#include "clouds/Clouds.h"
+
+#define COUT(x) std::cout << x << std::endl;
+
+
+
+#ifdef MACOS
+//#include "rendering/GLMetalInteropTex.h"
+//#define GLFW_EXPOSE_NATIVE_NSGL
+#endif
+
 #include <GLFW/glfw3.h>
+//#include <GLFW/glfw3native.h>
+
+
+GLuint64 startTime, stopTime;
+unsigned int queryID[2];    
+std::unique_ptr<Texture> outputTexture;  
+
+float CURTIME, TIMESTEP;
+glm::mat4 VIEWMAT = lookAt(vec3(18,18,18),vec3(0,0,-10),vec3(0,1.0,0));
+glm::mat4 PROJMAT = infinitePerspective(glm::radians(45.0f), 1.0f, 1.0f);
+glm::vec3 POSITION;
+int SCR_WIDTH, SCR_HEIGHT;
+
+
+
+
+void setTimer(){
+	
+	glGenQueries(2, queryID);
+	glQueryCounter(queryID[0], GL_TIMESTAMP);
+}
+
+
+GLuint64 getTimer(int block){
+
+	glQueryCounter(queryID[1], GL_TIMESTAMP);
+
+	GLuint64 stopTimerAvailable = 0;
+	int tc = 0;
+	while (!stopTimerAvailable && block) {
+	  glGetQueryObjectui64v(queryID[1], GL_QUERY_RESULT_AVAILABLE, &stopTimerAvailable);
+	  tc++;
+	}
+
+	glGetQueryObjectui64v(queryID[0], GL_QUERY_RESULT, &startTime);
+	glGetQueryObjectui64v(queryID[1], GL_QUERY_RESULT, &stopTime);
+
+	return stopTime - startTime;
+}
+
+
+
+	
+
+
 
 
 using namespace std;
 
-
-
+GLuint ssboOut, ssboIn;
+int terrainSeed;
 
 string basepath;
-int inputbreak = 0;
+int inputbreak;
+int toggleNetwork;
 
 
-const char *glsl_version = "#version 410";
+const char *glsl_version = "#version 450";
 
 mat4 biasMatrix(
 	0.5, 0.0, 0.0, 0.0,
@@ -65,7 +128,7 @@ void coutVec4(vec4 v){
 
 float *generate_terrain(int dim, double freq, float height_mult, int32_t *physx_samples){
 
-	const siv::PerlinNoise perlin(61881);
+	const siv::PerlinNoise perlin((float)terrainSeed);
 	
 	float *result = (float *) calloc(dim * dim, sizeof(float));
 
@@ -80,7 +143,7 @@ float *generate_terrain(int dim, double freq, float height_mult, int32_t *physx_
 			if (i == 0 || i == dim - 1) per = 0.0; 
 			if (j == 0 || j == dim - 1) per = 0.0;
 			
-			//Texture be flipped for opengl <-> physx correspondence
+			//Texture flipped for opengl <-> physx correspondence
 			result[j * dim + i] = per; 
 
 			//Increase range of samples, then set scale factor in HF constructor to compensate for 16 bit limitation
@@ -93,17 +156,15 @@ float *generate_terrain(int dim, double freq, float height_mult, int32_t *physx_
 	return result;
 }
 
-//Python 3.7 root
-///usr/local/opt/python/Frameworks/Python.framework/Versions/
 
 //For quads fullscreen or otherwise
-Mesh *gen_plane(){
+std::unique_ptr<Mesh> gen_plane(){
 
     vec3 verts[] = {vec3(-1,1,0), vec3(1,1,0), vec3(-1,-1,0), vec3(1,-1,0)};
     vec3 norms[] = {vec3(0,0,1), vec3(0,0,1), vec3(0,0,1), vec3(0,0,1)};
     GLuint inds[] = {0,1,2,1,3,2};
 
-    return new Mesh(vector<vec3>(verts,verts+4), vector<vec3>(norms,norms+4), vector<GLuint>(inds,inds+6));
+    return make_unique<Mesh>(vector<vec3>(verts,verts+4), vector<vec3>(norms,norms+4), vector<GLuint>(inds,inds+6));
 }
 
 
@@ -111,11 +172,12 @@ static void error_callback(int error, const char* description){
 	fputs(description, stderr);
 }
 
+
 static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods){
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
         glfwSetWindowShouldClose(window, GL_TRUE);
-   	if (key == GLFW_KEY_Q)
-   		inputbreak = 1;
+   	if (key == GLFW_KEY_Q && action == GLFW_PRESS)
+   		toggleNetwork = ~toggleNetwork;
 }
 
 double lastTime; 
@@ -124,11 +186,10 @@ int nbFrames = 0;
 //From stackoverflow @https://gamedev.stackexchange.com/questions/133173/how-to-calculate-fps-in-glfw
 void showFPS(GLFWwindow *pWindow){
 
-	double currentTime = glfwGetTime();
-	double delta = currentTime - lastTime;
+	double delta = CURTIME - lastTime;
 	nbFrames++;
 	
-	if ( delta >= 1.0 ){ // If last cout was more than 1 sec ago
+	if (delta >= 1.0){ // If last cout was more than 1 sec ago
 
 		double fps = double(nbFrames) / delta;
 
@@ -138,9 +199,30 @@ void showFPS(GLFWwindow *pWindow){
 		glfwSetWindowTitle(pWindow, ss.str().c_str());
 
 		nbFrames = 0;
-		lastTime = currentTime;
+		lastTime = CURTIME;
 	}
 }
+
+
+void populateInputSSBO(Shader *tex2ssbo, GLuint texID){
+
+	glUseProgram(tex2ssbo -> progID); 
+	tex2ssbo -> setImageTexture(texID, 0, 7);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, ssboIn);
+	glDispatchCompute(24, 24, 1);    
+ 	glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT | GL_SHADER_IMAGE_ACCESS_BARRIER_BIT | GL_TEXTURE_FETCH_BARRIER_BIT);
+}
+
+
+void populateOutputTex(Shader *ssbo2tex, GLuint ssbo){
+
+	glUseProgram(ssbo2tex -> progID); 
+	glBindImageTexture(0, outputTexture -> getID(), 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA32F);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, ssbo);
+	glDispatchCompute(24, 24, 1);    
+ 	glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT | GL_SHADER_IMAGE_ACCESS_BARRIER_BIT | GL_TEXTURE_FETCH_BARRIER_BIT);
+}
+
 
 
 float timeratio;
@@ -156,9 +238,9 @@ int initialize_window(){
 		return -1;
 	}
 
-	glfwWindowHint(GLFW_SAMPLES, 8);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+	glfwWindowHint(GLFW_SAMPLES, 16);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
 	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE); // To make MacOS happy; should not be needed
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
@@ -179,8 +261,9 @@ int initialize_window(){
 		return -1;
 	}
 
-	glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
-	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);  
+	glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_FALSE);
+	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED); 
+	//glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL); 
     glfwSetErrorCallback(error_callback);
     
     if (!glfwInit())
@@ -204,16 +287,26 @@ int initialize_window(){
 	ImGui_ImplOpenGL3_Init(glsl_version);
 
 	ImGui::StyleColorsDark();*/
+
+	SCR_HEIGHT = height;
+	SCR_WIDTH = width;
+
 	return 0;
 }
 
 
-Simu *mainSimu;
 
-Mesh *cube, *sphere, *terrain_plane, *plane;
-RenderTarget *shadowTarget, *textureTarget;
-Texture *noise_tex, *grass_tex, *skybox;
-Shader *shadow_shader, *terrain_shader, *basic_shader, *skybox_shader, *plane_shader, *copy_compute_shader;
+
+
+
+std::unique_ptr<RenderTarget> shadowTarget, textureTarget;
+std::unique_ptr<Simu> mainSimu;
+std::unique_ptr<Mesh> cube, sphere, terrain_plane, plane;
+std::unique_ptr<Texture> noise_tex, grass_tex, skybox, scream;
+std::unique_ptr<Shader> shadow_shader, terrain_shader, basic_shader, skybox_shader, plane_shader, tex2SSBO, SSBO2tex;
+
+std::unique_ptr<Clouds> clouds;
+
 
 //Perlin noise params
 int dim = 64;
@@ -222,17 +315,15 @@ int32_t *px_samples = (int32_t *) calloc(dim * dim, sizeof(int32_t));
 vec3 terrain_mult = 3.0f * vec3(10.0f, 5.0f, 10.0f);
 
 //Texture data
-float *img_data = generate_terrain(dim, freq, terrain_mult.y, px_samples);
+float *img_data;// = generate_terrain(dim, freq, terrain_mult.y, px_samples);
 
 float sphereMat[16] = {}, boxMat[16] = {}; 
 
-mat4 playerViewMat = lookAt(vec3(18,18,18),vec3(0,0,-10),vec3(0,1.0,0));
-mat4 proj1 = infinitePerspective(glm::radians(45.0f), 1.0f, 1.0f);
+
 mat4 rot = mat4(1.0), testmat, iden = mat4(1.0), trans = translate(vec3(0,9,0)), lighttrans = translate(vec3(0,18,18));
 
 vec3 lightPos = vec3(0,18,18), lookDir = vec3(0,9,0) - lightPos;
 
-mat4 depthOrtho = proj1;
 mat4 depthView = lookAt(lightPos, vec3(0,9,0), normalize(cross(vec3(1,0,0),lookDir)));
 mat4 depthProjMat = glm::ortho<float>(-20,20,-10,10,0,30);
 
@@ -241,35 +332,79 @@ vec3 ter_mult = terrain_mult;
 mat t1 = translate(vec3(-1,0,-1) * ter_mult), t2 = translate(vec3(1,0,-1) * ter_mult), t3 = translate(vec3(-1,0,1) * ter_mult), t4 = translate(vec3(1,0,1) * ter_mult);
 float *t1p = value_ptr(t1), *t2p = value_ptr(t2), *t3p = value_ptr(t3), *t4p = value_ptr(t4);
 
-float *viewptr = value_ptr(playerViewMat), *projptr = value_ptr(proj1);
+float *viewptr = value_ptr(VIEWMAT), *projptr = value_ptr(PROJMAT);
+int bufferSize = 600 * 600 * 3;
+float *dataOutSSBO, *dataInSSBO;
+
+std::unique_ptr<StyleTransfer> stModel;
+
 
 
 void initialize_game(string inpath){
 
-	basepath = inpath;
+	clouds = make_unique<Clouds>(384,384);
+	glCheckError();
 
-	mainSimu = new Simu();
+	img_data = generate_terrain(dim, freq, terrain_mult.y, px_samples);
+
+	//This SSBO will hold the ST's output
+	dataOutSSBO = new float[bufferSize]();
+
+	glGenBuffers(1, &ssboOut);
+	glBindBuffer(GL_SHADER_STORAGE_BUFFER, ssboOut);
+	glBufferData(GL_SHADER_STORAGE_BUFFER, bufferSize*sizeof(float), dataOutSSBO, GL_DYNAMIC_COPY);
+	GLvoid* p = glMapBuffer(GL_SHADER_STORAGE_BUFFER, GL_WRITE_ONLY);
+	memcpy(p, dataOutSSBO, bufferSize * sizeof(float));
+	glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
+	glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+
+
+	//We will render to textureTarget, then copy to this SSBO w/compute
+	//shader.  ST then consumes this SSBO.
+	dataInSSBO = new float[bufferSize]();
+
+	glGenBuffers(1, &ssboIn);
+	glBindBuffer(GL_SHADER_STORAGE_BUFFER, ssboIn);
+	glBufferData(GL_SHADER_STORAGE_BUFFER, bufferSize*sizeof(float), dataInSSBO, GL_DYNAMIC_COPY);
+	GLvoid* p2 = glMapBuffer(GL_SHADER_STORAGE_BUFFER, GL_WRITE_ONLY);
+	memcpy(p2, dataInSSBO, bufferSize * sizeof(float));
+	glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
+	glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+
+
+	//Create and set style for the ST
+	stModel = make_unique<StyleTransfer>(ssboOut,ssboIn);
+	stModel -> setStyle(0);
+	stModel -> prime();
+
+	basepath = inpath;
+	mainSimu = make_unique<Simu>();
 	
-	cube = new Mesh(string("assets/meshes/cube.obj"));
-	sphere = new Mesh(string("assets/meshes/ball.obj"));
-	terrain_plane = new Mesh(string("assets/meshes/terrain_plane.obj"));
+	cube = make_unique<Mesh>(string("assets/meshes/cube.obj"));
+	sphere =  make_unique<Mesh>(string("assets/meshes/ball.obj"));
+	terrain_plane = make_unique<Mesh>(string("assets/meshes/terrain_plane.obj"));
 	plane = gen_plane();
 
-	shadowTarget = new RenderTarget(1024,1024,1);
-	textureTarget = new RenderTarget(200,200,0);
+	shadowTarget = make_unique<RenderTarget>(1024,1024,1);
+	//textureTarget = new RenderTarget(200,200,0);
 
-	noise_tex = new Texture(img_data, dim, dim, 0);
-    grass_tex = new Texture(string("assets/images/grass.jpg"), 0);
-    skybox = new Texture(string("assets/images/yellowcloud"), 1);
+	outputTexture = make_unique<Texture>(384,384);
+
+	noise_tex = make_unique<Texture>(img_data, dim, dim, 0);
+    grass_tex = make_unique<Texture>(string("assets/images/grass.jpg"), 0);
+    skybox = make_unique<Texture>(string("assets/images/yellowcloud"), 1);
+    scream = make_unique<Texture>(string("assets/images/scream.jpg"), 0);
     //Texture skybox = Texture(string("/Users/will/projects/TombVoyage/Assets/SpaceSkiesFree/Skybox_2/Textures/1K_Resolution/1K_TEX"), 1);
 
-    shadow_shader = new Shader("assets/shaders/shadow"); 
-	plane_shader = new Shader("assets/shaders/plane");
-	terrain_shader = new Shader("assets/shaders/noise_test");
-	basic_shader = new Shader("assets/shaders/basic");
-	skybox_shader = new Shader("assets/shaders/cubemap");
-
-	copy_compute_shader = new Shader("assets/shaders/texRGB_2_ssbo",1);
+    shadow_shader = make_unique<Shader>("assets/shaders/shadow"); 
+	plane_shader = make_unique<Shader>("assets/shaders/plane");
+	terrain_shader = make_unique<Shader>("assets/shaders/noise_test");
+	basic_shader = make_unique<Shader>("assets/shaders/basic");
+	skybox_shader = make_unique<Shader>("assets/shaders/cubemap");
+	tex2SSBO = make_unique<Shader>("assets/shaders/texRGB_2_ssbo",1);
+	
+	//Replaced by modified plane shader that covers screen
+	SSBO2tex = make_unique<Shader>("assets/shaders/ssbo_2_texRGB",1);
 
 	mainSimu -> addTerrain(px_samples, dim, terrain_mult);
 	mainSimu -> addSphere(vec3(-4,23,-4), 1.0f, 1, reinterpret_cast<void *>(sphereMat));
@@ -287,19 +422,20 @@ void initialize_game(string inpath){
  	terrain_shader -> setMat4(string("shadowProj"), depthProjMat);
     terrain_shader -> setShadowTexture(shadowTarget -> getTexture());
 
-	plane_shader -> setImageTexture(shadowTarget -> getTexture(), 0, 4);
-	plane_shader -> setProj(projptr);
-
 	skybox_shader -> setProj(projptr);
 	skybox_shader -> setImageTexture(skybox -> getID(), 1, 9);
 
  	shadow_shader -> setProj(value_ptr(depthProjMat));
  	shadow_shader -> setView(value_ptr(depthView));
+
+ 	textureTarget = make_unique<RenderTarget>(384,384,0);
 }
 
 
 //Run main game loop
 int step_game(float timestep){
+
+	CURTIME += timestep;
 
 	/*ImGui_ImplOpenGL3_NewFrame();
 	ImGui_ImplGlfw_NewFrame();
@@ -310,33 +446,31 @@ int step_game(float timestep){
 	ImGui::SliderFloat("rotation", &rotation, 0, 2 * 3);
 	ImGui::End();*/
 
+	VIEWMAT = computeMatricesFromInputs();
+	viewptr = value_ptr(VIEWMAT);	
+	
 	mainSimu -> stepSimu(timestep);
 	mainSimu -> getModelMats();
 
 	rot = rotate(rot, timestep * glm::radians(20.0f), vec3(0.0f,1.0f,0.0f));
 	testmat = trans * rot;
 
+	//setTimer();
+
 	shadowTarget -> set();
-	shadow_shader -> setModel(value_ptr(testmat));
-	plane -> draw(shadow_shader -> progID);
+
 	shadow_shader -> setModel(sphereMat);
 	sphere -> draw(shadow_shader -> progID);
 	shadow_shader -> setModel(boxMat);
 	cube -> draw(shadow_shader -> progID);
 
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	glViewport(0, 0, width, height);
+	textureTarget -> set();
 
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glCheckError();
+	clouds -> draw(textureTarget -> getTexture());
+	clouds -> update();
 
 	terrain_shader -> setView(viewptr);
-	terrain_shader -> setProj(projptr);
 	terrain_plane -> draw(terrain_shader -> progID);
-
-	plane_shader -> setModel(value_ptr(testmat));
-	plane_shader -> setView(viewptr);
-	plane -> draw(plane_shader -> progID);
 
 	basic_shader -> setView(viewptr);
 	basic_shader -> setModel(sphereMat);
@@ -363,58 +497,74 @@ int step_game(float timestep){
 	basic_shader -> setColor(2.0f*vec3(1.0,1.0,0.0));
 	sphere -> draw(basic_shader -> progID);
 
-	skybox_shader -> setView(viewptr);
-	cube -> draw(skybox_shader -> progID);
+	//skybox_shader -> setView(viewptr);
+	//cube -> draw(skybox_shader -> progID);
+	
+	populateInputSSBO(tex2SSBO.get(), textureTarget -> getTexture());
+	
+	if (toggleNetwork){
+		stModel -> execute();
+		populateOutputTex(SSBO2tex.get(), ssboOut);
+	} else {
+		populateOutputTex(SSBO2tex.get(), ssboIn);
+	}
+
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glViewport(0, 0, width, height);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	plane_shader -> setModel(value_ptr(iden));
+	plane_shader -> setView(value_ptr(iden));
+	plane_shader -> setProj(value_ptr(iden));
+
+	glUseProgram(plane_shader -> progID);
+	plane_shader -> setImageTexture(outputTexture -> getID(),0,5);
+	plane -> draw(plane_shader -> progID);
 	glCheckError();
 
-	playerViewMat = computeMatricesFromInputs();
-	viewptr = value_ptr(playerViewMat);	
+	/*if (toggleNetwork){
+		//Set FS quad up
+		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, ssboOut);
+		plane -> draw(plane_shader -> progID);
+	} else {
+		//Render whatever we sent to the network
+		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, ssboIn);
+		plane -> draw(plane_shader -> progID);
+	}*/
 
 	/*ImGui::Render();
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
 	showFPS(window);*/
 
+	//printf("GPU FPS: %lu\n", 1000 / (getTimer(1) / 1000000));
+
 	glfwSwapBuffers(window);
 	glfwPollEvents();
 
-	if (inputbreak)
-		inputbreak = 0;
-		return 1;
+	if (glfwGetKey(window, GLFW_KEY_ESCAPE ) == GLFW_PRESS || glfwWindowShouldClose(window) != 0)
+		return -1;
 	return 0;
 }
 
 
 void destroy_game(){
+	
 	/*
 	ImGui_ImplOpenGL3_Shutdown();
 	ImGui_ImplGlfw_Shutdown();
 	ImGui::DestroyContext();
-	*/
+	*/	
+	delete px_samples;
 	
+	glDeleteBuffers(1,&ssboOut);
+	glDeleteBuffers(1,&ssboIn);
+
+	delete[] dataOutSSBO;
+	delete[] dataInSSBO;
+
 	glfwDestroyWindow(window);
 	glfwTerminate();
-
-	delete shadowTarget;
-	delete textureTarget;
-	delete px_samples;
-	delete mainSimu;
-
-	delete shadow_shader;
-	delete plane_shader;
-	delete terrain_shader;
-	delete skybox_shader;
-	delete basic_shader;
-	delete copy_compute_shader;
-
-	delete grass_tex;
-	delete skybox;
-	delete noise_tex;
-
-	delete plane;
-	delete sphere;
-	delete cube;
-	delete terrain_plane;
 }
 
 
@@ -422,40 +572,50 @@ void destroy_game(){
 
 int main(int argc, char **argv){
 
-#if __APPLE__
-	string inpath = "/Users/will/projects/cpprtx/";
-#else
-	string inpath = "/home/will/projects/cpprtx/";
+	COUT("GAME LAUNCH")
+
+#if __linux__
+	std::string inpath = "/home/will/projects/cpprtx/";
+#elif __APPLE__
+	std::string inpath = "/Users/will/projects/cpprtx/";
 #endif
-	
+
 	initialize_window();
-	initialize_game(inpath);
+
+	auto p0 = std::chrono::time_point<std::chrono::system_clock>{};
+	//auto epoch_time = std::chrono::system_clock::to_time_t(p0);
 
 	auto t_last = std::chrono::high_resolution_clock::now();
+	
+	srand(time(NULL));
+    terrainSeed = rand() % 100000000 + 1; 
+	img_data = generate_terrain(dim, freq, terrain_mult.y, px_samples);
+
+	initialize_game(inpath);
+
+
 	auto t_now = t_last;
-	float curtime = std::chrono::duration_cast<std::chrono::duration<float>>(t_now - t_last).count();
+	float timeStep;
 
 	while (1){
 
 		t_now = std::chrono::high_resolution_clock::now();
-		curtime = std::chrono::duration_cast<std::chrono::duration<float>>(t_now - t_last).count();
+		timeStep = std::chrono::duration_cast<std::chrono::duration<float>>(t_now - t_last).count();
 		t_last = t_now;
 
-		step_game(curtime);
+		step_game(timeStep);
 
 		if (glfwGetKey(window, GLFW_KEY_ESCAPE ) == GLFW_PRESS || glfwWindowShouldClose(window) != 0)
 			break;
 	}
 
 	destroy_game();
+
 	return 1;
 }
 
-
 #else
-
-PYBIND11_MODULE(GameContext, m) {
-    
+PYBIND11_MODULE(GameContext, m) { 
     m.doc() = "Full game loop";
     m.def("run_model", &run_model, "Run CPP test for TF");
     m.def("init_window", &initialize_window, "Initialize imgui, windows, etc");
@@ -463,5 +623,4 @@ PYBIND11_MODULE(GameContext, m) {
     m.def("step_game", &step_game, "Run game iteration");
     m.def("destroy_game", &destroy_game, "Run game iteration");
 }
-
 #endif

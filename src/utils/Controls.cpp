@@ -3,57 +3,43 @@ extern GLFWwindow* window;
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-using namespace glm;
-
 #include "utils/Controls.hpp"
 
-mat4 ViewMatrix;
-mat4 ProjectionMatrix;
-
-mat4 getViewMatrix(){
-	return ViewMatrix;
-}
-mat4 getProjectionMatrix(){
-	return ProjectionMatrix;
-}
+extern glm::vec3 POSITION;
 
 
-// Initial position : on +Z
+using namespace glm;
+
+
 vec3 position = vec3(18.0, 18.0, 18.0); 
-
-// Initial horizontal angle : toward -Z
-float horizontalAngle = 3.14f;
-
-// Initial vertical angle : none
-float verticalAngle = 0.0f;
-
-// Initial Field of View
+float horizontalAngle = 3.14f, verticalAngle = 0.0f;
 float initialFoV = 45.0f;
+float speed = 20.0f, mouseSpeed = 0.005f;
 
-float speed = 20.0f; 
-float mouseSpeed = 0.005f;
+double xpos, ypos, xlast, ylast;
 
+int init = 0;
 
+int initControls(){
+	glfwGetCursorPos(window, &xpos, &ypos);
+	glfwGetCursorPos(window, &xlast, &ylast);
+	return 1;
+}
 
 mat4 computeMatricesFromInputs(){
 
-	// glfwGetTime is called only once, the first time this function is called
-	static double lastTime = glfwGetTime();
+	if (!init)
+		init = initControls();
 
-	// Compute time difference between current and last frame
+	static double lastTime = glfwGetTime(); //static local var = called once
 	double currentTime = glfwGetTime();
 	float deltaTime = float(currentTime - lastTime);
 
-	// Get mouse position
-	double xpos, ypos;
 	glfwGetCursorPos(window, &xpos, &ypos);
-
-	// Reset mouse position for next frame
-	glfwSetCursorPos(window, 1024/2, 768/2);
-
-	// Compute new orientation
-	horizontalAngle += mouseSpeed * float(1024/2 - xpos );
-	verticalAngle += mouseSpeed * float( 768/2 - ypos );
+	horizontalAngle += mouseSpeed * float(xlast - xpos);
+	verticalAngle += mouseSpeed * float(ylast - ypos);
+	xlast = xpos;
+	ylast = ypos;
 
 	// Direction : Spherical coordinates to Cartesian coordinates conversion
 	vec3 direction(
@@ -63,33 +49,23 @@ mat4 computeMatricesFromInputs(){
 	);
 	
 	vec3 right = vec3(sin(horizontalAngle - 3.14f/2.0f), 0, cos(horizontalAngle - 3.14f/2.0f));
-	vec3 up = glm::cross( right, direction );
+	vec3 up = -1.0f * glm::cross(right, direction); //lol
 
-	// Move forward
-	if (glfwGetKey( window, GLFW_KEY_UP ) == GLFW_PRESS){
+	//Forward
+	if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
 		position += direction * deltaTime * speed;
-	}
-	// Move backward
-	if (glfwGetKey( window, GLFW_KEY_DOWN ) == GLFW_PRESS){
+	//Backward
+	if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
 		position -= direction * deltaTime * speed;
-	}
-	// Strafe right
-	if (glfwGetKey( window, GLFW_KEY_RIGHT ) == GLFW_PRESS){
+	//Right
+	if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
 		position += right * deltaTime * speed;
-	}
-	// Strafe left
-	if (glfwGetKey( window, GLFW_KEY_LEFT ) == GLFW_PRESS){
+	//Left
+	if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
 		position -= right * deltaTime * speed;
-	}
 
-	float FoV = initialFoV;
-
-	// For the next frame, the "last time" will be "now"
 	lastTime = currentTime;
+	POSITION = position;
 
-	return lookAt(position,           // Camera is here
-					   position+direction, // and looks here : at the same position, plus "direction"
-					   up                  // Head is up (set to 0,-1,0 to look upside-down)
-					   );
-
+	return lookAt(position, position+direction, up);
 }

@@ -19,7 +19,10 @@
 #include "tensorflow/lite/c/c_api.h"
 #include "tensorflow/lite/kernels/register.h"
 #include "tensorflow/lite/model.h"
+
 #include "opencv2/opencv.hpp"
+#include <string>
+
 
 #if __APPLE__
 #include "tensorflow/lite/delegates/gpu/metal_delegate.h"
@@ -33,23 +36,26 @@ class StyleTransfer {
 
 public:
     
-    StyleTransfer();
+    StyleTransfer(unsigned int ssboOut = 10000, unsigned int ssboIn = 10000);
     ~StyleTransfer();
 
-    std::string getRenderedStyle(int styleChosen);
+    void setStyle(int styleVal);
+    int execute();
+    int prime();
 
 private:
 
     cv::Mat preProcessImage(cv::Mat input);
-    std::vector<float> getStyle(int styleVal);
+    std::vector<float> styleEncoding;
+
     int fromNameToIndex(std::string stdName, bool isInput, bool isStylePredict) const;
 
-    std::unique_ptr<::tflite::FlatBufferModel> style_predict_model_;
-    std::unique_ptr<::tflite::FlatBufferModel> transfer_model_;
-    std::unique_ptr<::tflite::Interpreter> style_interpreter_;
-    std::unique_ptr<::tflite::Interpreter> transfer_interpreter_;
+    std::unique_ptr<::tflite::FlatBufferModel> predictorModel;
+    std::unique_ptr<::tflite::FlatBufferModel> transfererModel;
+    std::unique_ptr<::tflite::Interpreter> styleInterpreter;
+    std::unique_ptr<::tflite::Interpreter> transferInterpreter;
 
     TfLiteDelegate *delegate;
 };
 
-int run_model();
+int run_model(unsigned int ssbo=10000, unsigned int ssboIn=10000);
