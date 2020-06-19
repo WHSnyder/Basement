@@ -8,6 +8,8 @@
 
 #include <algorithm>
 #include <iostream>
+#include <memory>
+#include <string>
 
 
 #define INT_CEIL(n,d) (int)ceil((float)n/d)
@@ -20,12 +22,12 @@ class Clouds {
 public:
 	
 	Clouds(int w, int h);
-	~Clouds();
+	//~Clouds();
 
 	void update();
 	void draw(unsigned int fboTex);
 
-	std::unique_ptr<Shader> cloudsShader, perlinWorelyShader, worelyShader;//, *weatherShader;
+	std::unique_ptr<Shader> cloudsShader, perlinWorelyShader, worleyShader;//, *weatherShader;
 	//ScreenSpaceShader *postProcessingShader;
 
 	float coverage, cloudSpeed, crispiness, curliness, density, absorption;

@@ -2,6 +2,10 @@
 #include <pybind11/pybind11.h>
 #endif
 
+
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+
 /*
 #include "imgui/imgui.h"
 #include "imgui/bindings/imgui_impl_glfw.h"
@@ -51,7 +55,8 @@ unsigned int queryID[2];
 std::unique_ptr<Texture> outputTexture;  
 
 float CURTIME, TIMESTEP;
-glm::mat4 VIEWMAT, PROJMAT;
+glm::mat4 VIEWMAT = lookAt(vec3(18,18,18),vec3(0,0,-10),vec3(0,1.0,0));
+glm::mat4 PROJMAT = infinitePerspective(glm::radians(45.0f), 1.0f, 1.0f);
 glm::vec3 POSITION;
 int SCR_WIDTH, SCR_HEIGHT;
 
@@ -171,10 +176,8 @@ static void error_callback(int error, const char* description){
 static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods){
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
         glfwSetWindowShouldClose(window, GL_TRUE);
-   	if (key == GLFW_KEY_Q && action == GLFW_PRESS){
-   		COUT("TOGGLED")
+   	if (key == GLFW_KEY_Q && action == GLFW_PRESS)
    		toggleNetwork = ~toggleNetwork;
-   	}
 }
 
 double lastTime; 
@@ -316,8 +319,7 @@ float *img_data;// = generate_terrain(dim, freq, terrain_mult.y, px_samples);
 
 float sphereMat[16] = {}, boxMat[16] = {}; 
 
-VIEWMAT = lookAt(vec3(18,18,18),vec3(0,0,-10),vec3(0,1.0,0));
-PROJMAT = infinitePerspective(glm::radians(45.0f), 1.0f, 1.0f);
+
 mat4 rot = mat4(1.0), testmat, iden = mat4(1.0), trans = translate(vec3(0,9,0)), lighttrans = translate(vec3(0,18,18));
 
 vec3 lightPos = vec3(0,18,18), lookDir = vec3(0,9,0) - lightPos;
@@ -331,7 +333,6 @@ mat t1 = translate(vec3(-1,0,-1) * ter_mult), t2 = translate(vec3(1,0,-1) * ter_
 float *t1p = value_ptr(t1), *t2p = value_ptr(t2), *t3p = value_ptr(t3), *t4p = value_ptr(t4);
 
 float *viewptr = value_ptr(VIEWMAT), *projptr = value_ptr(PROJMAT);
-
 int bufferSize = 600 * 600 * 3;
 float *dataOutSSBO, *dataInSSBO;
 
@@ -388,7 +389,7 @@ void initialize_game(string inpath){
 	//textureTarget = new RenderTarget(200,200,0);
 
 	outputTexture = make_unique<Texture>(384,384);
-	COUT("Made output texture")
+
 	noise_tex = make_unique<Texture>(img_data, dim, dim, 0);
     grass_tex = make_unique<Texture>(string("assets/images/grass.jpg"), 0);
     skybox = make_unique<Texture>(string("assets/images/yellowcloud"), 1);
@@ -454,7 +455,7 @@ int step_game(float timestep){
 	rot = rotate(rot, timestep * glm::radians(20.0f), vec3(0.0f,1.0f,0.0f));
 	testmat = trans * rot;
 
-	setTimer();
+	//setTimer();
 
 	shadowTarget -> set();
 
@@ -464,6 +465,8 @@ int step_game(float timestep){
 	cube -> draw(shadow_shader -> progID);
 
 	textureTarget -> set();
+
+	clouds -> draw(textureTarget -> getTexture());
 
 	terrain_shader -> setView(viewptr);
 	terrain_plane -> draw(terrain_shader -> progID);
@@ -493,8 +496,10 @@ int step_game(float timestep){
 	basic_shader -> setColor(2.0f*vec3(1.0,1.0,0.0));
 	sphere -> draw(basic_shader -> progID);
 
-	skybox_shader -> setView(viewptr);
-	cube -> draw(skybox_shader -> progID);
+	//skybox_shader -> setView(viewptr);
+	//cube -> draw(skybox_shader -> progID);
+
+	
 	
 	populateInputSSBO(tex2SSBO.get(), textureTarget -> getTexture());
 	
@@ -533,7 +538,7 @@ int step_game(float timestep){
 
 	showFPS(window);*/
 
-	printf("GPU FPS: %lu\n", 1000 / (getTimer(1) / 1000000));
+	//printf("GPU FPS: %lu\n", 1000 / (getTimer(1) / 1000000));
 
 	glfwSwapBuffers(window);
 	glfwPollEvents();

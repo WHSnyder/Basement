@@ -11,7 +11,7 @@ extern string basepath;
 
 extern GLenum glCheckError_(const char *file, int line);
 #define glCheckError() glCheckError_(__FILE__, __LINE__) 
-
+#define COUT(x) std::cout << x << std::endl;
 
 GLenum texEnums[] = {GL_TEXTURE_2D, GL_TEXTURE_CUBE_MAP, GL_TEXTURE_3D};
 
@@ -41,6 +41,8 @@ int compile_shader(GLenum shaderType, string shaderCode){
 	    glGetShaderInfoLog(shader, 512, NULL, infoLog);
 	    std::cout << "ERROR::SHADER::COMPILATION_FAILED\n" << infoLog << "Shader type = " << shaderType << std::endl;
 	};
+
+	glCheckError();
 	  
 	return shader;
 }
@@ -58,6 +60,8 @@ GLuint build_compute_program(string shader_path){
     GLuint prog_id = glCreateProgram();
     glAttachShader(prog_id, c_id);
 	glLinkProgram(prog_id);
+
+	glCheckError();
 
 	return prog_id;
 }
@@ -115,18 +119,29 @@ Shader::Shader(string shader_path, int buildCompute){
 }
 
 
-int Shader::setTexture(GLuint texID, string texName, int unit){
-	
-	GLuint tempID = glGetUniformLocation(progID, texName.c_str());
-	GLenum texType;
-	GLsizei uniSize;
+int Shader::set2DTexture(GLuint texID, string texName, int unit){
 
-	glGetActiveUniform(progID, tempID, 0, 0, &uniSize, &texType, NULL);
+	GLuint tempID = glGetUniformLocation(progID, texName.c_str());
 
 	glUseProgram(progID);
 	glUniform1i(tempID, unit);
     glActiveTexture(GL_TEXTURE0 + unit); //The nuance of these calls is still hazy from memory...
-	glBindTexture(texType, texID);
+	glBindTexture(GL_TEXTURE_3D, texID);
+	
+	glCheckError();
+
+    return 0;
+}
+
+
+int Shader::set3DTexture(GLuint texID, string texName, int unit){
+
+	GLuint tempID = glGetUniformLocation(progID, texName.c_str());
+
+	glUseProgram(progID);
+	glUniform1i(tempID, unit);
+    glActiveTexture(GL_TEXTURE0 + unit); //The nuance of these calls is still hazy from memory...
+	glBindTexture(GL_TEXTURE_3D, texID);
 	
 	glCheckError();
 
@@ -213,8 +228,17 @@ void Shader::setFloat(string name, float f){
 	glUniform1f(tempID, f);
 }
 
+void Shader::setVec2(std::string name, const glm::vec2& v){
 
-void Shader::setVec3(string name, glm::vec3& v){
+	GLuint tempID;
+
+	glUseProgram(progID); 
+	tempID = glGetUniformLocation(progID, name.c_str());
+	glUniform2fv(tempID, 1, glm::value_ptr(v));	
+}
+
+
+void Shader::setVec3(string name, const glm::vec3& v){
 
 	GLuint tempID;
 
@@ -223,7 +247,7 @@ void Shader::setVec3(string name, glm::vec3& v){
 	glUniform3fv(tempID, 1, glm::value_ptr(v));	
 }
 
-void Shader::setMat4(string name, glm::mat4& m){
+void Shader::setMat4(string name, const glm::mat4& m){
 
 	GLuint tempID;
 
@@ -232,7 +256,7 @@ void Shader::setMat4(string name, glm::mat4& m){
 	glUniformMatrix4fv(tempID, 1, GL_FALSE, glm::value_ptr(m));	
 }
 
-void Shader::setColor(glm::vec3& v){
+void Shader::setColor(const glm::vec3& v){
 
 	glUseProgram(progID); 
 	glUniform3fv(col_loc, 1, glm::value_ptr(v));	

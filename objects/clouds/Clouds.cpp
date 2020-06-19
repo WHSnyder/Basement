@@ -8,30 +8,32 @@
 
 
 extern glm::vec3 POSITION;
-int SCR_WIDTH, SCR_HEIGHT;
+int scr_WIDTH, scr_HEIGHT;
 extern float CURTIME;
+extern glm::mat4 VIEWMAT,PROJMAT;
 
 extern GLenum glCheckError_(const char *file, int line);
 #define glCheckError() glCheckError_(__FILE__, __LINE__) 
 
 
 using namespace glm;
+using namespace std;
 
 
 Clouds::Clouds(int w, int h){
-	SCR_WIDTH = w;
-	SCR_HEIGHT = h;
+	scr_WIDTH = w;
+	scr_HEIGHT = h;
 	initVariables();
 	initShaders();
 	generateModelTextures();
 }
 
 
-void CloudsModel::initShaders(){
+void Clouds::initShaders(){
 	
 	cloudsShader = make_unique<Shader>("assets/shaders/volumetric_clouds",1);
-	perlinWorelyShader = make_unique<Shader>("assets/shaders/perlin_worley",1);
-	worleyShader = make_unique<Shader>("assets/shaders/worley", 1);
+	perlinWorelyShader = make_unique<Shader>("assets/shaders/perlin_worely",1);
+	worleyShader = make_unique<Shader>("assets/shaders/worely", 1);
 
 	glCheckError();
 
@@ -43,7 +45,7 @@ void CloudsModel::initShaders(){
 }
 
 
-void CloudsModel::generateModelTextures() {
+void Clouds::generateModelTextures() {
 				
 	perlinTex = make_unique<Texture>(128, 128, 128);
 	
@@ -59,7 +61,7 @@ void CloudsModel::generateModelTextures() {
 
 	glCheckError();
 	
-	COUT("Computed worely")
+	COUT("Computed perlin")
 	glGenerateMipmap(GL_TEXTURE_3D);
 
 	
@@ -75,7 +77,7 @@ void CloudsModel::generateModelTextures() {
 
 	glCheckError();
 
-	COUT("Wrote worely noise")
+	COUT("Computed worely")
 	glGenerateMipmap(GL_TEXTURE_3D);
 
 
@@ -92,7 +94,7 @@ void CloudsModel::generateModelTextures() {
 }
 
 
-void CloudsModel::update(){
+void Clouds::update(){
 
 	/*	
 	seed = scene->seed;
@@ -104,7 +106,7 @@ void CloudsModel::update(){
 }
 
 
-void CloudsModel::initVariables(){
+void Clouds::initVariables(){
 
 	cloudSpeed = 450.0;
 	coverage = 0.45;
@@ -136,9 +138,9 @@ void CloudsModel::initVariables(){
 void Clouds::draw(GLuint fboTex) {
 
 	float t1, t2;
-	static vec3 lightPos = 5.0 * vec3(0,18,18);
-	static vec3 lightColor = vec3(1.0,0.0,1.0);
-	static vec3 blue = vec3(1.0,0.0,0.0);
+	static vec3 lightPos = 5.0f * vec3(0,18,18);
+	static vec3 lightColor = vec3(0.7,0.7,0.7);
+	static vec3 blue = vec3(0.5,0.5,0.5);
 	vec3 lightDir = normalize(POSITION - lightPos);
 
 	//cloudsFBO->bind();
@@ -150,12 +152,14 @@ void Clouds::draw(GLuint fboTex) {
 	glUseProgram(cloudsShader -> progID); 
 	glBindImageTexture(0, fboTex, 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA32F);
 
-	cloudsShader -> setVec2("iResolution", vec2(SCR_WIDTH, SCR_HEIGHT));
+	//COUT("Binding cloud uniforms")
+
+	cloudsShader -> setVec2("iResolution", vec2(scr_WIDTH, scr_HEIGHT));
 	cloudsShader -> setFloat("iTime", CURTIME);
 	cloudsShader -> setMat4("inv_proj", inverse(PROJMAT));
-	cloudsShader -> setMat4("inv_view", VIEWMAT);
+	cloudsShader -> setMat4("inv_view", inverse(VIEWMAT));
 	cloudsShader -> setVec3("cameraPosition", POSITION);
-	cloudsShader -> setFloat("FOV", .9);
+	cloudsShader -> setFloat("FOV", glm::radians(45.0f));
 	cloudsShader -> setVec3("lightDirection", lightDir);
 	cloudsShader -> setVec3("lightColor", lightColor);
 	
@@ -178,14 +182,16 @@ void Clouds::draw(GLuint fboTex) {
 	cloudsShader -> setVec3("skyColorTop", blue);
 	cloudsShader -> setVec3("skyColorBottom", blue);
 
-	cloudsShader -> setTexture(perlinTex -> getID(), "perlinTex",  0);
-	cloudsShader -> setTexture(worley -> getID(), "worleyTex", 1);
+	cloudsShader -> set3DTexture(perlinTex -> getID(), "perlinTex",  0);
+	cloudsShader -> set3DTexture(worleyTex -> getID(), "worleyTex", 1);
 	
 	//cloudsShader -> setTexture(depthTex, "depthMap", 3);
 	//cloudsShader -> setTexture("weatherTex", model->weatherTex, 2);
 	//cloudsShader -> setTexture(model->sky->getSkyTexture(), "sky", 4);
 
-	glDispatchCompute(INT_CEIL(SCR_WIDTH, 16), INT_CEIL(SCR_HEIGHT, 16), 1);
+	//COUT("Dispatching compute")
+
+	glDispatchCompute(INT_CEIL(scr_WIDTH, 16), INT_CEIL(scr_HEIGHT, 16), 1);
 	glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
 
 	
@@ -202,8 +208,8 @@ void Clouds::draw(GLuint fboTex) {
 		cloudsPPShader.setSampler2D("emissions", cloudsFBO->getColorAttachmentTex(VolumetricClouds::bloom), 1);
 		cloudsPPShader.setSampler2D("depthMap", s->sceneFBO->depthTex, 2);
 
-		cloudsPPShader.setVec2("cloudRenderResolution", vec2(SCR_WIDTH, SCR_HEIGHT));
-		cloudsPPShader.setVec2("resolution", vec2(Window::SCR_WIDTH , Window::SCR_HEIGHT));
+		cloudsPPShader.setVec2("cloudRenderResolution", vec2(scr_WIDTH, scr_HEIGHT));
+		cloudsPPShader.setVec2("resolution", vec2(Window::scr_WIDTH , Window::scr_HEIGHT));
 
 		mat4 lightModel;
 		lightModel = translate(lightModel, s->lightPos);
@@ -235,10 +241,10 @@ void Clouds::draw(GLuint fboTex) {
 
 
 /*
-VolumetricClouds::VolumetricClouds(int SW, int SH, CloudsModel * model): SCR_WIDTH(SW), SCR_HEIGHT(SH), model(model) {
+VolumetricClouds::VolumetricClouds(int SW, int SH, Clouds * model): scr_WIDTH(SW), scr_HEIGHT(SH), model(model) {
 
 	cloudsFBO = new TextureSet(SW, SH, 4);
-	cloudsPostProcessingFBO = new FrameBufferObject(Window::SCR_WIDTH, Window::SCR_HEIGHT, 2);
+	cloudsPostProcessingFBO = new FrameBufferObject(Window::scr_WIDTH, Window::scr_HEIGHT, 2);
 }
 */
 
@@ -246,7 +252,7 @@ VolumetricClouds::VolumetricClouds(int SW, int SH, CloudsModel * model): SCR_WID
 
 
 /*
-void CloudsModel::generateWeatherMap() {
+void Clouds::generateWeatherMap() {
 	bindTexture2D(weatherTex, 0);
 	weatherShader->use();
 	weatherShader->setVec3("seed", scene->seed);

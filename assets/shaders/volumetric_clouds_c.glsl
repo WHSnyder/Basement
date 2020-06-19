@@ -472,7 +472,7 @@ void main(){
 	//intersectCubeMap(vec3(0.0, 0.0, 0.0), worldDir, stub, cubeMapEndPos);
 	bool hit = raySphereintersectionSkyMap(worldDir, 0.5, cubeMapEndPos);
 
-	vec4 bg = vec4(.5,0.0,0.5,1.0); //texture(sky, fragCoord/iResolution); CHANGE HERE
+	vec4 bg = vec4(.5,0.5,0.5,1.0); //texture(sky, fragCoord/iResolution); CHANGE HERE
 	vec3 red = vec3(1.0);
 
 	bg = mix( mix(red.rgbr, vec4(1.0), SUN_DIR.y), bg, pow( max(cubeMapEndPos.y+0.1, .0), 0.2));
@@ -505,7 +505,7 @@ void main(){
 	bloom_v = vec4(getSun(worldDir, 128)*1.3,1.0);
 
 	if(fogAmount > 0.965){
-		fragColor_v = vec4(.3,0.0,.3) + .05 * bg;
+		fragColor_v = vec4(0.5,0.5,0.5,1.0);// + .05 * bg;
 		bloom_v = bg;
 		imageStore(fragColor, fragCoord, fragColor_v);
 		/*
