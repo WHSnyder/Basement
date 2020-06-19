@@ -80,9 +80,6 @@ int StyleTransfer::execute(){
 //sets the transfer model's style vector tensor.
 int StyleTransfer::prime() {
 
-    COUT("Getting rendered style")
-
-
     if(styleEncoding.size() > 0) {
 
         cv::Mat processedImage = preProcessImage(cv::imread(INPUT_IMAGE, cv::IMREAD_COLOR));
@@ -155,9 +152,6 @@ int StyleTransfer::prime() {
 
 
 void StyleTransfer::setStyle(int styleVal) {
-
-    COUT(std::string("Getting style at ") + SCREAM)
-    
 
     std::string styleImage;
 

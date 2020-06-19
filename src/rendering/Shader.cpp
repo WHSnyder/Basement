@@ -126,7 +126,7 @@ int Shader::set2DTexture(GLuint texID, string texName, int unit){
 	glUseProgram(progID);
 	glUniform1i(tempID, unit);
     glActiveTexture(GL_TEXTURE0 + unit); //The nuance of these calls is still hazy from memory...
-	glBindTexture(GL_TEXTURE_3D, texID);
+	glBindTexture(GL_TEXTURE_2D, texID);
 	
 	glCheckError();
 

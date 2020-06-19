@@ -467,6 +467,7 @@ int step_game(float timestep){
 	textureTarget -> set();
 
 	clouds -> draw(textureTarget -> getTexture());
+	clouds -> update();
 
 	terrain_shader -> setView(viewptr);
 	terrain_plane -> draw(terrain_shader -> progID);
@@ -498,8 +499,6 @@ int step_game(float timestep){
 
 	//skybox_shader -> setView(viewptr);
 	//cube -> draw(skybox_shader -> progID);
-
-	
 	
 	populateInputSSBO(tex2SSBO.get(), textureTarget -> getTexture());
 	
@@ -611,7 +610,7 @@ int main(int argc, char **argv){
 	}
 
 	destroy_game();
-	exit(0);
+	//exit(0);
 	return 1;
 }
 

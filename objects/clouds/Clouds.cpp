@@ -3,6 +3,7 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
+#include <random>
 
 //#define TIMETO(CODE, TASK) 	t1 = glfwGetTime(); CODE; t2 = glfwGetTime(); std::cout << "Time to " + std::string(TASK) + " :" << (t2 - t1)*1e3 << "ms" << std::endl;
 
@@ -16,11 +17,29 @@ extern GLenum glCheckError_(const char *file, int line);
 #define glCheckError() glCheckError_(__FILE__, __LINE__) 
 
 
+int counter = 0;
+
+
 using namespace glm;
 using namespace std;
 
 
-Clouds::Clouds(int w, int h){
+
+glm::vec3 genRandomVec3() {
+	std::random_device rd;  //Will be used to obtain a seed for the random number engine
+	std::mt19937 gen(rd()); //Standard mersenne_twister_engine seeded with rd()
+	std::uniform_real_distribution<> dis(.0, 100.);
+
+	float x, y, z;
+	x = dis(gen);
+	y = dis(gen);
+	z = dis(gen);
+
+	return glm::vec3(x, y, z);
+}
+
+
+Clouds::Clouds(int w, int h) {
 	scr_WIDTH = w;
 	scr_HEIGHT = h;
 	initVariables();
@@ -29,19 +48,16 @@ Clouds::Clouds(int w, int h){
 }
 
 
-void Clouds::initShaders(){
+void Clouds::initShaders() {
 	
 	cloudsShader = make_unique<Shader>("assets/shaders/volumetric_clouds",1);
 	perlinWorelyShader = make_unique<Shader>("assets/shaders/perlin_worely",1);
-	worleyShader = make_unique<Shader>("assets/shaders/worely", 1);
+	worleyShader = make_unique<Shader>("assets/shaders/worely",1);
+	weatherShader = make_unique<Shader>("assets/shaders/weather",1);
 
 	glCheckError();
 
 	//postProcessingShader = new ScreenSpaceShader("shaders/clouds_post.frag");
-	//compute shaders
-	//weatherShader = new Shader("weatherMap");
-	//weatherShader->attachShader("shaders/weather.comp");
-	//weatherShader->linkPrograms();
 }
 
 
@@ -65,7 +81,6 @@ void Clouds::generateModelTextures() {
 	glGenerateMipmap(GL_TEXTURE_3D);
 
 	
-
 	worleyTex = make_unique<Texture>(32, 32, 32);
 	
 	glUseProgram(worleyShader -> progID);
@@ -81,35 +96,41 @@ void Clouds::generateModelTextures() {
 	glGenerateMipmap(GL_TEXTURE_3D);
 
 
-	if (1) {
-		//make texture
-		//this->weatherTex = generateTexture2D(1024, 1024);
-
-		//compute
-		//generateWeatherMap();
-
-		//seed = scene->seed;
-		//oldSeed = seed;
-	}
+	weatherTex = make_unique<Texture>(1024,1024);
 }
 
 
-void Clouds::update(){
 
-	/*	
-	seed = scene->seed;
-	if (seed != oldSeed) {
+void Clouds::generateWeatherMap() {
+
+	glBindImageTexture(0, weatherTex -> getID(), 0, GL_TRUE, 0, GL_READ_WRITE, GL_RGBA8);
+	weatherShader -> setVec3("seed", seed);
+	weatherShader -> setFloat("perlinFrequency", perlinFrequency);
+	
+	glDispatchCompute(INT_CEIL(1024, 8), INT_CEIL(1024, 8), 1);
+	glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
+	glCheckError();
+
+	COUT("Computed weather")
+
+	oldSeed = seed;
+}
+
+
+void Clouds::update() {
+
+	if (counter % 300 == 0){
+		seed = genRandomVec3();
 		generateWeatherMap();
-		oldSeed = seed;
 	}
-	*/
+	counter++;
 }
 
 
-void Clouds::initVariables(){
+void Clouds::initVariables() {
 
 	cloudSpeed = 450.0;
-	coverage = 0.45;
+	coverage = 0.15;
 	crispiness = 40.;
 	curliness = .1;
 	density = 0.02;
@@ -119,7 +140,7 @@ void Clouds::initVariables(){
 	sphereInnerRadius = 5000.0;
 	sphereOuterRadius = 17000.0;
 
-	perlinFrequency = 0.8;
+	perlinFrequency = .8;
 
 	enableGodRays = false;
 	enablePowder = false;
@@ -133,21 +154,13 @@ void Clouds::initVariables(){
 }
 
 
-
-
 void Clouds::draw(GLuint fboTex) {
 
-	float t1, t2;
 	static vec3 lightPos = 5.0f * vec3(0,18,18);
-	static vec3 lightColor = vec3(0.7,0.7,0.7);
-	static vec3 blue = vec3(0.5,0.5,0.5);
-	vec3 lightDir = normalize(POSITION - lightPos);
+	static vec3 lightColor = vec3(0.5,0.0,0.6);
+	static vec3 blue = vec3(0.2,0.0,0.2);
 
-	//cloudsFBO->bind();
-	/*
-	for (int i = 0; i < cloudsFBO->getNTextures(); ++i) 
-		bindTexture2D(cloudsFBO->getColorAttachmentTex(i), i);
-	*/
+	vec3 lightDir = normalize(lightPos - POSITION);
 
 	glUseProgram(cloudsShader -> progID); 
 	glBindImageTexture(0, fboTex, 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA32F);
@@ -184,10 +197,9 @@ void Clouds::draw(GLuint fboTex) {
 
 	cloudsShader -> set3DTexture(perlinTex -> getID(), "perlinTex",  0);
 	cloudsShader -> set3DTexture(worleyTex -> getID(), "worleyTex", 1);
-	
-	//cloudsShader -> setTexture(depthTex, "depthMap", 3);
-	//cloudsShader -> setTexture("weatherTex", model->weatherTex, 2);
-	//cloudsShader -> setTexture(model->sky->getSkyTexture(), "sky", 4);
+	cloudsShader -> set2DTexture(weatherTex -> getID(), "weatherTex", 2);
+	//cloudsShader -> set2DTexture(depthTex -> getID(), "depthMap", 3);
+	//cloudsShader -> setCubemap(skyTex -> getID(), "sky", 4);
 
 	//COUT("Dispatching compute")
 
@@ -236,30 +248,3 @@ void Clouds::draw(GLuint fboTex) {
 			model->postProcessingShader->draw();
 	}*/
 }
-
-
-
-
-/*
-VolumetricClouds::VolumetricClouds(int SW, int SH, Clouds * model): scr_WIDTH(SW), scr_HEIGHT(SH), model(model) {
-
-	cloudsFBO = new TextureSet(SW, SH, 4);
-	cloudsPostProcessingFBO = new FrameBufferObject(Window::scr_WIDTH, Window::scr_HEIGHT, 2);
-}
-*/
-
-
-
-
-/*
-void Clouds::generateWeatherMap() {
-	bindTexture2D(weatherTex, 0);
-	weatherShader->use();
-	weatherShader->setVec3("seed", scene->seed);
-	weatherShader->setFloat("perlinFrequency", perlinFrequency);
-	//COUT("computing weather!")
-	glDispatchCompute(INT_CEIL(1024, 8), INT_CEIL(1024, 8), 1);
-	//COUT("weather computed!!")
-
-	glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
-}*/

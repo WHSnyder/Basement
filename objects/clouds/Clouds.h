@@ -27,7 +27,7 @@ public:
 	void update();
 	void draw(unsigned int fboTex);
 
-	std::unique_ptr<Shader> cloudsShader, perlinWorelyShader, worleyShader;//, *weatherShader;
+	std::unique_ptr<Shader> cloudsShader, perlinWorelyShader, worleyShader, weatherShader;
 	//ScreenSpaceShader *postProcessingShader;
 
 	float coverage, cloudSpeed, crispiness, curliness, density, absorption;
@@ -44,7 +44,7 @@ public:
 
 private:
 
-	//void generateWeatherMap();
+	void generateWeatherMap();
 	void generateModelTextures();
 	void initVariables();
 	void initShaders();
