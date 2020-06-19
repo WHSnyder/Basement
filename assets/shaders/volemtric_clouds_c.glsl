@@ -15,7 +15,7 @@ layout(rgba32f, binding = 1) uniform image2D bloom;
 layout(rgba32f, binding = 2) uniform image2D alphaness;
 layout(rgba32f, binding = 3) uniform image2D cloudDistance;
 
-uniform sampler2D sky;
+//uniform sampler2D sky;  CHANGE HERE
 
 uniform float FOV;
 uniform vec2 iResolution;
@@ -23,7 +23,7 @@ uniform float iTime;
 uniform mat4 inv_view;
 uniform mat4 inv_proj;
 
-uniform mat4 invViewProj;
+//uniform mat4 invViewProj;
 
 uniform vec3 lightColor = vec3(1.0);
 uniform sampler3D cloud;
@@ -468,7 +468,7 @@ void main(){
 	//intersectCubeMap(vec3(0.0, 0.0, 0.0), worldDir, stub, cubeMapEndPos);
 	bool hit = raySphereintersectionSkyMap(worldDir, 0.5, cubeMapEndPos);
 
-	vec4 bg = texture(sky, fragCoord/iResolution);
+	vec4 bg = vec4(.5,0.0,0.5,1.0); //texture(sky, fragCoord/iResolution); CHANGE HERE
 	vec3 red = vec3(1.0);
 
 	bg = mix( mix(red.rgbr, vec4(1.0), SUN_DIR.y), bg, pow( max(cubeMapEndPos.y+0.1, .0), 0.2));

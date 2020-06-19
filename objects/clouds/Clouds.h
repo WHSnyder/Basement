@@ -48,8 +48,6 @@ public:
 
 	enum cloudsTextureNames {fragColor, bloom, alphaness, cloudDistance};
 
-	int SCR_WIDTH, SCR_HEIGHT;
-
 	//TextureSet *cloudsFBO;
 	//FrameBufferObject *cloudsPostProcessingFBO;
 	//CloudsModel *model;

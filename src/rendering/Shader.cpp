@@ -214,7 +214,7 @@ void Shader::setFloat(string name, float f){
 }
 
 
-void Shader::setVec3(string name, glm::vec3 v){
+void Shader::setVec3(string name, glm::vec3& v){
 
 	GLuint tempID;
 
@@ -223,7 +223,7 @@ void Shader::setVec3(string name, glm::vec3 v){
 	glUniform3fv(tempID, 1, glm::value_ptr(v));	
 }
 
-void Shader::setMat4(string name, glm::mat4 m){
+void Shader::setMat4(string name, glm::mat4& m){
 
 	GLuint tempID;
 
@@ -232,7 +232,7 @@ void Shader::setMat4(string name, glm::mat4 m){
 	glUniformMatrix4fv(tempID, 1, GL_FALSE, glm::value_ptr(m));	
 }
 
-void Shader::setColor(glm::vec3 v){
+void Shader::setColor(glm::vec3& v){
 
 	glUseProgram(progID); 
 	glUniform3fv(col_loc, 1, glm::value_ptr(v));	

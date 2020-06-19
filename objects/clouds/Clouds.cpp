@@ -3,6 +3,10 @@
 #define TIMETO(CODE, TASK) 	t1 = glfwGetTime(); CODE; t2 = glfwGetTime(); std::cout << "Time to " + std::string(TASK) + " :" << (t2 - t1)*1e3 << "ms" << std::endl;
 
 
+extern glm::vec3 POSITION;
+extern int SCR_WIDTH, SCR_HEIGHT;
+
+
 using namespace glm;
 
 
@@ -43,7 +47,7 @@ void CloudsModel::generateModelTextures() {
 	glGenerateMipmap(GL_TEXTURE_3D);
 
 	
-	worleyShader = make_unique<Shader>("assets/shaders/worley");
+	worleyShader = make_unique<Shader>("assets/shaders/worley", 1);
 	worleyTex = make_unique<Texture>(32, 32, 32);
 	
 	glUseProgram(worleyShader -> progID);
@@ -70,8 +74,8 @@ void CloudsModel::generateModelTextures() {
 }
 
 
-void CloudsModel::update()
-{
+void CloudsModel::update(){
+
 	seed = scene->seed;
 	if (seed != oldSeed) {
 		generateWeatherMap();
@@ -109,7 +113,7 @@ void CloudsModel::initVariables(){
 
 
 
-void Clouds::draw() {
+void Clouds::draw(GLuint depthTex) {
 
 	float t1, t2;
 
@@ -120,46 +124,46 @@ void Clouds::draw() {
 
 	sceneElements* s = drawableObject::scene;
 
-	cloudsShader.use();
+	cloudsShader -> use();
 
-	cloudsShader.setVec2("iResolution", vec2(SCR_WIDTH, SCR_HEIGHT));
-	cloudsShader.setFloat("iTime", glfwGetTime());
-	cloudsShader.setMat4("inv_proj", inverse(s->projMatrix));
-	cloudsShader.setMat4("inv_view", inverse(s->cam->GetViewMatrix()));
-	cloudsShader.setVec3("cameraPosition", s->cam->Position);
-	cloudsShader.setFloat("FOV", s->cam->Zoom);
-	cloudsShader.setVec3("lightDirection", normalize(s->lightPos - s->cam->Position));
-	cloudsShader.setVec3("lightColor", s->lightColor);
+	cloudsShader -> setVec2("iResolution", vec2(SCR_WIDTH, SCR_HEIGHT));
+	cloudsShader -> setFloat("iTime", glfwGetTime());
+	cloudsShader -> setMat4("inv_proj", inverse(PROJMAT));
+	cloudsShader -> setMat4("inv_view", VIEWMAT);
+	cloudsShader -> setVec3("cameraPosition", POSITION);
+	cloudsShader -> setFloat("FOV", s->cam->Zoom);
+	cloudsShader -> setVec3("lightDirection", normalize(s->lightPos - s->cam->Position));
+	cloudsShader -> setVec3("lightColor", s->lightColor);
 	
-	cloudsShader.setFloat("coverage_multiplier", model->coverage);
-	cloudsShader.setFloat("cloudSpeed", model->cloudSpeed);
-	cloudsShader.setFloat("crispiness", model->crispiness);
-	cloudsShader.setFloat("curliness", model->curliness);
-	cloudsShader.setFloat("absorption", model->absorption*0.01);
-	cloudsShader.setFloat("densityFactor", model->density);
+	cloudsShader -> setFloat("coverage_multiplier", model->coverage);
+	cloudsShader -> setFloat("cloudSpeed", model->cloudSpeed);
+	cloudsShader -> setFloat("crispiness", model->crispiness);
+	cloudsShader -> setFloat("curliness", model->curliness);
+	cloudsShader -> setFloat("absorption", model->absorption*0.01);
+	cloudsShader -> setFloat("densityFactor", model->density);
 
-	//cloudsShader.setBool("enablePowder", enablePowder);
+	//cloudsShader -> setBool("enablePowder", enablePowder);
 	
-	cloudsShader.setFloat("earthRadius", model->earthRadius);
-	cloudsShader.setFloat("sphereInnerRadius", model->sphereInnerRadius);
-	cloudsShader.setFloat("sphereOuterRadius", model->sphereOuterRadius);
+	cloudsShader -> setFloat("earthRadius", model->earthRadius);
+	cloudsShader -> setFloat("sphereInnerRadius", model->sphereInnerRadius);
+	cloudsShader -> setFloat("sphereOuterRadius", model->sphereOuterRadius);
 
-	cloudsShader.setVec3("cloudColorTop", model->cloudColorTop);
-	cloudsShader.setVec3("cloudColorBottom", model->cloudColorBottom);
+	cloudsShader -> setVec3("cloudColorTop", model->cloudColorTop);
+	cloudsShader -> setVec3("cloudColorBottom", model->cloudColorBottom);
 	
-	cloudsShader.setVec3("skyColorTop", model->sky->skyColorTop);
-	cloudsShader.setVec3("skyColorBottom", model->sky->skyColorBottom);
+	cloudsShader -> setVec3("skyColorTop", model->sky->skyColorTop);
+	cloudsShader -> setVec3("skyColorBottom", model->sky->skyColorBottom);
 
-	mat4 vp = s->projMatrix*s->cam->GetViewMatrix();
-	cloudsShader.setMat4("invViewProj", inverse(vp));
-	cloudsShader.setMat4("gVP", vp);
+	//mat4 vp = projMat * viewMat;
+	//cloudsShader -> setMat4("inv_view", inverse(vp));
+	//cloudsShader -> setMat4("gVP", vp);
 
-	cloudsShader.setSampler3D("cloud", perlinTex -> getID(), 0);
-	cloudsShader.setSampler3D("worley32", worley -> getID(), 1);
-	//cloudsShader.setSampler2D("weatherTex", model->weatherTex, 2);
-	cloudsShader.setSampler2D("depthMap", s->sceneFBO->depthTex, 3);
-
-	cloudsShader.setSampler2D("sky", model->sky->getSkyTexture(), 4);
+	cloudsShader -> setTexture(perlinTex -> getID(), "cloud",  0);
+	cloudsShader -> setTexture(worley -> getID(), "worley32", 1);
+	cloudsShader -> setTexture(depthTex, "depthMap", 3);
+	
+	//cloudsShader -> setTexture("weatherTex", model->weatherTex, 2);
+	//cloudsShader -> setTexture(model->sky->getSkyTexture(), "sky", 4);
 
 	glDispatchCompute(INT_CEIL(SCR_WIDTH, 16), INT_CEIL(SCR_HEIGHT, 16), 1);
 	glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);

@@ -5,8 +5,10 @@ extern GLFWwindow* window;
 #include <glm/gtc/matrix_transform.hpp>
 #include "utils/Controls.hpp"
 
-using namespace glm;
+extern glm::vec3 POSITION;
 
+
+using namespace glm;
 
 
 vec3 position = vec3(18.0, 18.0, 18.0); 
@@ -63,6 +65,7 @@ mat4 computeMatricesFromInputs(){
 		position -= right * deltaTime * speed;
 
 	lastTime = currentTime;
+	POSITION = position;
 
 	return lookAt(position, position+direction, up);
 }

@@ -48,6 +48,14 @@ GLuint64 startTime, stopTime;
 unsigned int queryID[2];    
 std::unique_ptr<Texture> outputTexture;  
 
+float CURTIME, TIMESTEP;
+glm::mat4 VIEWMAT, PROJMAT;
+glm::vec3 POSITION;
+int SCR_WIDTH, SCR_HEIGHT;
+
+
+
+
 
 void setTimer(){
 	
@@ -276,6 +284,10 @@ int initialize_window(){
 	ImGui_ImplOpenGL3_Init(glsl_version);
 
 	ImGui::StyleColorsDark();*/
+
+	SCR_HEIGHT = height;
+	SCR_WIDTH = width;
+
 	return 0;
 }
 
@@ -303,13 +315,12 @@ float *img_data;// = generate_terrain(dim, freq, terrain_mult.y, px_samples);
 
 float sphereMat[16] = {}, boxMat[16] = {}; 
 
-mat4 playerViewMat = lookAt(vec3(18,18,18),vec3(0,0,-10),vec3(0,1.0,0));
-mat4 proj1 = infinitePerspective(glm::radians(45.0f), 1.0f, 1.0f);
+VIEWMAT = lookAt(vec3(18,18,18),vec3(0,0,-10),vec3(0,1.0,0));
+PROJMAT = infinitePerspective(glm::radians(45.0f), 1.0f, 1.0f);
 mat4 rot = mat4(1.0), testmat, iden = mat4(1.0), trans = translate(vec3(0,9,0)), lighttrans = translate(vec3(0,18,18));
 
 vec3 lightPos = vec3(0,18,18), lookDir = vec3(0,9,0) - lightPos;
 
-mat4 depthOrtho = proj1;
 mat4 depthView = lookAt(lightPos, vec3(0,9,0), normalize(cross(vec3(1,0,0),lookDir)));
 mat4 depthProjMat = glm::ortho<float>(-20,20,-10,10,0,30);
 
@@ -318,7 +329,7 @@ vec3 ter_mult = terrain_mult;
 mat t1 = translate(vec3(-1,0,-1) * ter_mult), t2 = translate(vec3(1,0,-1) * ter_mult), t3 = translate(vec3(-1,0,1) * ter_mult), t4 = translate(vec3(1,0,1) * ter_mult);
 float *t1p = value_ptr(t1), *t2p = value_ptr(t2), *t3p = value_ptr(t3), *t4p = value_ptr(t4);
 
-float *viewptr = value_ptr(playerViewMat), *projptr = value_ptr(proj1);
+float *viewptr = value_ptr(VIEWMAT), *projptr = value_ptr(PROJMAT);
 
 int bufferSize = 600 * 600 * 3;
 float *dataOutSSBO, *dataInSSBO;
@@ -436,8 +447,8 @@ int step_game(float timestep){
 	ImGui::SliderFloat("rotation", &rotation, 0, 2 * 3);
 	ImGui::End();*/
 
-	playerViewMat = computeMatricesFromInputs();
-	viewptr = value_ptr(playerViewMat);	
+	VIEWMAT = computeMatricesFromInputs();
+	viewptr = value_ptr(VIEWMAT);	
 	
 	mainSimu -> stepSimu(timestep);
 	mainSimu -> getModelMats();
