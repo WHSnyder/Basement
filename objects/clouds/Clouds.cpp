@@ -5,8 +5,6 @@
 
 #include <random>
 
-//#define TIMETO(CODE, TASK) 	t1 = glfwGetTime(); CODE; t2 = glfwGetTime(); std::cout << "Time to " + std::string(TASK) + " :" << (t2 - t1)*1e3 << "ms" << std::endl;
-
 
 extern glm::vec3 POSITION;
 int scr_WIDTH, scr_HEIGHT;
@@ -65,9 +63,6 @@ void Clouds::generateModelTextures() {
 				
 	perlinTex = make_unique<Texture>(128, 128, 128);
 	
-	//perlinWorelyShader -> setVec3("u_resolution", vec3(128, 128, 128));
-	//perlinWorelyShader -> setInt("outVolTex", 0);
-
 	glUseProgram(perlinWorelyShader -> progID); //Need to abstract that...
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_3D, perlinTex -> getID());
@@ -129,11 +124,11 @@ void Clouds::update() {
 
 void Clouds::initVariables() {
 
-	cloudSpeed = 450.0;
-	coverage = 0.15;
+	cloudSpeed = 1000.0;
+	coverage = 0.65;
 	crispiness = 40.;
-	curliness = .1;
-	density = 0.02;
+	curliness = .7;
+	density = 0.04;
 	absorption = 0.35;
 
 	earthRadius = 600000.0;

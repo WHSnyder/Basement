@@ -246,7 +246,7 @@ float sampleCloudDensity(vec3 p, bool expensive, float lod){
 	float density = getDensityForCloud(heightFraction, 1.0);
 	base_cloud *= (density/heightFraction);
 
-	vec3 weather_data = vec3(1.0); //texture(weatherTex, moving_uv).rgb; 
+	vec3 weather_data = vec3(.1,0.1,0.2);  //vec3(.4); //texture(weatherTex, moving_uv).rgb; 
 	float cloud_coverage = weather_data.r*coverage_multiplier;
 	float base_cloud_with_coverage = remap(base_cloud , cloud_coverage , 1.0 , 0.0 , 1.0);
 	base_cloud_with_coverage *= cloud_coverage;
@@ -358,7 +358,7 @@ vec4 raymarchToCloud(vec3 startPos, vec3 endPos, vec3 bg, out vec4 cloudPos){
 
 	int zero_density_sample = 0;
 
-	for(int i = 0; i < nSteps; ++i){	
+	for(int i = 0; i < nSteps; i+=1){	
 
 		float density_sample = sampleCloudDensity(pos, true, i/16);
 		if(density_sample > 0.){
