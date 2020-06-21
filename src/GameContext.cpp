@@ -89,10 +89,6 @@ GLuint64 getTimer(int block){
 
 
 
-	
-
-
-
 
 using namespace std;
 
@@ -238,7 +234,7 @@ int initialize_window(){
 		return -1;
 	}
 
-	glfwWindowHint(GLFW_SAMPLES, 16);
+	glfwWindowHint(GLFW_SAMPLES, 8);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
 	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE); // To make MacOS happy; should not be needed
@@ -469,6 +465,12 @@ int step_game(float timestep){
 	shadow_shader -> setModel(boxMat);
 	cube -> draw(shadow_shader -> progID);
 
+	//terrain_shader -> setProj(value_ptr(depthProjMat));
+ 	//terrain_shader -> setView(value_ptr(depthView));
+	//terrain_plane -> draw(terrain_shader -> progID);
+
+	glCheckError();
+
 
 	textureTarget -> set();
 
@@ -478,6 +480,7 @@ int step_game(float timestep){
 	//plane_shader -> setImageTexture(cloudTarget -> getTexture(),0,5);
 	//plane -> draw(plane_shader -> progID);
 
+	terrain_shader -> setProj(projptr);
 	terrain_shader -> setView(viewptr);
 	terrain_plane -> draw(terrain_shader -> progID);
 
