@@ -39,6 +39,19 @@ GLenum glCheckError_(const char *file, int line){
 vector<string> face_tags({string("_rt"), string("_lf"), string("_up"), string("_dn"), string("_bk"), string("_ft")});
 
 
+Texture::~Texture(){
+
+    std::cout << "Deleting texture " << texID;
+    if (path.length() > 0)
+        std::cout << " loaded from " << path.c_str();
+    std::cout << std::endl;
+
+    if (data != nullptr)
+        delete data; 
+    glDeleteTextures(1,&texID);
+}
+
+
 GLuint load3DTexture(int w, int h, int d){
 
     GLuint texID;
@@ -138,6 +151,8 @@ Texture::Texture(float *_data, int width, int height, int color){
 Texture::Texture(string filepath, int cubemap, std::string extension){
 
     filepath.insert(0, basepath);
+
+    path = filepath;
 
     if (!cubemap){
         

@@ -299,7 +299,7 @@ int initialize_window(){
 
 
 
-std::unique_ptr<RenderTarget> shadowTarget, textureTarget;
+std::unique_ptr<RenderTarget> shadowTarget, textureTarget, cloudTarget;
 std::unique_ptr<Simu> mainSimu;
 std::unique_ptr<Mesh> cube, sphere, terrain_plane, plane;
 std::unique_ptr<Texture> noise_tex, grass_tex, skybox, scream;
@@ -342,8 +342,8 @@ std::unique_ptr<StyleTransfer> stModel;
 
 void initialize_game(string inpath){
 
+	cloudTarget = make_unique<RenderTarget>(384,384,0);
 	clouds = make_unique<Clouds>(384,384);
-	glCheckError();
 
 	img_data = generate_terrain(dim, freq, terrain_mult.y, px_samples);
 
@@ -391,7 +391,7 @@ void initialize_game(string inpath){
 	outputTexture = make_unique<Texture>(384,384);
 
 	noise_tex = make_unique<Texture>(img_data, dim, dim, 0);
-    grass_tex = make_unique<Texture>(string("assets/images/grass.jpg"), 0);
+    grass_tex = make_unique<Texture>(string("assets/images/volcanic.jpg"), 0);
     skybox = make_unique<Texture>(string("assets/images/yellowcloud"), 1);
     scream = make_unique<Texture>(string("assets/images/scream.jpg"), 0);
     //Texture skybox = Texture(string("/Users/will/projects/TombVoyage/Assets/SpaceSkiesFree/Skybox_2/Textures/1K_Resolution/1K_TEX"), 1);
@@ -429,6 +429,10 @@ void initialize_game(string inpath){
  	shadow_shader -> setView(value_ptr(depthView));
 
  	textureTarget = make_unique<RenderTarget>(384,384,0);
+
+ 	plane_shader -> setModel(value_ptr(iden));
+	plane_shader -> setView(value_ptr(iden));
+	plane_shader -> setProj(value_ptr(iden));
 }
 
 
@@ -437,14 +441,16 @@ int step_game(float timestep){
 
 	CURTIME += timestep;
 
-	/*ImGui_ImplOpenGL3_NewFrame();
+	/*
+	ImGui_ImplOpenGL3_NewFrame();
 	ImGui_ImplGlfw_NewFrame();
 	ImGui::NewFrame();
 
 	ImGui::Begin("Triangle Position/Color");
 	static float rotation = 0.0;
 	ImGui::SliderFloat("rotation", &rotation, 0, 2 * 3);
-	ImGui::End();*/
+	ImGui::End();
+	*/
 
 	VIEWMAT = computeMatricesFromInputs();
 	viewptr = value_ptr(VIEWMAT);	
@@ -456,18 +462,21 @@ int step_game(float timestep){
 	testmat = trans * rot;
 
 	//setTimer();
-
 	shadowTarget -> set();
-
+	
 	shadow_shader -> setModel(sphereMat);
 	sphere -> draw(shadow_shader -> progID);
 	shadow_shader -> setModel(boxMat);
 	cube -> draw(shadow_shader -> progID);
 
+
 	textureTarget -> set();
 
-	clouds -> draw(textureTarget -> getTexture());
 	clouds -> update();
+	clouds -> draw(textureTarget -> getTexture());
+
+	//plane_shader -> setImageTexture(cloudTarget -> getTexture(),0,5);
+	//plane -> draw(plane_shader -> progID);
 
 	terrain_shader -> setView(viewptr);
 	terrain_plane -> draw(terrain_shader -> progID);
@@ -493,14 +502,11 @@ int step_game(float timestep){
 	basic_shader -> setColor(2.0f*vec3(0.0,0.0,1.0));
 	sphere -> draw(basic_shader -> progID);
 
-	basic_shader -> setModel(value_ptr(lighttrans));
-	basic_shader -> setColor(2.0f*vec3(1.0,1.0,0.0));
-	sphere -> draw(basic_shader -> progID);
-
 	//skybox_shader -> setView(viewptr);
 	//cube -> draw(skybox_shader -> progID);
-	
+
 	populateInputSSBO(tex2SSBO.get(), textureTarget -> getTexture());
+	
 	
 	if (toggleNetwork){
 		stModel -> execute();
@@ -508,31 +514,17 @@ int step_game(float timestep){
 	} else {
 		populateOutputTex(SSBO2tex.get(), ssboIn);
 	}
+	
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glViewport(0, 0, width, height);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	plane_shader -> setModel(value_ptr(iden));
-	plane_shader -> setView(value_ptr(iden));
-	plane_shader -> setProj(value_ptr(iden));
-
-	glUseProgram(plane_shader -> progID);
 	plane_shader -> setImageTexture(outputTexture -> getID(),0,5);
 	plane -> draw(plane_shader -> progID);
-	glCheckError();
 
-	/*if (toggleNetwork){
-		//Set FS quad up
-		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, ssboOut);
-		plane -> draw(plane_shader -> progID);
-	} else {
-		//Render whatever we sent to the network
-		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, ssboIn);
-		plane -> draw(plane_shader -> progID);
-	}*/
-
-	/*ImGui::Render();
+	/*
+	ImGui::Render();
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
 	showFPS(window);*/
@@ -555,6 +547,7 @@ void destroy_game(){
 	ImGui_ImplGlfw_Shutdown();
 	ImGui::DestroyContext();
 	*/	
+
 	delete px_samples;
 	
 	glDeleteBuffers(1,&ssboOut);
@@ -611,7 +604,7 @@ int main(int argc, char **argv){
 
 	destroy_game();
 	//exit(0);
-	return 1;
+	return 0;
 }
 
 #else

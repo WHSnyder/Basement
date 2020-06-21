@@ -22,6 +22,11 @@ void Shader::Dispatch(int w, int l, int d, int barrier){
 }
 */
 
+#if __linux__
+string prefix = "/home/will/projects/cpprtx/";
+#else
+string prefix = "/home/will/projects/cpprtx/";
+#endif
 
 int compile_shader(GLenum shaderType, string shaderCode){
 	
@@ -102,9 +107,9 @@ GLuint build_program(string shader_path){
 Shader::Shader(string shader_path, int buildCompute){
 
 	if (buildCompute)
-		progID = build_compute_program(shader_path);
+		progID = build_compute_program(prefix + shader_path);
 	else 
-		progID = build_program(shader_path);
+		progID = build_program(prefix + shader_path);
 
 	glUseProgram(progID); 
 

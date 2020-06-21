@@ -104,6 +104,9 @@ add_subdirectory(src/phys)
 add_subdirectory(objects/clouds)
 #add_subdirectory(libs/imgui)
 
+add_definitions(-DGL_HDR_TST="\"tensorflow/lite/delegates/gpu/gl/glew.h\"")
+
+
 if (BUILDTEST)
 	add_subdirectory(src/tf_driver)
 	target_link_libraries(basement PUBLIC test_TFCPP)

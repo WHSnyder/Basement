@@ -18,7 +18,7 @@ class RenderTarget {
 		RenderTarget(int rows_, int cols_, int shadow=0);
 		RenderTarget(Node node);
 		
-		void set();
+		void set(int clear = 1);
 
 		inline GLuint getTexture(){
 			return texID;

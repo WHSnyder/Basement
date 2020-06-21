@@ -11,10 +11,14 @@ extern GLenum glCheckError_(const char *file, int line);
 using namespace std;
 
 
-void RenderTarget::set(){
+void RenderTarget::set(int clear){
+
 	glBindFramebuffer(GL_FRAMEBUFFER, framebufferID);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glCheckError();
+	if (clear == 1)
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	if (clear == 2)
+		glClear(GL_DEPTH_BUFFER_BIT);
+	
 	glViewport(0, 0, cols, rows);
 }
 

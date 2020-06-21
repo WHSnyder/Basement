@@ -12,7 +12,7 @@ void main() {
 	int dim = 384;
 	ivec2 gid = ivec2(gl_GlobalInvocationID.xy);
 	
-	int linear_index = 3 * ((dim - gid.y) * dim + dim - gid.x);
+	int linear_index = 3 * ((gid.y) * dim + gid.x);
 	if (linear_index >= dim * dim * 3){
 		return;
 	}

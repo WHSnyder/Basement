@@ -116,7 +116,7 @@ void Clouds::update() {
 
 	if (counter % 300 == 0){
 		seed = genRandomVec3();
-		generateWeatherMap();
+		//generateWeatherMap();
 	}
 	counter++;
 }
@@ -152,8 +152,8 @@ void Clouds::initVariables() {
 void Clouds::draw(GLuint fboTex) {
 
 	static vec3 lightPos = 5.0f * vec3(0,18,18);
-	static vec3 lightColor = vec3(0.5,0.0,0.6);
-	static vec3 blue = vec3(0.2,0.0,0.2);
+	static vec3 lightColor = vec3(0.7,0.1,0.1);
+	static vec3 blue = vec3(0.2,0.2,0.2);
 
 	vec3 lightDir = normalize(lightPos - POSITION);
 

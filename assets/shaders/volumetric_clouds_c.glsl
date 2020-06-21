@@ -74,7 +74,6 @@ uniform vec3 noiseKernel[6u] = vec3[]
 	vec3(-0.16852403,  0.14748697,  0.97460106)
 );
 
-
 // Cloud types height density gradients
 #define STRATUS_GRADIENT vec4(0.0, 0.1, 0.2, 0.3)
 #define STRATOCUMULUS_GRADIENT vec4(0.02, 0.2, 0.48, 0.625)

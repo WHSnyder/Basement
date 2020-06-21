@@ -49,7 +49,7 @@ mat4 computeMatricesFromInputs(){
 	);
 	
 	vec3 right = vec3(sin(horizontalAngle - 3.14f/2.0f), 0, cos(horizontalAngle - 3.14f/2.0f));
-	vec3 up = -1.0f * glm::cross(right, direction); //lol
+	vec3 up = glm::cross(right, direction); //lol
 
 	//Forward
 	if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)

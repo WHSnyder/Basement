@@ -1,5 +1,4 @@
-#ifndef TEX_
-#define TEX_
+#pragma once
 
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
@@ -12,7 +11,6 @@
 Basic texture class
 */
 
-
 class Texture {
 
 	private:
@@ -20,6 +18,7 @@ class Texture {
 		void *data = nullptr;
 		GLuint texID;
 		int rows,cols;
+		std::string path;
 
 	public:
 
@@ -36,10 +35,5 @@ class Texture {
 		    return cols;
 		}
 
-		~Texture(){
-			if (data != nullptr)
-				delete data; 
-			glDeleteTextures(1,&texID);
-		}
+		~Texture();
 };
-#endif

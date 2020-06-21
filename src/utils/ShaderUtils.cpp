@@ -12,11 +12,8 @@
 
 using namespace std;
 
-extern string basepath;
 
 string read_shader(string filepath){
-
-    filepath.insert(0, basepath);
 
 	string content;
     ifstream fileStream(filepath.c_str());
