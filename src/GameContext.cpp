@@ -12,24 +12,13 @@
 #include "imgui/bindings/imgui_impl_opengl3.h"
 */
 
-#include <GL/glew.h>
-#include <stdlib.h>
-#include <string>
-#include <chrono>
-#include <iostream>
-#include <vector>
-#include <memory>
-#include <time.h>
-
-#include <sys/types.h>
-#include <unistd.h>
+#include "GameContext.h"
 
 #include "rendering/Texture.h"
 #include "mesh/Mesh.h"
 #include "phys/Physics.h"
 #include "glm/gtx/transform.hpp"
 #include "perlin/PerlinNoise.hpp"
-#include "rendering/Shader.h"
 #include "utils/Controls.hpp"
 #include "rendering/RenderTarget.h"
 #include "tf_driver/StyleTransfer.h"
@@ -59,7 +48,7 @@ glm::mat4 VIEWMAT = lookAt(vec3(18,18,18),vec3(0,0,-10),vec3(0,1.0,0));
 glm::mat4 PROJMAT = infinitePerspective(glm::radians(45.0f), 1.0f, 1.0f);
 glm::vec3 POSITION;
 int SCR_WIDTH, SCR_HEIGHT;
-
+int userIn=0;
 
 
 
@@ -154,7 +143,7 @@ float *generate_terrain(int dim, double freq, float height_mult, int32_t *physx_
 
 
 //For quads fullscreen or otherwise
-std::unique_ptr<Mesh> gen_plane(){
+unique_ptr<Mesh> gen_plane(){
 
     vec3 verts[] = {vec3(-1,1,0), vec3(1,1,0), vec3(-1,-1,0), vec3(1,-1,0)};
     vec3 norms[] = {vec3(0,0,1), vec3(0,0,1), vec3(0,0,1), vec3(0,0,1)};
@@ -174,6 +163,8 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
         glfwSetWindowShouldClose(window, GL_TRUE);
    	if (key == GLFW_KEY_Q && action == GLFW_PRESS)
    		toggleNetwork = ~toggleNetwork;
+    if (key == GLFW_KEY_I && action == GLFW_PRESS)
+   		userIn = 1;
 }
 
 double lastTime; 
@@ -200,20 +191,20 @@ void showFPS(GLFWwindow *pWindow){
 }
 
 
-void populateInputSSBO(Shader *tex2ssbo, GLuint texID){
+void textureToSSBO(Shader *tex2ssbo, GLuint texID, GLuint ssbo){
 
 	glUseProgram(tex2ssbo -> progID); 
 	tex2ssbo -> setImageTexture(texID, 0, 7);
-	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, ssboIn);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, ssbo);
 	glDispatchCompute(24, 24, 1);    
  	glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT | GL_SHADER_IMAGE_ACCESS_BARRIER_BIT | GL_TEXTURE_FETCH_BARRIER_BIT);
 }
 
 
-void populateOutputTex(Shader *ssbo2tex, GLuint ssbo){
+void SSBOToTexture(Shader *ssbo2tex, GLuint ssbo, GLuint texID){
 
 	glUseProgram(ssbo2tex -> progID); 
-	glBindImageTexture(0, outputTexture -> getID(), 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA32F);
+	glBindImageTexture(0, texID, 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA32F);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, ssbo);
 	glDispatchCompute(24, 24, 1);    
  	glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT | GL_SHADER_IMAGE_ACCESS_BARRIER_BIT | GL_TEXTURE_FETCH_BARRIER_BIT);
@@ -294,6 +285,7 @@ int initialize_window(){
 
 
 
+std::unique_ptr<StyleTransfer> stModel;
 
 std::unique_ptr<RenderTarget> shadowTarget, textureTarget, cloudTarget;
 std::unique_ptr<Simu> mainSimu;
@@ -332,11 +324,10 @@ float *viewptr = value_ptr(VIEWMAT), *projptr = value_ptr(PROJMAT);
 int bufferSize = 600 * 600 * 3;
 float *dataOutSSBO, *dataInSSBO;
 
-std::unique_ptr<StyleTransfer> stModel;
 
 
 
-void initialize_game(string inpath){
+int initialize_game(string inpath){
 
 	cloudTarget = make_unique<RenderTarget>(384,384,0);
 	clouds = make_unique<Clouds>(384,384);
@@ -370,6 +361,8 @@ void initialize_game(string inpath){
 
 	//Create and set style for the ST
 	stModel = make_unique<StyleTransfer>(ssboOut,ssboIn);
+	if (stModel == nullptr)
+		return -1;
 	stModel -> setStyle(0);
 	stModel -> prime();
 
@@ -429,6 +422,8 @@ void initialize_game(string inpath){
  	plane_shader -> setModel(value_ptr(iden));
 	plane_shader -> setView(value_ptr(iden));
 	plane_shader -> setProj(value_ptr(iden));
+
+	return 0;
 }
 
 
@@ -508,14 +503,14 @@ int step_game(float timestep){
 	//skybox_shader -> setView(viewptr);
 	//cube -> draw(skybox_shader -> progID);
 
-	populateInputSSBO(tex2SSBO.get(), textureTarget -> getTexture());
+	textureToSSBO(tex2SSBO.get(), textureTarget -> getTexture(), ssboIn);
 	
 	
 	if (toggleNetwork){
 		stModel -> execute();
-		populateOutputTex(SSBO2tex.get(), ssboOut);
+		SSBOToTexture(SSBO2tex.get(), ssboOut, outputTexture -> getID());
 	} else {
-		populateOutputTex(SSBO2tex.get(), ssboIn);
+		SSBOToTexture(SSBO2tex.get(), ssboIn, outputTexture -> getID());
 	}
 	
 
@@ -534,12 +529,28 @@ int step_game(float timestep){
 
 	//printf("GPU FPS: %lu\n", 1000 / (getTimer(1) / 1000000));
 
+	
+
+	int x;
+	if (userIn){
+		userIn = 0;
+		std::cout << "Yes? ";
+		std::cin >> x;
+		std::cout << "Number entered: " << x << std::endl;
+	}
+
 	glfwSwapBuffers(window);
 	glfwPollEvents();
 
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE ) == GLFW_PRESS || glfwWindowShouldClose(window) != 0)
 		return -1;
 	return 0;
+}
+
+
+void destroy_context(){
+	glfwDestroyWindow(window);
+	glfwTerminate();	
 }
 
 
@@ -559,8 +570,7 @@ void destroy_game(){
 	delete[] dataOutSSBO;
 	delete[] dataInSSBO;
 
-	glfwDestroyWindow(window);
-	glfwTerminate();
+	destroy_context();
 }
 
 
@@ -569,7 +579,7 @@ void destroy_game(){
 int main(int argc, char **argv){
 
 	COUT("GAME LAUNCH")
-
+//bazel build --config "linux" -c opt --copt "-Os" --copt "-DMAC_OPENGL" --copt "-DTFLITE_GPU_BINARY_RELEASE" --verbose_failures :libtensorflowlite_gpu_delegate.so 
 #if __linux__
 	std::string inpath = "/home/will/projects/cpprtx/";
 #elif __APPLE__
@@ -587,8 +597,10 @@ int main(int argc, char **argv){
     terrainSeed = rand() % 100000000 + 1; 
 	img_data = generate_terrain(dim, freq, terrain_mult.y, px_samples);
 
-	initialize_game(inpath);
-
+	if (initialize_game(inpath) == -1){
+		COUT("GAME INIT ERROR")
+		return -1;
+	}
 
 	auto t_now = t_last;
 	float timeStep;
