@@ -125,11 +125,11 @@ void Clouds::update() {
 void Clouds::initVariables() {
 
 	cloudSpeed = 1000.0;
-	coverage = 0.65;
+	coverage = 0.55;
 	crispiness = 10.;
-	curliness = .7;
+	curliness = .6;
 	density = 0.04;
-	absorption = 0.35;
+	absorption = 0.25;
 
 	earthRadius = 600000.0;
 	sphereInnerRadius = 5000.0;
@@ -244,28 +244,30 @@ void Clouds::draw(GLuint fboTex) {
 	}*/
 }
 
+/*
+auto input = ctx.graph->FindInputs(ctx.node->id)[0];
 
-/* MY SHADER
-#version 430
-layout(local_size_x = 16, local_size_y = 16, local_size_z = 4) in;
-layout(std430) buffer;
-precision mediump float;
-#define Vec4FromHalf(v) vec4(unpackHalf2x16(v.x), unpackHalf2x16(v.y))
-#define Vec4ToHalf(v) uvec2(packHalf2x16(v.xy), packHalf2x16(v.zw))
-layout(binding = 1) writeonly buffer B1 { uvec2 data[]; } output_data_0;
-layout(binding = 0) readonly buffer B0 { uvec2 data[]; } input_data_0;
+    std::vector<Variable> parameters = {
+        {"input_data_0_h", input->tensor.shape.h},
+        {"input_data_0_w", input->tensor.shape.w},
+        {"input_data_0_c", input->tensor.shape.c}};
 
+    std::string source;
 
-shared highp vec4 sh_mem[1024];
+    int zDim = ceil(input->tensor.shape.c / 4.0 - .0001);
 
-void main() {
+    std::vector<Variable> shared_variables = {
+        {"sh_mem", std::vector<float4>(64 * zDim)},
+    };
 
-  ivec3 gid = ivec3(gl_GlobalInvocationID.xyz);
-  highp vec4 value_0 = vec4(0);
+    if (input->tensor.shape.h * input->tensor.shape.w >= 1024) { //Arbitrary
 
-{
+      source = R"(        
         highp vec4 sum = vec4(0.0);
-        highp float inputSize = float(384 * 384);
+
+        float cDim = float($input_data_0_c$);
+
+        highp float inputSize = float($input_data_0_w$ * $input_data_0_h$);
 
         const int sizeY = int(gl_WorkGroupSize.y);
         const int sizeX = int(gl_WorkGroupSize.x);
@@ -274,104 +276,120 @@ void main() {
         int workGridSize = sizeX * sizeY;
         int taskSize = int(ceil(inputSize/float(workGridSize)));
 
-        int gridID = localID.x * sizeY + localID.y;
+        int gridID = localID.y * sizeX + localID.x;
         int z_offset = localID.z * int(inputSize);
 
         int startIndex = gridID * taskSize;
 
-        for (int i = startIndex; i < startIndex + taskSize; i++) {
-          sum += i < inputSize ? Vec4FromHalf(input_data_0.data[i + z_offset + 384 * ( 0 + 384 * ( 0))]) : vec4(0.0);
+        for (int i = startIndex; i < startIndex + taskSize; i+=1) {
+          sum += i < inputSize ? $input_data_0[i + z_offset, 0, 0]$ : vec4(0.0);
         }
+
+        z_offset = localID.z * workGridSize;
 
         sh_mem[gridID + z_offset] = sum;
 
         memoryBarrierShared();
         barrier();
 
-        if (gid.x >= 1 || gid.y >= 1 || gid.z >= 4){
+        if (gid.x >= 1 || gid.y >= 1){
           return;
         }
 
         sum = vec4(0.0);
-        z_offset = workGridSize * localID.z;
         
         for (int i = 0; i < workGridSize; i++){
           sum += sh_mem[i + z_offset];  
         }
 
         value_0 = sum / inputSize;
-      
-}
-{
-value_0 += 0.000010014f;
-}{
-
-            const float nan = normalize(vec4(0, 0, 0, 0)).x;
-            value_0.x = value_0.x > 0.0 ? 1.0 / sqrt(value_0.x) : nan;
-            value_0.y = value_0.y > 0.0 ? 1.0 / sqrt(value_0.y) : nan;
-            value_0.z = value_0.z > 0.0 ? 1.0 / sqrt(value_0.z) : nan;
-            value_0.w = value_0.w > 0.0 ? 1.0 / sqrt(value_0.w) : nan;
-        
-}  output_data_0.data[gid.x + 1 * ( gid.y + 1 * ( gid.z))] = Vec4ToHalf(value_0);
-}
-
-
-*/
+      )";
+	*/
+      //*generated_code = {
+          /*parameters=*///std::move(parameters),
+          /*objects=*///{},
+          /*shared_variables=*///std::move(shared_variables),
+          /*workload=*///uint3(1,1,1),
+          /*workgroup=*///uint3(8,8,zDim), //Someone more knowledgeable should change this,
+                                         //I kept it small for compatibility/simplicity.
+          /*source_code=*///std::move(source),
+          /*input=*///IOStructure::ONLY_DEFINITIONS,
+          /*output=*///IOStructure::AUTO,
+      //};
+    //}
 
 
 
 
-
-
+//WITH GLOBAL SCOPE
 /*
-#version 430
-layout(local_size_x = 16, local_size_y = 16, local_size_z = 4) in;
-layout(std430) buffer;
-precision mediump float;
-#define Vec4FromHalf(v) vec4(unpackHalf2x16(v.x), unpackHalf2x16(v.y))
-#define Vec4ToHalf(v) uvec2(packHalf2x16(v.xy), packHalf2x16(v.zw))
-layout(binding = 1) writeonly buffer B1 { uvec2 data[]; } output_data_0;
-layout(binding = 0) readonly buffer B0 { uvec2 data[]; } input_data_0;
+constexpr int kWorkgroupHintX = 4;
+    constexpr int kWorkgroupHintY = 4;
+    int kWorkgroupHintZ = ceil(input->tensor.shape.c / 4.0 - .0001);
 
-void main() {
+    std::vector<Variable> shared_variables = {
+        {"sh_mem", std::vector<float4>(kWorkgroupHintX/2 * kWorkgroupHintX * 
+                                       kWorkgroupHintY/2 * kWorkgroupHintY * 
+                                       kWorkgroupHintZ)},
+    };
 
-  ivec3 gid = ivec3(gl_GlobalInvocationID.xyz);
-  if (gid.x >= 1 || gid.y >= 1 || gid.z >= 4) {
-    return;
-  }
-  highp vec4 value_0 = vec4(0);
 
-{
-      MEAN
+    if (input->tensor.shape.h * input->tensor.shape.w >= 1024) {
 
-      // Shaders may be compiled with a precision hint mediump, which means that
-      // GLSL compiler may drop the size of float data type from 32 to 16 bits.
-      // If "sum" and "size" variables are 16bit floats, their values range
-      // become not enough for providing a good results accuracy. That is why
-      // their precision is forced to be 32bit by using highp qualifier.
+      source = R"(        
+        highp vec4 sum = vec4(0.0);
+        highp float size = float($input_data_0_w$ * $input_data_0_h$);
 
-      highp vec4 sum = vec4(0.0);
-      highp float size = float(192 * 192);
-      for (int w = 0; w < 192; w+=2) { //change back to ++
-        for (int h = 0; h < 192; h+=2) { //change back to ++
-          sum += Vec4FromHalf(input_data_0.data[w + 192 * ( h + 192 * ( gid.z))]);
-        }
-      }
-      value_0 = (sum / size) * 4.0;
-    
-}
-{
-ADD_SCALAR
-value_0 += 0.000010014f;
-}{
+        const int groupsX = int(gl_NumWorkGroups.x);
+        const int groupsY = int(gl_NumWorkGroups.y);
+        const int sizeX = int(gl_WorkGroupSize.x);
+        const int sizeY = int(gl_WorkGroupSize.y);
+        ivec3 localID = ivec3(gl_LocalInvocationID.xyz);
+        int workGridSize = sizeX * sizeY * groupsX * groupsY;
 
-            ELEMENTWISE_RSQRT
-            const float nan = normalize(vec4(0, 0, 0, 0)).x;
-            value_0.x = value_0.x > 0.0 ? 1.0 / sqrt(value_0.x) : nan;
-            value_0.y = value_0.y > 0.0 ? 1.0 / sqrt(value_0.y) : nan;
-            value_0.z = value_0.z > 0.0 ? 1.0 / sqrt(value_0.z) : nan;
-            value_0.w = value_0.w > 0.0 ? 1.0 / sqrt(value_0.w) : nan;
+        int local_grid_index = sizeX * localID.y + localID.x;
+        int global_grid_index = gid.x * sizeX * sizeY * groupsY + gid.y * sizeX * sizeY;
         
-}  output_data_0.data[gid.x + 1 * ( gid.y + 1 * ( gid.z))] = Vec4ToHalf(value_0);
-}
-*/
+        int taskSize = int(ceil(size / float(workGridSize)));
+
+        int flattenedIndex = global_grid_index + local_grid_index;
+        int z_offset = gid.z * int(size);
+
+        int startIndex = flattenedIndex * taskSize;
+
+        for (int i = startIndex; i < startIndex + taskSize; i++) {
+          sum += i < size ? $input_data_0[z_offset + i, 0, 0]$ : vec4(0.0);
+        }
+
+        z_offset = gid.z * workGridSize;
+
+        sh_mem[flattenedIndex + z_offset] = sum;
+
+        memoryBarrierShared();
+        groupMemoryBarrier();
+        barrier();
+
+        if (gid.x >= 1 || gid.y >= 1){
+          return;
+        }
+
+        sum = vec4(0.0);
+        
+        for (int i = 0; i < workGridSize; i++){
+          sum += sh_mem[i + z_offset];  
+        }
+
+        value_0 = sum / size;
+      )";*/
+
+      //*generated_code = {
+          /*parameters=*///std::move(parameters),
+          /*objects=*///{},
+          /*shared_variables=*///std::move(shared_variables),
+          /*workload=*///uint3(kWorkgroupHintX,kWorkgroupHintY,1),
+          /*workgroup=*/ //uint3(kWorkgroupHintX/2,kWorkgroupHintY/2,kWorkgroupHintZ), 
+          /*source_code=*///std::move(source),
+          /*input=*///IOStructure::ONLY_DEFINITIONS,
+          /*output=*///IOStructure::AUTO,
+      //};
+    //}

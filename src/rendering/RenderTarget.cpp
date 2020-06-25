@@ -63,30 +63,10 @@ void bindTextureFramebuffer(GLuint& framebufferID, GLuint& depthBufferID, GLuint
 	glBindTexture(GL_TEXTURE_2D, texID);
 
 	//glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, cols, rows, 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA32F, cols, rows);
 	glCheckError();
-
-	COUT("SUBIMAGE INBOUND")
-
-	unsigned char *dummy = new unsigned char[cols * rows * 3]();
-
-	for (int h = 0; h < 200 * 200; h++)
-		dummy[h] = 150; //Visual sanity check 
-
-	//Dummy texture data
-	/*glTexSubImage2D(GL_TEXTURE_2D,     
-                0,                 
-                0,
-                0,          
-                cols,
-                rows,
-                GL_RGB,
-                GL_UNSIGNED_BYTE,
-                dummy); // <- Causes seg fault?  A lot of docs use this...
-	*/
-	delete[] dummy;
 
 	//Depth buffer
 	glGenRenderbuffers(1, &depthBufferID);

@@ -460,20 +460,12 @@ int step_game(float timestep){
 	shadow_shader -> setModel(boxMat);
 	cube -> draw(shadow_shader -> progID);
 
-	//terrain_shader -> setProj(value_ptr(depthProjMat));
- 	//terrain_shader -> setView(value_ptr(depthView));
-	//terrain_plane -> draw(terrain_shader -> progID);
 
-	glCheckError();
-
-
+	//Render objects
 	textureTarget -> set();
 
 	clouds -> update();
 	clouds -> draw(textureTarget -> getTexture());
-
-	//plane_shader -> setImageTexture(cloudTarget -> getTexture(),0,5);
-	//plane -> draw(plane_shader -> progID);
 
 	terrain_shader -> setProj(projptr);
 	terrain_shader -> setView(viewptr);
@@ -505,7 +497,6 @@ int step_game(float timestep){
 
 	textureToSSBO(tex2SSBO.get(), textureTarget -> getTexture(), ssboIn);
 	
-	
 	if (toggleNetwork){
 		stModel -> execute();
 		SSBOToTexture(SSBO2tex.get(), ssboOut, outputTexture -> getID());
@@ -513,7 +504,6 @@ int step_game(float timestep){
 		SSBOToTexture(SSBO2tex.get(), ssboIn, outputTexture -> getID());
 	}
 	
-
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glViewport(0, 0, width, height);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -528,9 +518,7 @@ int step_game(float timestep){
 	showFPS(window);*/
 
 	//printf("GPU FPS: %lu\n", 1000 / (getTimer(1) / 1000000));
-
 	
-
 	int x;
 	if (userIn){
 		userIn = 0;
@@ -618,11 +606,11 @@ int main(int argc, char **argv){
 	}
 
 	destroy_game();
-	//exit(0);
 	return 0;
 }
 
 #else
+
 PYBIND11_MODULE(GameContext, m) { 
     m.doc() = "Full game loop";
     m.def("run_model", &run_model, "Run CPP test for TF");
@@ -631,4 +619,5 @@ PYBIND11_MODULE(GameContext, m) {
     m.def("step_game", &step_game, "Run game iteration");
     m.def("destroy_game", &destroy_game, "Run game iteration");
 }
+
 #endif
