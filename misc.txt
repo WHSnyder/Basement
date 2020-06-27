@@ -1,6 +1,5 @@
 RANDOM USEFUL NOTES
 
-bazel build --config "macos" -c opt --copt "-Os" --copt "-DMAC_OPENGL" --copt "-DTFLITE_GPU_BINARY_RELEASE" --verbose_failures :libtensorflowlite_gpu_delegate.so --apple_platform_type=macos
 
 rm -rf /private/var/tmp/_bazel_will/*
 
@@ -8,6 +7,13 @@ cmake .. -DGLPATH="/System/Library/Frameworks/OpenGL.framework/Versions/A/Librar
 
 cmake .. -DGLPATH="/usr/lib/x86_64-linux-gnu/" -DBINDPY=ON 
 
+
+
+cp ~/projects/cpprtx/libs/tf_gl/bazel-bin/tensorflow/lite/c/libtensorflowlite_c.dylib macOS/libtensorflowlite_c.dylib
+cp ~/projects/cpprtx/libs/tf_gl/bazel-bin/tensorflow/lite/delegates/gpu/tensorflow_lite_gpu_dylib.dylib macOS/libtensorflowlite_metal_delegate.dylib
+
+bazel build --config "macos" -c opt --copt -Os --copt -DMAC_OPENGL :tensorflowlite --apple_platform_type=macos
+bazel build -c opt --copt -Os --copt -DTFLITE_GPU_BINARY_RELEASE --copt -fvisibility=hidden --linkopt -s --strip always --cxxopt=-std=c++14 :tensorflow_lite_gpu_dylib --apple_platform_type=macos
 
 
 TFL Notes

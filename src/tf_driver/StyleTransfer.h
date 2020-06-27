@@ -16,19 +16,21 @@
 
 #pragma once
 
+#include "tensorflow/lite/c/c_api.h"
 #include "tensorflow/lite/kernels/register.h"
 #include "tensorflow/lite/model.h"
-#include "GL/glew.h"
+
+#include "opencv2/opencv.hpp"
 #include <string>
 
-#define MAC_OPENGL
 
-#if (__MACOS__)
+#if __APPLE__
+#include "tensorflow/lite/delegates/gpu/metal_delegate.h"
 #else
+#define MAC_OPENGL
 #include "tensorflow/lite/delegates/gpu/gl_delegate.h"
 #endif
 
-#include <opencv2/opencv.hpp>
 
 class StyleTransfer {
 

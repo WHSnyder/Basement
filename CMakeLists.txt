@@ -19,7 +19,7 @@ else()
 	
 	add_library(basement SHARED)
 
-	find_package(Python3 3.6 EXACT COMPONENTS Interpreter Development)
+	find_package(Python3 3.7 EXACT COMPONENTS Interpreter Development)
 	target_include_directories(basement PUBLIC ${Python3_INCLUDE_DIRS})
 	
 	execute_process (
@@ -43,7 +43,6 @@ endif()
 
 set_property(TARGET basement PROPERTY CXX_STANDARD 17)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC") #not sure how this works with executables
-
 
 if (UNIX AND NOT APPLE)
 	target_link_libraries(basement PUBLIC "-Wl,--no-as-needed")
@@ -113,6 +112,7 @@ if (BUILDTEST)
 	target_link_libraries(basement PUBLIC test_TFCPP)
 endif()
 
+
 target_link_directories(basement PUBLIC libs/glm/build/glm)
 target_link_libraries(basement PUBLIC glm_static)
 
@@ -122,12 +122,17 @@ target_link_libraries(basement PUBLIC ${PHYSX_LIBS})
 target_link_directories(basement PUBLIC ${OpenCV_LIBRARY_DIRS})
 target_link_libraries(basement PUBLIC ${OpenCV_LIBRARIES})
 
-target_link_directories(basement PUBLIC libs/glfw/build/src)
+set(GLFW_LIB_PATH ${CD}/libs/glfw/build/src)
+target_link_directories(basement PUBLIC ${GLFW_LIB_PATH})
 
 if (APPLE)
 	target_link_libraries(basement PUBLIC glfw.3)
 else()
 	target_link_libraries(basement PUBLIC glfw3) 
+endif()
+
+if (TESTS)
+	add_subdirectory(tests)
 endif()
 
 target_link_directories(basement PUBLIC ${ASSIMP_LIB_PATH})
@@ -138,6 +143,8 @@ target_link_libraries(basement PUBLIC z)
 if (UNIX AND NOT APPLE)
 	target_link_libraries(basement PUBLIC -ldl) #handled automatically on Mac
 endif()
+
+target_link_libraries(basement PUBLIC -ldl) #handled automatically on Mac
 
 target_link_libraries(basement PUBLIC -lpthread)
 target_link_libraries(basement PUBLIC m)

@@ -1,15 +1,20 @@
 import time, sys, os
 
+projpath = os.getcwd() + "/"
+buildpath = os.path.join(projpath, "build")
+tf_path = os.path.join(projpath, "libs/tf_gl")
 
-sys.path.insert(0,"/home/will/projects/cpprtx/build/")
-os.chdir("/home/will/projects/cpprtx/libs/tf_gl/")
+print(projpath)
+print(tf_path)
+
+sys.path.insert(0,buildpath)
+os.chdir(tf_path) #must be done for shared lib dependency to load properly.  Install-name-tool
+				  #and linker environment vars are ignored.
 from GameContext import *
-os.chdir("/home/will/projects/cpprtx/")
+os.chdir(projpath)
 
 init_window()
-#run_model()
-
-init_game("/home/will/projects/cpprtx/")
+init_game(projpath)
 
 timelast = time.perf_counter()
 timestart = timelast
@@ -32,7 +37,7 @@ while True:
 
 	frames += 1
 
-os.system('nvidia-smi')
+#os.system('nvidia-smi')
 print("CPU FPS: " + str(frames / (timecur - timestart)))
 
 destroy_game()

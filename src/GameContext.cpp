@@ -23,10 +23,10 @@
 #include "rendering/RenderTarget.h"
 #include "tf_driver/StyleTransfer.h"
 
+
 #include "clouds/Clouds.h"
 
 #define COUT(x) std::cout << x << std::endl;
-
 
 
 
@@ -614,7 +614,8 @@ int main(int argc, char **argv){
 	}
 
 	destroy_game();
-	return 0;
+
+	return 1;
 }
 
 #else

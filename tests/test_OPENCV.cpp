@@ -12,24 +12,6 @@ using namespace std;
 int num_images = 0;
 
 
-
-
-class TestImg {
-
-private:
-
-	 
-
-public:
-
-	TestImg();
-
-
-
-
-}
-
-
 void run_basic() {
 	string filepath = string("/Users/will/projects/cpprtx/assets/images/grass.jpg");
 	cv::Mat img = imread(filepath, cv::IMREAD_COLOR);

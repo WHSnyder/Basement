@@ -17,8 +17,17 @@
 #include "StyleTransfer.h"
 #include <iostream>
 
-std::string MODEL_PATH = "/home/will/projects/cpprtx/libs/tf_models/magenta_models/";
-std::string APP_PATH = "/home/will/Desktop/";
+#if __APPLE__
+std::string pref = "/Users";
+#else
+#include "GL/glew.h"
+std::string pref = "/home"
+#endif
+
+
+
+std::string MODEL_PATH = pref + "/will/projects/cpprtx/libs/tf_models/magenta_models/";
+
 std::string GRAD = APP_PATH + "grad.jpg";
 std::string INPUT_IMAGE = APP_PATH + "gate.jpg";
 std::string predictorPath = MODEL_PATH + "arb_style_predict.tflite";
@@ -51,16 +60,18 @@ StyleTransfer::StyleTransfer(unsigned int outputSSBO, unsigned int inputSSBO) {
     if (transform_builder(&transferInterpreter) != kTfLiteOk)
         COUT("Error with transfer interpreter")
 
+#if __APPLE__ 
+    delegate = TFLGpuDelegateCreate(nullptr)
+#else  
 #ifndef TFLV2
     delegate = TfLiteGpuDelegateCreate(nullptr);
 #else
     delegate = TfLiteGpuDelegateV2Create(nullptr);
 #endif
-
+#endif
+    
     if (outputSSBO != 10000){
     	int outputIndex = fromNameToIndex("transformer/expand/conv3/conv/Sigmoid", false, false);
-        COUT("Output index:")
-        COUT(outputIndex)
     	TfLiteGpuDelegateBindBufferToTensor(delegate, outputSSBO, outputIndex);
     	int contentImageIndex = fromNameToIndex("content_image", true, false);
     	TfLiteGpuDelegateBindBufferToTensor(delegate, inputSSBO, contentImageIndex);
@@ -211,7 +222,6 @@ void StyleTransfer::setStyle(int styleVal) {
 }
 
 
-
 int StyleTransfer::fromNameToIndex(std::string stdName, bool isInput, bool isStylePredict) const {
     
     ::tflite::Interpreter *interpreter;
@@ -236,15 +246,16 @@ int StyleTransfer::fromNameToIndex(std::string stdName, bool isInput, bool isSty
 
 
 StyleTransfer::~StyleTransfer() {
+    COUT("Destroying style transferer")
 
-	COUT("Destroying style transferer")
-
-#if __linux__
-    #ifndef TFLV2
+#if __APPLE__
+    TFLGpuDelegateDelete(delegate);
+#elif __linux__
+#ifndef TFLV2
     TfLiteGpuDelegateDelete(delegate);
-    #else
+#else
     TfLiteGpuDelegateV2Delete(delegate);
-    #endif
+#endif
 #endif
 }
 
