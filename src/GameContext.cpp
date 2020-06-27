@@ -225,18 +225,25 @@ int initialize_window(){
 		return -1;
 	}
 
+	COUT("GLFWINIT")
+
 	glfwWindowHint(GLFW_SAMPLES, 8);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
-	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE); // To make MacOS happy; should not be needed
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
+	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
+	COUT("SETHINTS")
 
 	// Open a window and create its OpenGL context
 	window = glfwCreateWindow(600, 600, "Test", NULL, NULL);
 	if (!window) {
         glfwTerminate();
+        COUT("FAILED TO CREATE WINDOW")
         exit(EXIT_FAILURE);
     }
+
+    COUT("WINDOWCREATED")
 
 	glfwMakeContextCurrent(window);
 
@@ -575,6 +582,7 @@ int main(int argc, char **argv){
 #endif
 
 	initialize_window();
+	COUT("INITIALIZED WINDOW")
 
 	auto p0 = std::chrono::time_point<std::chrono::system_clock>{};
 	//auto epoch_time = std::chrono::system_clock::to_time_t(p0);

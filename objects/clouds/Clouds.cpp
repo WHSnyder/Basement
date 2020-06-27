@@ -128,14 +128,14 @@ void Clouds::initVariables() {
 	coverage = 0.55;
 	crispiness = 10.;
 	curliness = .6;
-	density = 0.04;
+	density = 0.1;
 	absorption = 0.25;
 
 	earthRadius = 600000.0;
 	sphereInnerRadius = 5000.0;
 	sphereOuterRadius = 17000.0;
 
-	perlinFrequency = .8;
+	perlinFrequency = 1.8;
 
 	enableGodRays = false;
 	enablePowder = false;
