@@ -7,10 +7,12 @@ using namespace glm;
 using namespace std;
 
 
+
+
+
 /*
 *  Plane methods.
 */
-
 cv::Vec3b Plane::shade(RayHit *rhit, cv::Mat *img, Scene *scene){
 
 	vec3 hit_pos = *rhit -> entrance;
@@ -123,13 +125,11 @@ RayHit *Sphere::intersect_ray(Ray& r) {
 	vec3 center_to_line = origin - (dotprod * r.dir + r.origin);
 	
 	float d = length(center_to_line);
-	if (d >= radius){	
-		return nullptr;
-	}
-
+	
+	if (d >= radius) return nullptr;
+	
 	float temp = abs(sqrt(radius*radius - d*d));
-	float ent_length = dotprod - temp;
-	float exit_length = dotprod + temp;
+	float ent_length = dotprod - temp, exit_length = dotprod + temp;
 
 	if (ent_length < .001) return nullptr;
 
@@ -210,7 +210,7 @@ vec3 zbase = vec3(0,0,1);
 
 cv::Vec3b Cube::shade(RayHit *rhit, cv::Mat *img, Scene *scene){
 
-	vec3 hit_pos = *rhit -> entrance, color = vec3(70,70,70);
+	vec3 hit_pos = *rhit -> entrance, color = vec3(250,20,230);
 	std::vector<Light *> lights = scene -> lights;
 
 	int i = -1;
@@ -261,10 +261,10 @@ RayHit *Cube::intersect_ray(Ray &r) {
 
 	    	xflip = -1.0f;
 	    }
-	}
 
-    min_norm = xflip * xbase;
-    max_norm = xflip * -1.0f * xbase;
+	    min_norm = xflip * xbase;
+    	max_norm = xflip * -1.0f * xbase;
+	}
 
     if (abs(r.dir.y) > .00001){
  

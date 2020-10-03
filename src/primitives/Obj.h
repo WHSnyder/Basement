@@ -18,6 +18,15 @@ using namespace glm;
 class Scene;
 
 
+/*
+* General shading functions.
+*/
+
+
+cv::Vec3b shade_reflective(RayHit *rhit, cv::Mat *tex, Scene *scene);
+
+
+
 struct Vertex {
 
 	vec3 coord;
@@ -32,6 +41,7 @@ class Obj {
 		vec3 origin;
 		virtual RayHit *intersect_ray(Ray& r)=0;
 		virtual cv::Vec3b shade(RayHit *rh, cv::Mat *image, Scene *scene)=0;
+		cv::Vec3b (*shader)(RayHit *rh, cv::Mat *image, Scene *scene) = nullptr;
 };
 
 

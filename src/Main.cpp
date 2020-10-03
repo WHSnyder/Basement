@@ -136,13 +136,23 @@ int main(int argc, char **argv){
 	Plane p = Plane(p1,p2,p3,p4);
 	Obj *op = &p;
 
+	vec3 p12 = vec3(-2,2,.1);
+	vec3 p22 = vec3(-2,-2,.1);
+	vec3 p32 = vec3(-2,-2,1.9);
+	vec3 p42 = vec3(-2,2,1.9);
+
+	Plane _p1 = Plane(p12,p22,p32,p42);
+	Obj *op1 = &_p1;
+
 	Sphere s =  Sphere(vec3(-.2,-1.1,1.2), vec3(240,40,40),.4);
 	Obj *os = &s;
 
-	Sphere s2 = Sphere(vec3(-.2,-.7,1.2), vec3(30,230,30),.3);
+	Sphere s2 = Sphere(vec3(.1,-.8,1.4), vec3(250,170,170),.25);
 	Obj *os2 = &s2;
+	s2.shader = &shade_reflective;
 
-	Cube c0 = Cube(vec3(-.4,-.7,1.2),vec3(-.2,-.7,1.2) + 4.0f * vec3(.1,-.1,.1));
+	vec3 lb = vec3(-.1,-.6,1.2);
+	Cube c0 = Cube(lb,lb + 4.0f * vec3(.1,-.1,.1));
 	Obj *oc0 = &c0;
 
 	vec3 t0 = vec3(0,-2.7,2.6);
@@ -172,11 +182,13 @@ int main(int argc, char **argv){
 	else combo = cube_0 - sphere_1;
 	
 	CSG planecsg = CSG(op);
+	CSG planecsg2 = CSG(op1);
 	CSG tricsg = CSG(ot);
 
 	scene.add_csg(combo);
 	//scene.add_csg(&cube_0);
 	scene.add_csg(&planecsg);
+	scene.add_csg(&planecsg2);
 	scene.add_csg(&tricsg);
 
 	cv::Vec3b color;
