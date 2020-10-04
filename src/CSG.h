@@ -1,7 +1,6 @@
 #ifndef csgi
 #define csgi
 
-#include "Ray.h"
 #include "primitives/Obj.h"
 
 

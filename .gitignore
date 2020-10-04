@@ -9,3 +9,4 @@ meshes
 **/bin/*
 bin/*
 bin
+*.o

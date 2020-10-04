@@ -86,7 +86,6 @@ cv::Vec3b Sphere::shade(RayHit *rhit, cv::Mat *img, Scene *scene){
 
 	vec3 hit_pos = *rhit -> entrance;
 	std::vector<Light *> lights = scene -> lights;
-	vec3 col = lights[0] -> color;
 
 	int i = -1;
 

@@ -50,18 +50,19 @@ RayHit *Cube::intersect_ray(Ray &r) {
     tmin = 100000000;
     tmax = -100000000;
 
-    if (r.dir.x)
+    if (abs(r.dir.x) > 0.00001){
 
-    tmin = (min.x - r.origin.x) / r.dir.x; 
-    tmax = (max.x - r.origin.x) / r.dir.x;
+	    tmin = (min.x - r.origin.x) / r.dir.x; 
+	    tmax = (max.x - r.origin.x) / r.dir.x;
 
-    if (tmin > tmax){
-    	temp = tmax;
-    	tmax = tmin;
-    	tmin = temp;
+	    if (tmin > tmax){
+	    	temp = tmax;
+	    	tmax = tmin;
+	    	tmin = temp;
 
-    	xlfip = -1.0f
-    }
+	    	xlfip = -1.0f
+	    }
+	}
 
     min_norm = xflip * xbase;
     max_norm = xflip * -1.0f * xbase;

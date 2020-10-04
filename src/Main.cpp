@@ -4,17 +4,6 @@
 #include <iostream>
 #include <pthread.h>
 
-#ifndef glmi
-#define glmi
-#include <glm/glm.hpp> // vec2, vec3, mat4, radians
-#include <glm/ext.hpp> // perspective, translate, rotate
-#endif
-
-#ifndef cvinc
-#define cvinc
-#include <opencv2/opencv.hpp> 
-#endif
-
 #include "Scene.h"
 
 using namespace std;
@@ -154,10 +143,6 @@ int main(int argc, char **argv){
 	Obj *ot = &t;
 
 	Scene scene = Scene(&view);
-	scene.add_object(os);
-	scene.add_object(ot);
-	scene.add_object(os2);
-	scene.add_object(op);
 
 	vec3 lightpos = vec3(0,-.5,3);
 	vec3 lightlook = vec3(0,-1.0,1.2);

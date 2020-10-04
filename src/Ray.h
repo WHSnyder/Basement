@@ -55,11 +55,11 @@ class RayHit {
 			
 			entrance = new vec3(w_ent);
 			ent_normal = new vec3(n_ent);
-			ent_distance = new vec3(d_ent);
+			ent_distance = d_ent;
 
 			exit = new vec3(w_exit);
 			exit_normal = new vec3(n_exit);
-			exit_distance = new vec3(d_exit);
+			exit_distance = d_exit;
 
 			ray = r;
 			object_hit = obj_hit;
